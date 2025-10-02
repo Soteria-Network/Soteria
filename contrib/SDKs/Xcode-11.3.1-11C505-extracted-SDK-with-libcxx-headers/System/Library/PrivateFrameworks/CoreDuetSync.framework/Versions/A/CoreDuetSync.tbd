@@ -1,0 +1,9 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 503DEA6E-92B3-36A2-88A7-B6DE8C1BCF8D', 'x86_64: 503DEA6E-92B3-36A2-88A7-B6DE8C1BCF8D' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/CoreDuetSync.framework/Versions/A/CoreDuetSync'
+exports:         
+  - archs:           [ x86_64 ]
+    objc-classes:    [ _DKSync3Coordinator, _DKSyncCoordinatorFactory ]
+...

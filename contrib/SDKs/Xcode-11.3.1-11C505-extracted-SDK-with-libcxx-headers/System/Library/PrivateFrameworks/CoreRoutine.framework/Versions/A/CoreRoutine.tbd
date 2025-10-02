@@ -1,0 +1,27 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 84A9A3A4-4EB7-3B1E-873E-17263D5D57A5', 'x86_64: 84A9A3A4-4EB7-3B1E-873E-17263D5D57A5' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/CoreRoutine.framework/Versions/A/CoreRoutine'
+current-version: 690.0.9
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _RTConflictingItemIdentifierKey, _RTDetailedErrorsKey, _RTErrorDomain, 
+                       _RTLocationsOfInterestDidChangeNotification, _RTMachServiceEvent, 
+                       _RTMachServiceInternal, _RTMachServiceRegistration, _RTVisitConfidenceHigh, 
+                       _RTVisitConfidenceLow, _personalizedLabelsMask ]
+    objc-classes:    [ RTAddress, RTApplication, RTFetchFingerprintsOptions, RTFingerprint, 
+                       RTInferredMapItem, RTLocation, RTLocationOfInterest, RTLocationOfInterestTransition, 
+                       RTLocationOfInterestVisit, RTMapItem, RTMapItemExtendedAttributes, 
+                       RTMapServiceOptions, RTMotionActivity, RTPair, RTPlaceInference, 
+                       RTPlaceInferenceOptions, RTPredictedDate, RTPredictedLocationOfInterest, 
+                       RTReceipt, RTReceiptEventKit, RTRoutineManager, RTScenarioTrigger, 
+                       RTScenarioTriggerSettled, RTScenarioTriggerUnsettled, RTSignalGeneratorOptions, 
+                       RTSource, RTSourceCoreRoutine, RTSourceCoreRoutineLearnedLocation, 
+                       RTSourceCoreRoutineVehicleEvent, RTSourceEventKit, RTSourceMapsSupport, 
+                       RTSourceMapsSupportFavoritePlace, RTSourceMapsSupportHistoryEntry, 
+                       RTSourceMapsSupportHistoryEntryPlaceDisplay, RTSourceMapsSupportHistoryEntryRoute, 
+                       RTStoredLocationEnumerationContext, RTStoredLocationEnumerationOptions, 
+                       RTStoredVisitFetchOptions, RTTokenBucket, RTVehicleEvent, 
+                       RTVisit, RTWiFiAccessPoint ]
+...

@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 88D805F1-6A1B-3C22-84EC-0ADDE2F548A6' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/CoreChart.framework/Versions/A/CoreChart'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _CoreChartVersionNumber, _CoreChartVersionString ]
+    objc-classes:    [ CCChartView ]
+...

@@ -1,0 +1,18 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: F39BC672-F7E7-3BFB-9FCD-DAA086352439', 'x86_64: F39BC672-F7E7-3BFB-9FCD-DAA086352439' ]
+platform:        zippered
+install-name:    '/System/Library/Frameworks/SoundAnalysis.framework/Versions/A/SoundAnalysis'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _SNErrorDomain, _SNSoundIdentifierApplause, _SNSoundIdentifierBabble, 
+                       _SNSoundIdentifierCheering, _SNSoundIdentifierDistressedBaby, 
+                       _SNSoundIdentifierLaughter, _SNSoundIdentifierMusic, _SNSoundIdentifierSpeech, 
+                       _SNVGGishFeatureEmbeddingCustomModelName, _SNVGGishFrontEndProcessingCustomModelName ]
+    objc-classes:    [ SNAudioFileAnalyzer, SNAudioStreamAnalyzer, SNClassification, 
+                       SNClassificationResult, SNClassifySoundRequest, SNCreateFeaturePrintRequest, 
+                       SNDetectSignalThresholdRequest, SNDetectSoundRequest, SNDetectSpeechUtteranceRequest, 
+                       SNDetectionResult, SNFeaturePrint, SNLKFSResult, SNMeasureLKFSRequest, 
+                       SNNullRequest, SNNullResult, SNResultsCollector, SNSignalThresholdResult, 
+                       SNSpeechUtteranceResult ]
+...

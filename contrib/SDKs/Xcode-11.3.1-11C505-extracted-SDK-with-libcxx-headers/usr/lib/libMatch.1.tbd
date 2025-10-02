@@ -1,0 +1,11 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: D059FA22-1620-3A26-BF81-70EA469C97EB', 'x86_64: D059FA22-1620-3A26-BF81-70EA469C97EB' ]
+platform:        zippered
+install-name:    '/usr/lib/libMatch.1.dylib'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _matchCombine, _matchCompile, _matchDiagram, _matchDup, _matchExec, 
+                       _matchFree, _matchInit, _matchOptimize, _matchPack, _matchPrintNodes, 
+                       _matchSetOption, _matchUnpack, _matchValidate ]
+...

@@ -1,0 +1,81 @@
+policy_module(soteria, 1.100.1)
+
+########################################
+#
+# Declarations
+#
+
+type soteria_t;
+type soteria_exec_t;
+init_daemon_domain(soteria_t, soteria_exec_t)
+
+permissive soteria_t;
+
+type soteria_initrc_exec_t;
+init_script_file(soteria_initrc_exec_t)
+
+type soteria_conf_t;
+files_type(soteria_conf_t)
+
+type soteria_var_lib_t;
+files_type(soteria_var_lib_t)
+
+type soteria_var_run_t;
+files_type(soteria_var_run_t)
+
+type soteria_port_t;
+corenet_port(soteria_port_t)
+
+########################################
+#
+# soteria local policy
+#
+allow soteria_t self:process { fork };
+
+allow soteria_t self:fifo_file rw_fifo_file_perms;
+allow soteria_t self:unix_stream_socket create_stream_socket_perms;
+
+manage_dirs_pattern(soteria_t, soteria_conf_t, soteria_conf_t)
+manage_files_pattern(soteria_t, soteria_conf_t, soteria_conf_t)
+
+manage_dirs_pattern(soteria_t, soteria_var_lib_t, soteria_var_lib_t)
+manage_files_pattern(soteria_t, soteria_var_lib_t, soteria_var_lib_t)
+files_var_lib_filetrans(soteria_t, soteria_var_lib_t, { dir file })
+
+manage_dirs_pattern(soteria_t, soteria_var_run_t, soteria_var_run_t)
+manage_files_pattern(soteria_t, soteria_var_run_t, soteria_var_run_t)
+
+sysnet_dns_name_resolve(soteria_t)
+corenet_all_recvfrom_unlabeled(soteria_t)
+
+allow soteria_t self:tcp_socket create_stream_socket_perms;
+corenet_tcp_sendrecv_generic_if(soteria_t)
+corenet_tcp_sendrecv_generic_node(soteria_t)
+corenet_tcp_sendrecv_all_ports(soteria_t)
+corenet_tcp_bind_generic_node(soteria_t)
+
+gen_require(`
+    type soteria_port_t;
+')
+allow soteria_t soteria_port_t:tcp_socket name_bind;
+
+gen_require(`
+    type soteria_port_t;
+')
+allow soteria_t soteria_port_t:tcp_socket name_connect;
+
+domain_use_interactive_fds(soteria_t)
+
+files_read_etc_files(soteria_t)
+
+miscfiles_read_localization(soteria_t)
+
+sysnet_dns_name_resolve(soteria_t)
+
+allow soteria_t soteria_exec_t:file execute_no_trans;
+allow soteria_t self:process setsched;
+corecmd_exec_ls(soteria_t)
+corenet_tcp_connect_http_port(soteria_t)
+dev_read_urand(soteria_t)
+fs_getattr_xattr_fs(soteria_t)
+kernel_read_system_state(soteria_t)

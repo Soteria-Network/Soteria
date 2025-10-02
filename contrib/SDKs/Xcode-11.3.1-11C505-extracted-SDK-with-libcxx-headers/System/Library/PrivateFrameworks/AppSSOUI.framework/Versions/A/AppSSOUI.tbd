@@ -1,0 +1,9 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 494812E2-4F68-311D-8960-EB1E57A48BE7' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/AppSSOUI.framework/Versions/A/AppSSOUI'
+exports:         
+  - archs:           [ x86_64 ]
+    objc-classes:    [ SOUIAuthorizationViewController ]
+...

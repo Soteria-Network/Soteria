@@ -1,0 +1,13 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: F0FE2B41-C715-32FE-A50A-C683024C8CC9', 'x86_64: F0FE2B41-C715-32FE-A50A-C683024C8CC9' ]
+platform:        zippered
+install-name:    '/usr/lib/libCTGreenTeaLogger.dylib'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _ct_green_tea_logger_create, _ct_green_tea_logger_create_static, 
+                       _ct_green_tea_logger_destroy, _ct_green_tea_logging_enabled, 
+                       _getCTGreenTeaOsLogHandle, _kCTGreenTeaMessageDeleteLoggingFormat, 
+                       _kCTGreenTeaMessageReadLoggingFormat, _kCTGreenTeaMessageTransmitLoggingFormat, 
+                       _kCTGreenTeaPhoneNumberTransmitLoggingFormat ]
+...

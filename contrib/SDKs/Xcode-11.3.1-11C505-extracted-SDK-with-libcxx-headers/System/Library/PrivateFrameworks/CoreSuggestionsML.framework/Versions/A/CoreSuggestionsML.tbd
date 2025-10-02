@@ -1,0 +1,24 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 94106FCA-C314-3F8F-8F73-B79768B0D7BE', 'x86_64: 94106FCA-C314-3F8F-8F73-B79768B0D7BE' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/CoreSuggestionsML.framework/Versions/A/CoreSuggestionsML'
+current-version: 1052.14
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _CoreSuggestionsMLVersionNumber, _CoreSuggestionsMLVersionString, 
+                       _SGRepairString ]
+    objc-classes:    [ SGLanguageDetection, SGLazyInit, SGModelAsset, SGModelFeatures, 
+                       SGModelHyperparameters, SGModelSampler, SGModelSource, SGNestedArray, 
+                       SGPipelineTransformer, SGQuickResponse, SGQuickResponsesCategoryScore, 
+                       SGQuickResponsesClassScore, SGQuickResponsesClassificationModel, 
+                       SGQuickResponsesClassificationParameters, SGQuickResponsesConfig, 
+                       SGQuickResponsesDatabase, SGQuickResponsesDistributingCount, 
+                       SGQuickResponsesInference, SGQuickResponsesModel, SGQuickResponsesModelRules, 
+                       SGQuickResponsesPersonalization, SGQuickResponsesPredictionParameters, 
+                       SGQuickResponsesRanking, SGQuickResponsesRecords, SGQuickResponsesReplies, 
+                       SGQuickResponsesReplyModel, SGQuickResponsesReplyOption, SGQuickResponsesReplyRecord, 
+                       SGQuickResponsesScoring, SGQuickResponsesStore, SGQuickResponsesTransformerInstance, 
+                       SGRandomization, SGStringLabelingTransformer, SGStringPreprocessingTransformer, 
+                       SGStringPreprocessor, SGTextLabelTransformer ]
+...

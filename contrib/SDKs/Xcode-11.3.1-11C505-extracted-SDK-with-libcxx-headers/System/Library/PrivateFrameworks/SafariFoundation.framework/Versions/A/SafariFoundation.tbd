@@ -1,0 +1,20 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: B58D7FB3-D4C6-3036-8A2A-E4EB98DA4620', 'x86_64: B58D7FB3-D4C6-3036-8A2A-E4EB98DA4620' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/SafariFoundation.framework/Versions/A/SafariFoundation'
+current-version: 608.3.10
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _SFAutoFillFromAddressBookPreferenceKey, _SFCredentialProviderDeveloperEntitlement, 
+                       _SFCredentialProviderExtensionPointIdentifier, _SFCredentialProviderShowsConfigurationUIKey, 
+                       _SFCredentialProviderSystemEntitlement, _SFExternalCredentialIdentityStoreErrorDomain, 
+                       _SFPasswordCredentialIdentityInvalidRowIdentifier, _SFPasswordGenerationNoLengthLimit, 
+                       _SFSharablePasswordURLSchemeForAirDrop, _maximumNumberOfWebCredentialEntriesToReturnForAppID ]
+    objc-classes:    [ SFAutoFillFeatureManager, SFCredentialProviderExtensionState, 
+                       SFDomainAssociationUtilities, SFPasswordCredentialIdentity, 
+                       SFSafariCredential, SFSafariCredentialStore, SFSharablePassword, 
+                       SFSharablePasswordReceiver, SFSharedWebCredentialsDatabaseEntry, 
+                       SFStrongPasswordGenerator, SFSuggestedUser, SFSuggestedUserProvider, 
+                       _SFSharablePasswordEncryptionInformation ]
+...

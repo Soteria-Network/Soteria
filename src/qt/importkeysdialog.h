@@ -1,0 +1,66 @@
+// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2017-2019 The Raven Core developers
+// Copyright (c) 2025 The Soteria Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#ifndef SOTERIA_QT_IMPORTKEYS_H
+#define SOTERIA_QT_IMPORTKEYS_H
+class CWallet;
+class CBlockIndex;
+
+#include <QDialog>
+#include <QThread>
+
+class ImportKeysDialog;
+class PlatformStyle;
+
+namespace Ui {
+class ImportKeysDialog;
+}
+
+/* Object for executing key import commands in a separate thread.
+*/
+class ImportKeyExecutor : public QObject
+{
+    Q_OBJECT
+
+public Q_SLOTS:
+    void rescan(CWallet*, CBlockIndex*);
+
+Q_SIGNALS:
+    void rescanWallet(CWallet*, CBlockIndex*);
+};
+
+/** Preferences dialog. */
+class ImportKeysDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit ImportKeysDialog(const PlatformStyle *_platformStyle, QWidget *parent = 0);
+    ~ImportKeysDialog();
+
+Q_SIGNALS:
+    void stopExecutor();
+    void rescanWallet(CWallet*, CBlockIndex*);
+
+private:
+    Ui::ImportKeysDialog *ui;
+    const PlatformStyle *platformStyle;
+    QThread thread;
+    CWallet *pwalletMain = NULL;
+
+private Q_SLOTS:
+    /* set OK button state (enabled / disabled) */
+    void setOkButtonState(bool fState);
+    void on_resetButton_clicked();
+    void on_okButton_clicked();
+    void on_cancelButton_clicked();
+    void resetDialogValues();
+
+    /* import a private key */
+    bool importKey();
+};
+
+#endif // SOTERIA_QT_IMPORTKEYS_H

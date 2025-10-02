@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 8AAF105D-7963-3F9A-94BD-258510CDDB7E', 'x86_64: 8AAF105D-7963-3F9A-94BD-258510CDDB7E' ]
+platform:        zippered
+install-name:    '/System/Library/CoreServices/Encodings/libHebrewConverter.dylib'
+current-version: 76
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ ___CFStringEncodingGetHebrewConverterDefinition ]
+...

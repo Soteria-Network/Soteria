@@ -1,0 +1,18 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 23AF4473-4FDB-39D9-8862-7D23276606A9', 'x86_64: 23AF4473-4FDB-39D9-8862-7D23276606A9' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/LinguisticData.framework/Versions/A/LinguisticData'
+current-version: 353
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _LDCreateSystemLexiconCompatibilityVersion, _LDEnumerateAssetDataItems, 
+                       _kLDAssetTypeCharacterLanguageModel, _kLDAssetTypeContinuousPathModel, 
+                       _kLDAssetTypeDeltaLexicon, _kLDAssetTypeEventDetectionModel, 
+                       _kLDAssetTypeIntentDetectionModel, _kLDAssetTypeLanguageIdentificationModel, 
+                       _kLDAssetTypeLanguageModel, _kLDAssetTypeLexicon, _kLDAssetTypeMorphologicalAnalyzer, 
+                       _kLDAssetTypeMultilingualModel, _kLDAssetTypeNaturalLanguageSearchModel, 
+                       _kLDAssetTypePOSTaggingModel, _kLDAssetTypePolarityModel, 
+                       _kLDAssetTypeProactiveGrammar, _kLDAssetTypeSpellcheckerData, 
+                       _kLDAssetTypeTokenizationModel, _kLDAssetTypeTransliterationModel ]
+...

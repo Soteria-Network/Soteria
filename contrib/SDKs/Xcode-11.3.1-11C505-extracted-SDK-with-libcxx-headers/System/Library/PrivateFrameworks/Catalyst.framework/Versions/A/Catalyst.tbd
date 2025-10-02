@@ -1,0 +1,27 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: F1B42AF0-28D6-30BD-8DBD-34274BB4EC41', 'x86_64: F1B42AF0-28D6-30BD-8DBD-34274BB4EC41' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/Catalyst.framework/Versions/A/Catalyst'
+current-version: 6
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _CATAssertIsNotQueue, _CATAssertIsQueue, _CATErrorDomain, 
+                       _CATErrorWithCodeAndUserInfo, _CATErrorWithDomainCodeAndUserInfo, 
+                       _CATFormattedStringForKey, _CATGetCatalystQueue, _CATLocalizedKey, 
+                       _CATSetCatalystQueue, _CATUnlocalizedKey ]
+    objc-classes:    [ CATAddress, CATArbitrator, CATBatchRemoteTaskOperation, CATBlockOperationObserver, 
+                       CATCollectionController, CATEndPoint, CATMessage, CATMutableTaskProgress, 
+                       CATNetworkReachability, CATNotificationMessage, CATOperation, 
+                       CATOperationQueue, CATProperty, CATRemoteConnection, CATRemoteConnectionSocketOptions, 
+                       CATRemoteConnectionTrustDecision, CATRemoteTaskOperation, 
+                       CATRemoteTransport, CATSerialOperationQueue, CATSessionMessage, 
+                       CATSessionMessageDidInvalidate, CATSessionMessageInvalidate, 
+                       CATSessionMessageResume, CATSessionMessageResumed, CATSocket, 
+                       CATState, CATStateMachine, CATStateMachineEvent, CATTaskBlockServer, 
+                       CATTaskClient, CATTaskMessage, CATTaskMessageCancel, CATTaskMessageError, 
+                       CATTaskMessageFetchProgress, CATTaskMessageIncrementalProgress, 
+                       CATTaskMessageProgressUpdate, CATTaskMessageStart, CATTaskOperation, 
+                       CATTaskProgress, CATTaskRequest, CATTaskResultObject, CATTaskServer, 
+                       CATTaskSession, CATTransition, CATTransport, CATXPCTransport ]
+...

@@ -1,0 +1,18 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 1FCFFFE1-13FB-3144-ABFE-2D0B6A18CA9C', 'x86_64: 1FCFFFE1-13FB-3144-ABFE-2D0B6A18CA9C' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/PersonaKit.framework/Versions/A/PersonaKit'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _PRCachedOtherValuesDidChangeNotification, _PRCachedSelfValuesDidChangeNotification, 
+                       _PRLikenessPropertyCropRect, _PRLikenessPropertyCurrent, _PRLikenessPropertyExternalID, 
+                       _PRLikenessPropertyRecipe, _PRLikenessPropertyStaticRepresentation, 
+                       _PRNilLikenessIdentifier, _PROtherLikenessesDidChangeNotification, 
+                       _PRPersonaErrorDomain, _PRPersonaServiceMachName, _PRSelfLikenessesDidChangeNotification, 
+                       _PersonaKitVersionNumber, _PersonaKitVersionString, __PRGetLogSystem, 
+                       _kPRNilLikenessVersion ]
+    objc-classes:    [ PRLikeness, PRLikenessChange, PRManagedLikeness, PRManagedLikenessChange, 
+                       PRManagedPropagationEvent, PRManagedScreenName, PRPersonaServiceInterface, 
+                       PRPersonaStore ]
+...

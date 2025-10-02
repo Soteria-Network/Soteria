@@ -1,0 +1,12 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: D330C232-51A7-3943-87EB-FAEA3C9352DC', 'x86_64: D330C232-51A7-3943-87EB-FAEA3C9352DC' ]
+platform:        zippered
+install-name:    '/usr/lib/libspindump.dylib'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _SPCachePort, _SPGenerateSpindump, _SPHIDResponseDelayThreshold, 
+                       _SPNotifyLeavingFullWake, _SPReportCPUUsageResource, _SPReportCPUWakeupsResource, 
+                       _SPReportDiskWritesResource, _SPReportHIDResponseDelay, _SPReportStuckProcess, 
+                       _SPReportStuckProcessWithCallback, _SPReportUnstuckProcess ]
+...

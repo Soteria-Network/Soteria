@@ -1,0 +1,22 @@
+[Unit]
+Description=Soteria's distributed currency daemon
+After=network.target
+
+[Service]
+User=soteria
+Group=soteria
+
+Type=forking
+PIDFile=/var/lib/soteriad/soteriad.pid
+ExecStart=/usr/bin/soteriad -daemon -pid=/var/lib/soteriad/soteriad.pid \
+-conf=/etc/soteria/soteria.conf -datadir=/var/lib/soteriad -disablewallet
+
+Restart=always
+PrivateTmp=true
+TimeoutStopSec=60s
+TimeoutStartSec=2s
+StartLimitInterval=120s
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
