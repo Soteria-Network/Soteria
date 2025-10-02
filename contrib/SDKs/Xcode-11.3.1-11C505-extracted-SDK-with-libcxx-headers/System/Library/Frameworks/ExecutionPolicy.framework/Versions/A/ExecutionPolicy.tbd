@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: F6D4F304-697F-37BA-A4AD-DACCFFD8E973' ]
+platform:        macosx
+install-name:    '/System/Library/Frameworks/ExecutionPolicy.framework/Versions/A/ExecutionPolicy'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _EPErrorDomain ]
+    objc-classes:    [ EPDeveloperTool, EPExecutionPolicy ]
+...

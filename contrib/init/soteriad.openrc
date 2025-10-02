@@ -1,0 +1,92 @@
+#!/sbin/runscript
+
+# backward compatibility for existing gentoo layout 
+#
+if [ -d "/var/lib/soteria/.soteria" ]; then
+	SOTERIAD_DEFAULT_DATADIR="/var/lib/soteria/.soteria"
+else
+	SOTERIAD_DEFAULT_DATADIR="/var/lib/soteriad"
+fi
+
+SOTERIAD_CONFIGFILE=${SOTERIAD_CONFIGFILE:-/etc/soteria/soteria.conf}
+SOTERIAD_PIDDIR=${SOTERIAD_PIDDIR:-/var/run/soteriad}
+SOTERIAD_PIDFILE=${SOTERIAD_PIDFILE:-${SOTERIAD_PIDDIR}/soteriad.pid}
+SOTERIAD_DATADIR=${SOTERIAD_DATADIR:-${SOTERIAD_DEFAULT_DATADIR}}
+SOTERIAD_USER=${SOTERIAD_USER:-${SOTERIA_USER:-soteria}}
+SOTERIAD_GROUP=${SOTERIAD_GROUP:-soteria}
+SOTERIAD_BIN=${SOTERIAD_BIN:-/usr/bin/soteriad}
+SOTERIAD_NICE=${SOTERIAD_NICE:-${NICELEVEL:-0}}
+SOTERIAD_OPTS="${SOTERIAD_OPTS:-${SOTERIA_OPTS}}"
+
+name="Soteria Core Daemon"
+description="Soteria cryptocurrency P2P network daemon"
+
+command="/usr/bin/soteriad"
+command_args="-pid=\"${SOTERIAD_PIDFILE}\" \
+		-conf=\"${SOTERIAD_CONFIGFILE}\" \
+		-datadir=\"${SOTERIAD_DATADIR}\" \
+		-daemon \
+		${SOTERIAD_OPTS}"
+
+required_files="${SOTERIAD_CONFIGFILE}"
+start_stop_daemon_args="-u ${SOTERIAD_USER} \
+			-N ${SOTERIAD_NICE} -w 2000"
+pidfile="${SOTERIAD_PIDFILE}"
+
+# The retry schedule to use when stopping the daemon. Could be either
+# a timeout in seconds or multiple signal/timeout pairs (like
+# "SIGKILL/180 SIGTERM/300")
+retry="${SOTERIAD_SIGTERM_TIMEOUT}"
+
+depend() {
+	need localmount net
+}
+
+# verify
+# 1) that the datadir exists and is writable (or create it)
+# 2) that a directory for the pid exists and is writable
+# 3) ownership and permissions on the config file
+start_pre() {
+	checkpath \
+	-d \
+	--mode 0750 \
+	--owner "${SOTERIAD_USER}:${SOTERIAD_GROUP}" \
+	"${SOTERIAD_DATADIR}"
+
+	checkpath \
+	-d \
+	--mode 0755 \
+	--owner "${SOTERIAD_USER}:${SOTERIAD_GROUP}" \
+	"${SOTERIAD_PIDDIR}"
+
+	checkpath -f \
+	-o ${SOTERIAD_USER}:${SOTERIAD_GROUP} \
+	-m 0660 \
+	${SOTERIAD_CONFIGFILE}
+
+	checkconfig || return 1
+}
+
+checkconfig()
+{
+	if ! grep -qs '^rpcpassword=' "${SOTERIAD_CONFIGFILE}" ; then
+		eerror ""
+		eerror "ERROR: You must set a secure rpcpassword to run soteriad."
+		eerror "The setting must appear in ${SOTERIAD_CONFIGFILE}"
+		eerror ""
+		eerror "This password is security critical to securing wallets "
+		eerror "and must not be the same as the rpcuser setting."
+		eerror "You can generate a suitable random password using the following "
+		eerror "command from the shell:"
+		eerror ""
+		eerror "bash -c 'tr -dc a-zA-Z0-9 < /dev/urandom | head -c32 && echo'"
+		eerror ""
+		eerror "It is recommended that you also set alertnotify so you are "
+		eerror "notified of problems:"
+		eerror ""
+		eerror "ie: alertnotify=echo %%s | mail -s \"Soteria Alert\"" \
+			"admin@foo.com"
+		eerror ""
+		return 1
+	fi
+}

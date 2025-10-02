@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 2657CBEB-F32E-32F8-AECF-F898A7CEDF5E' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/AMPSharing.framework/Versions/A/AMPSharing'
+exports:         
+  - archs:           [ x86_64 ]
+    objc-classes:    [ AMPSHomeSharingPrefs, AMPSPhotoSharingPrefs, AMPSPlaylistSharingPrefs, 
+                       AMPSPublicSharingPrefs, AMPSSharingPrefs ]
+...

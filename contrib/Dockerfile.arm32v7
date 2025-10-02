@@ -1,0 +1,23 @@
+FROM arm32v7/ubuntu:latest
+
+MAINTAINER cade <cade.call@mediciventures.com>
+
+EXPOSE $RPCPORT
+
+EXPOSE $PORT
+
+RUN useradd -ms /bin/bash soteria
+
+RUN mkdir /etc/soteria
+
+RUN mkdir /var/lib/soteria
+
+RUN chown soteria:soteria /etc/soteria /var/lib/soteria
+
+WORKDIR /home/soteria
+
+COPY --chown=soteria:soteria linux64/* ./run.sh /home/soteria/
+
+USER soteria
+
+CMD ["/home/soteria/run.sh"]

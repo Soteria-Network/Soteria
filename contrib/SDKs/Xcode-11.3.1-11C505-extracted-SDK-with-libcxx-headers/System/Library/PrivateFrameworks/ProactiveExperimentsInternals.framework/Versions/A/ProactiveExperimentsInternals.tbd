@@ -1,0 +1,13 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 2DB0FA3F-82A3-3D77-AD62-EADC3EBE96CF', 'x86_64: 2DB0FA3F-82A3-3D77-AD62-EADC3EBE96CF' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/ProactiveExperimentsInternals.framework/Versions/A/ProactiveExperimentsInternals'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _PREServerSideErrorDomain, _PREServerSideErrorInfoKey, _ProactiveExperimentsInternalsVersionNumber, 
+                       _ProactiveExperimentsInternalsVersionString, _pre_sv_quicktype_handle, 
+                       _pre_sv_responses_handle, _pre_sv_xpc_handle ]
+    objc-classes:    [ PREResponsesServerDelegate, PREResponsesServerRequestHandler, 
+                       PREXPCServer, PREXPCServerHelper ]
+...

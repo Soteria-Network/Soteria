@@ -1,0 +1,13 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 8176A12D-5EDF-3D6D-940B-B9E0F7379A36', 'x86_64: 8176A12D-5EDF-3D6D-940B-B9E0F7379A36' ]
+platform:        zippered
+install-name:    '/usr/lib/swift/libswiftSpeech.dylib'
+current-version: 0
+swift-abi-version: 7
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ '_$sSo17SFAcousticFeatureC6SpeechE08acousticB13ValuePerFrameSaySdGvg', 
+                       '_$sSo17SFAcousticFeatureC6SpeechE08acousticB13ValuePerFrameSaySdGvpMV', 
+                       '__swift_FORCE_LOAD_$_swiftSpeech' ]
+...

@@ -1,0 +1,11 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 9C457EFF-CC67-3FB2-8E29-2F2A7BA4DA2C' ]
+platform:        macosx
+install-name:    '/System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/ImageFormats/unorm16_rgbx.dylib'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ ___FunctionTableTransposed_AVX10, ___FunctionTableTransposed_SSE3, 
+                       ___FunctionTableTransposed_SSE41, ___FunctionTable_AVX10, 
+                       ___FunctionTable_SSE3, ___FunctionTable_SSE41 ]
+...

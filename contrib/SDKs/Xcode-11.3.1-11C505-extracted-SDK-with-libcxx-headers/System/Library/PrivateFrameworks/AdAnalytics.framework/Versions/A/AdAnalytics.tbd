@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 2D3D13DB-EEBD-3106-9AEC-3723DD6578BB', 'x86_64: 2D3D13DB-EEBD-3106-9AEC-3723DD6578BB' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/AdAnalytics.framework/Versions/A/AdAnalytics'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _AdAnalyticsErrorDomain, _AdAnalyticsVersionNumber, _AdAnalyticsVersionString ]
+    objc-classes:    [ AdAnalyticsCommon, AdAnalyticsEventInfo, AdAnalyzer ]
+...

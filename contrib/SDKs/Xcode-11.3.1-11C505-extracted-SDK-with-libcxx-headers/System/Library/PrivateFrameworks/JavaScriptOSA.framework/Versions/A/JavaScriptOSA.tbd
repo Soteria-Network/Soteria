@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: D26A2548-EEC7-35AC-81B8-46D2BB762B63' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/JavaScriptOSA.framework/Versions/A/JavaScriptOSA'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _JavaScriptOpen ]
+    objc-classes:    [ JSStorage, JSStorageResult, JSStorageScriptContext ]
+...

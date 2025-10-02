@@ -1,0 +1,27 @@
+FROM amd64/ubuntu:latest
+
+MAINTAINER cade <cade.call@mediciventures.com>
+
+EXPOSE $RPCPORT
+
+EXPOSE $PORT
+
+RUN apt update && apt install -y bash net-tools && apt clean
+
+RUN useradd -ms /bin/bash soteria
+
+RUN mkdir /etc/soteria
+
+RUN mkdir /var/lib/soteria
+
+RUN chown soteria:soteria /etc/soteria /var/lib/soteria
+
+WORKDIR /home/soteria
+
+COPY --chown=soteria:soteria linux64/* /home/soteria/
+
+COPY --chown=soteria:soteria run.sh /home/soteria/
+
+USER soteria
+
+CMD ["/home/soteria/run.sh"]

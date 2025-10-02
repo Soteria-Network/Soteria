@@ -1,0 +1,12 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: EF56F02A-9F49-3E2C-A891-7361FE11E37A' ]
+platform:        macosx
+install-name:    '/usr/lib/libBSDPClient.A.dylib'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _BSDPClientCreate, _BSDPClientCreateWithInterface, _BSDPClientCreateWithInterfaceAndAttributes, 
+                       _BSDPClientFree, _BSDPClientList, _BSDPClientSelect, _BSDPImageDescriptionIdentifierImageKind, 
+                       _BSDPImageDescriptionIdentifierIsInstall, _BSDPImageDescriptionIdentifierIsServerLocal, 
+                       _BSDPImageDescriptionIndexIsServerLocal, _BSPPClientSelect ]
+...

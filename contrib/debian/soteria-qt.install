@@ -1,0 +1,6 @@
+usr/local/bin/soteria-qt usr/bin
+share/pixmaps/soteria32.xpm usr/share/pixmaps
+share/pixmaps/soteria16.xpm usr/share/pixmaps
+share/pixmaps/soteria128.png usr/share/pixmaps
+debian/soteria-qt.desktop usr/share/applications
+debian/soteria-qt.protocol usr/share/kde4/services/

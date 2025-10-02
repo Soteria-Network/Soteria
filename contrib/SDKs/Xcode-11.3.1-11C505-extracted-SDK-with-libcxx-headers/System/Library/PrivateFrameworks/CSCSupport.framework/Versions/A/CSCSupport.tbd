@@ -1,0 +1,11 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: B0E559EC-C69A-3FF2-BC01-125175C0931F' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/CSCSupport.framework/Versions/A/CSCSupport'
+current-version: 0
+compatibility-version: 0
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _CSCEnableMobileStorageMounting ]
+...

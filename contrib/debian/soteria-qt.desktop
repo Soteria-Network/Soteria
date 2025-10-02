@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Soteria Core
+Comment=Connect to the Soteria P2P Network
+Comment[de]=Verbinde mit dem Soteria peer-to-peer Netzwerk
+Comment[fr]=Soteria, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Soteria, eşten eşe kriptografik sanal para birimi
+Exec=soteria-qt %u
+Terminal=false
+Type=Application
+Icon=soteria128
+MimeType=x-scheme-handler/soteria;
+Categories=Office;Finance;

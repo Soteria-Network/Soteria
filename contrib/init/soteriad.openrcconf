@@ -1,0 +1,33 @@
+# /etc/conf.d/soteriad: config file for /etc/init.d/soteriad
+
+# Config file location
+#SOTERIAD_CONFIGFILE="/etc/soteria/soteria.conf"
+
+# What directory to write pidfile to?  (created and owned by $SOTERIAD_USER)
+#SOTERIAD_PIDDIR="/var/run/soteriad"
+
+# What filename to give the pidfile
+#SOTERIAD_PIDFILE="${SOTERIAD_PIDDIR}/soteriad.pid"
+
+# Where to write soteriad data (be mindful that the blockchain is large)
+#SOTERIAD_DATADIR="/var/lib/soteriad"
+
+# User and group to own soteriad process
+#SOTERIAD_USER="soteria"
+#SOTERIAD_GROUP="soteria"
+
+# Path to soteriad executable
+#SOTERIAD_BIN="/usr/bin/soteriad"
+
+# Nice value to run soteriad under
+#SOTERIAD_NICE=0
+
+# Additional options (avoid -conf and -datadir, use flags above)
+#SOTERIAD_OPTS=""
+
+# The timeout in seconds OpenRC will wait for soteriad to terminate
+# after a SIGTERM has been raised.
+# Note that this will be mapped as argument to start-stop-daemon's
+# '--retry' option, which means you can specify a retry schedule
+# here. For more information see man 8 start-stop-daemon.
+SOTERIAD_SIGTERM_TIMEOUT=60

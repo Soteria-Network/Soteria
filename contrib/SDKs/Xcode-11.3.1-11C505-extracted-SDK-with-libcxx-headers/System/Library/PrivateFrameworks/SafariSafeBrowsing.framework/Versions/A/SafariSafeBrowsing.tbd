@@ -1,0 +1,17 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 0EAC823B-0A4F-3FFC-89B0-EF5B19B1E339', 'x86_64: 0EAC823B-0A4F-3FFC-89B0-EF5B19B1E339' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/SafariSafeBrowsing.framework/Versions/A/SafariSafeBrowsing'
+current-version: 0
+compatibility-version: 0
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _SSBLookupContextDatabasesDidUpdateNotification, _SSBLookupContextDatabasesDidUpdateNotificationUserInfoProviderKey, 
+                       _SSBProviderGoogle, _SSBProviderTencent, _SSBSafeBrowsingEnabledDefaultsKey, 
+                       _SSBSafeBrowsingEnabledStateDidChangeNotification, _SSBSafeBrowsingEnabledStateDidChangeNotificationUserInfoEnabledStateKey, 
+                       __ZN12SafeBrowsing7Service4mainEv ]
+    objc-classes:    [ SSBAvailability, SSBDatabaseUpdaterStatus, SSBLookupContext, 
+                       SSBLookupResult, SSBServiceLookupResult, _SSBDatabaseStatus, 
+                       _SSBSafeHashCache, _SSBServiceStatus ]
+...

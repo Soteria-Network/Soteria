@@ -1,0 +1,25 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: B35FDAA9-A7EC-378C-B7B9-F0718C13D076' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/CoreSuggestionsUI.framework/Versions/A/CoreSuggestionsUI'
+current-version: 1052.14
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _CoreSuggestionsUIVersionNumber, _CoreSuggestionsUIVersionString, 
+                       _SGUIAccessibilityIdentifierActionButton, _SGUIAccessibilityIdentifierCloseButton, 
+                       _SGUIAccessibilityIdentifierSubtitleLabel, _SGUIAccessibilityIdentifierTitleLabel, 
+                       _SGUICompositeImageNSCompositeOperationKey, _SGUICompositeImageNSImageKey, 
+                       _SGUICompositeImageNSRectKey ]
+    objc-classes:    [ SGBanner, SGCalendarBannerIconCreator, SGContactSuggestion, 
+                       SGContactSuggestionBase, SGEventSuggestion, SGEventSuggestionBase, 
+                       SGFoundInSuggestionPresenter, SGFoundInSuggestionViewController, 
+                       SGList, SGSuggestionAction, SGSuggestionPresenter, SGSuggestionSection, 
+                       SGSuggestionStore, SGSuggestionsPagingPopoverViewController, 
+                       SGUIAddContactLabelTransformer, SGUIConfirmButtonTextValueTransformer, 
+                       SGUIDateFormatting, SGUIDetailsTextValueTransformer, SGUISuggestedContactPopoverViewController, 
+                       SGUISuggestedContactStyleProvider, SGUISuggestedEventDayViewAppearanceDelegate, 
+                       SGUISuggestedEventPopoverViewController, _SGUICompositeImageRep ]
+    objc-ivars:      [ SGContactSuggestionBase._realtimeContact, SGEventSuggestionBase._eventKitEvent, 
+                       SGEventSuggestionBase._realtimeEvent ]
+...

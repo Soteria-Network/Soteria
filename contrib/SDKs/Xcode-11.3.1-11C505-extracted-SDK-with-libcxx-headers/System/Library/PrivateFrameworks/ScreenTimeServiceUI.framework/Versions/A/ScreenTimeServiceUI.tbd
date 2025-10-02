@@ -1,0 +1,13 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 5D3C69C1-62FF-37B7-8CB5-48AF35DE2A68' ]
+platform:        macosx
+install-name:    '/System/Library/PrivateFrameworks/ScreenTimeServiceUI.framework/Versions/A/ScreenTimeServiceUI'
+current-version: 354
+exports:         
+  - archs:           [ x86_64 ]
+    allowable-clients: [ AppKit, LockoutUI, ScreenTimeUI, ScreenTimeViewService ]
+    symbols:         [ _STBlockingRemoteViewControllerDidFinishDismissalAnimationNotification, 
+                       _STClassNameSTBlockingServiceViewController, _STServiceNameScreenTimeViewService ]
+    objc-classes:    [ STBlockingRemoteViewController, STBlockingViewService ]
+...

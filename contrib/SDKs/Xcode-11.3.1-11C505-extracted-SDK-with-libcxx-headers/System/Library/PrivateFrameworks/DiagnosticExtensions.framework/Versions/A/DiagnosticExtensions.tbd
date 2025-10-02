@@ -1,0 +1,14 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: AE8CA02D-A23E-310E-89DF-871D0D760677', 'x86_64: AE8CA02D-A23E-310E-89DF-871D0D760677' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/DiagnosticExtensions.framework/Versions/A/DiagnosticExtensions'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _DEUtilsValidateConnection, _DEUtilsValidateDestination, _DiagnosticExtensionsVersionNumber, 
+                       _DiagnosticExtensionsVersionString, _pgrep, _signal_USR2 ]
+    objc-classes:    [ DEArchive, DEArchiveReader, DEArchiver, DEAttachmentGroup, 
+                       DEAttachmentItem, DEExtension, DEExtensionContext, DEExtensionHostContext, 
+                       DEExtensionManager, DEExtensionProvider, DELogMover, DELogging, 
+                       DEUtils, DiagnosticExtensions_Subsystem ]
+...

@@ -1,0 +1,15 @@
+--- !tapi-tbd-v3
+archs:           [ x86_64 ]
+uuids:           [ 'x86_64: 9CDA6116-7F54-3231-85B2-C8F92E5B848B', 'x86_64: 9CDA6116-7F54-3231-85B2-C8F92E5B848B' ]
+platform:        zippered
+install-name:    '/System/Library/PrivateFrameworks/HearingCore.framework/Versions/A/HearingCore'
+exports:         
+  - archs:           [ x86_64 ]
+    symbols:         [ _AXHAMessageKeyIdentifier, _AXHAMessageKeyPayload, _AXHANULL, 
+                       _AXHearingAidServerName, _HAEngineeringLog, _HAInitializeLogging, 
+                       _HALoggingQueue, _HCApplicationGetMainBundleIdentifier, _HCHeardBundleName, 
+                       _HCHeardProcessName, _HCMessageDeviceNameKey, _HCPerformSafeBlock, 
+                       _HCPreferencesBundleName, _HCProcessGetName, _HearingCoreVersionNumber, 
+                       _HearingCoreVersionString ]
+    objc-classes:    [ HCDatabaseManager, HCServer, HCUtilities, HCXPCClient, HCXPCMessage ]
+...
