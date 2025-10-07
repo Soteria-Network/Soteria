@@ -205,9 +205,9 @@ bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader *
 
 unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params, const POW_TYPE powType)
 {
-    if (!pindexLast || pindexLast->nHeight < params.lwmaHeight) 
+    if (!pindexLast || pindexLast->nHeight >= params.lwmaHeight || (params.diffRetarget && pindexLast->GetBlockTime() >= params.lwmaTimestamp))
         return GetNextWorkRequiredLWMA1(pindexLast, pblock, params, powType);
-    else if (pindexLast->nHeight >= params.lwmaHeight && pindexLast->GetBlockTime() < params.lwma1Timestamp)
+    else if (pindexLast->nHeight >= params.lwma1Height && pindexLast->GetBlockTime() < params.lwma1Timestamp)
         return GetNextWorkRequiredLWMA2(pindexLast, pblock, params, powType);  
     else
         return GetNextWorkRequiredLWMA3(pindexLast, pblock, params, powType);
