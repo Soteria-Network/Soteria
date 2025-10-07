@@ -823,7 +823,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         labelBtcSOTER->setAlignment(Qt::AlignVCenter);
         labelBtcSOTER->setObjectName("labelBtcSOTER");
 
-        labelVersionUpdate->setText("<a href=\"https://github.com/SoteriaNetwork/Soteria/releases\">New Wallet Version Available</a>");
+        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Available</a>");
         labelVersionUpdate->setTextFormat(Qt::RichText);
         labelVersionUpdate->setTextInteractionFlags(Qt::TextBrowserInteraction);
         labelVersionUpdate->setOpenExternalLinks(true);
