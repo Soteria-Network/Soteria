@@ -108,7 +108,7 @@ public:
         consensus.nBIP66Enabled = true;
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
-        consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetSpacing = 15;
         consensus.lwmaTimestamp = 1759415968;
         consensus.nPowTargetTimespan = 5400;
@@ -135,7 +135,7 @@ public:
                 ? static_cast<int>(delta / consensus.nPowTargetSpacing)
                 : 0;
        
-        consensus.lwmaHWCA = height + 40;
+        consensus.lwmaHWCA = height + 30;
         consensus.nBlockTimeDivisor = 13;
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
@@ -143,10 +143,12 @@ public:
         consensus.nBurstWindowSeconds = 60;
         consensus.nBurstFactorTenths = 1;
         consensus.lwmaAveragingWindow = 180;
-        consensus.lwmaHeight = 6000000; 
-        consensus.lwma1Timestamp = 4294967295;
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.lwmaHeight = 450000;
+		consensus.diffRetarget = 1759967768;
+        consensus.lwma1Height = 3500000;
+        consensus.lwma1Timestamp = 2147483647;
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
 
         consensus.BIP34LockedIn = 1;
 
@@ -275,7 +277,7 @@ public:
         consensus.nBIP66Enabled = true;
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
-        consensus.powLimit = uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
+        consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 2700; 
         consensus.nPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = true;
@@ -299,10 +301,11 @@ public:
         // Dual-algo consensus
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 180;
-
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-
+        consensus.diffRetarget = 1759967768;
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.lwma1Height = 3500000;
+        consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
 
