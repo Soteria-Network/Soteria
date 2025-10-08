@@ -143,7 +143,7 @@ public:
         consensus.nBurstWindowSeconds = 60;
         consensus.nBurstFactorTenths = 1;
         consensus.lwmaAveragingWindow = 180;
-        consensus.lwmaHeight = 450000;
+        consensus.lwmaHeight = 60000;
 		consensus.diffRetarget = 1759967768;
         consensus.lwma1Height = 3500000;
         consensus.lwma1Timestamp = 2147483647;
