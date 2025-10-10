@@ -108,7 +108,7 @@ public:
         consensus.nBIP66Enabled = true;
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
-        consensus.powLimit = uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // def=0.15 , > 0.1 – 1
+        consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // def=0.015
         consensus.nPowTargetSpacing = 15;
         consensus.lwmaTimestamp = 1759415968;
         consensus.nPowTargetTimespan = 5400;
