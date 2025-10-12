@@ -128,7 +128,6 @@ struct ConsensusParams {
     int64_t lwmaTimestamp;
     int64_t lwmaHWCA;
     int64_t lwmaHeight;
-    int64_t diffRetarget;
     int64_t lwma1Height;
     int64_t lwma1Timestamp;
     int64_t lwmaAveragingWindow;        // Averaging window size for LWMA-EMA3 diff adjust
