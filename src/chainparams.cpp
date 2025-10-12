@@ -109,7 +109,7 @@ public:
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // def=0.015
-        consensus.nPowTargetSpacing = 15;
+        consensus.nPowTargetSpacing = 30;
         consensus.lwmaTimestamp = 1759415968;
         consensus.nPowTargetTimespan = 5400;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -143,12 +143,12 @@ public:
         consensus.nBurstWindowSeconds = 60;
         consensus.nBurstFactorTenths = 1;
         consensus.lwmaAveragingWindow = 180;
-        consensus.lwmaHeight = 60000;
-		consensus.diffRetarget = 1759967768;
-        consensus.lwma1Height = 3500000;
+        consensus.lwmaHeight = 1;
+		// consensus.diffRetarget = 1759967768;
+        consensus.lwma1Height = 300000;
         consensus.lwma1Timestamp = 2147483647;
-        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // > 0.15
-        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // ~0.04
+        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // G > 0.15
+        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // C ~0.04
 
         consensus.BIP34LockedIn = 1;
 
@@ -162,7 +162,7 @@ public:
         static constexpr int nDefaultPort = 8323; // P2P port
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1759415967, 31907241, 0x1e00ffff, 4, 18 * COIN / 100);
+        genesis = CreateGenesisBlock(1759415967, 31907241, 0x1e00ffff, 4, 18 * COIN / 100); // 36/100
 
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("0000001a6714182e55df603ab0232ce6c4b1bef6ef312e5fe40787f02c1477d5"));
@@ -197,7 +197,7 @@ public:
             1759415967, // * UNIX timestamp of last known number of transactions
             0,    // * total number of transactions between genesis and that timestamp
                         //   (the tx=... number in the SetBestChain debug.log lines)
-            0.04        // * estimated number of transactions per second after that timestamp
+            0.0        // * estimated number of transactions per second after that timestamp
         };
 
       // Amounts & Addresses of the Tokenomics
@@ -279,7 +279,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 2700; 
-        consensus.nPowTargetSpacing = 15;
+        consensus.nPowTargetSpacing = 30;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 135;
@@ -299,12 +299,13 @@ public:
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
   
         // Dual-algo consensus
+		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 180;
-        consensus.diffRetarget = 1759967768;
-        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.lwma1Height = 3500000;
+        // consensus.diffRetarget = 1759967768;
+        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.lwma1Height = 300000;
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
@@ -316,7 +317,7 @@ public:
         static constexpr int nDefaultPort = 18323;
         static constexpr uint64_t nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1759419049, 12390692, 0x1e00ffff, 4, 18 * COIN / 100);
+        genesis = CreateGenesisBlock(1759419049, 12390692, 0x1e00ffff, 4, 18 * COIN / 100); // 36/100
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5"));
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
@@ -405,10 +406,10 @@ public:
         consensus.nBIP66Enabled = true;
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
-        consensus.nSubsidyHalvingInterval = 150;
+        consensus.nSubsidyHalvingInterval = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 600;
-        consensus.nPowTargetSpacing = 1 * 15;
+        consensus.nPowTargetSpacing = 30;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 30; 
@@ -430,8 +431,8 @@ public:
         // Dual-Algo consensus
         consensus.lwmaTimestamp = 1759421432;        
         consensus.lwmaAveragingWindow = 180; 
-        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));   // SoterG limit
-        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));   // SoterC limit
+        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));  
+        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));   
 
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("606c795ca9d9ee08dba32d599dd65af25ba9e0b9aaeabc4b8a43533805e43136");
@@ -443,7 +444,7 @@ public:
        static constexpr int nDefaultPort = 18310;
        static constexpr uint64_t nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1759421431, 1, 0x207fffff, 4, 18 * COIN / 100); 
+        genesis = CreateGenesisBlock(1759421431, 1, 0x207fffff, 4, 18 * COIN / 100); // 36/100
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("606c795ca9d9ee08dba32d599dd65af25ba9e0b9aaeabc4b8a43533805e43136"));
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
