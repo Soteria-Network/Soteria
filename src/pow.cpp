@@ -237,7 +237,7 @@ unsigned int GetNextWorkRequiredLWMA1(
     static std::array<int64_t, TYPE_COUNT> lastLogTime = {};
     bool verbose = LogAcceptCategory(BCLog::SOTERC_SWITCH);
     int64_t now = GetTime();
-    bool logThis = verbose && (now - lastLogTime[static_cast<size_t>(powType)] > 30);
+    bool logThis = verbose && (now - lastLogTime[static_cast<size_t>(powType)] > 10);
     if (logThis) lastLogTime[static_cast<size_t>(powType)] = now;
 
     // Parameters
@@ -276,7 +276,7 @@ unsigned int GetNextWorkRequiredLWMA1(
         // Early break if too far below fork height
         if (walker->nHeight <= params.lwmaHWCA - int(N)) break;
         walker = walker->pprev;
-		++scanned
+		++scanned;
     }
     if (blocks.size() < N + 1) {
         if (logThis) {
@@ -699,7 +699,7 @@ bool CheckProofOfWorkSoterC(uint256 hash, unsigned int nBits, const Consensus::C
 	bnTarget.SetCompact(nBits, &fNegative, &fOverflow);
 
 	// Check range
-	if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powTypeLimits[powType]))
+	if (fNegative || bnTarget == 0 || fOverflow || bnTarget > UintToArith256(params.powTypeLimits[POW_TYPE_SOTERC]))
 		return false;
 
 	// Check proof of work matches claimed amount
