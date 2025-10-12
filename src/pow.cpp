@@ -205,7 +205,7 @@ bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader *
 
 unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params, const POW_TYPE powType)
 {
-    if (!pindexLast || pindexLast->nHeight >= params.lwmaHeight || (params.diffRetarget && pindexLast->GetBlockTime() >= params.lwmaTimestamp))
+    if (!pindexLast || pindexLast->nHeight >= params.lwmaHeight || pindexLast->GetBlockTime() >= params.lwmaTimestamp)
         return GetNextWorkRequiredLWMA1(pindexLast, pblock, params, powType);
     else if (pindexLast->nHeight >= params.lwma1Height && pindexLast->GetBlockTime() < params.lwma1Timestamp)
         return GetNextWorkRequiredLWMA2(pindexLast, pblock, params, powType);  
@@ -222,13 +222,13 @@ unsigned int GetNextWorkRequiredLWMA1(
     // Input validation
     if (!pindexLast || !pblock) {
         LogPrintf("ERROR: Null input in GetNextWorkRequiredLWMA1\n");
-        return UintToArith256(params.powLimit).GetCompact();
+        return UintToArith256(params.powTypeLimits[powType]).GetCompact();
     }
 
     // Chain continuity
     if (pindexLast->nHeight > 0 && !pindexLast->pprev) {
         LogPrintf("ERROR: Broken chain at height %d\n", pindexLast->nHeight);
-        return UintToArith256(params.powLimit).GetCompact();
+        return UintToArith256(params.powTypeLimits[powType]).GetCompact();
     }
 
     // Logging throttle per POW_TYPE
@@ -241,7 +241,7 @@ unsigned int GetNextWorkRequiredLWMA1(
     if (logThis) lastLogTime[static_cast<size_t>(powType)] = now;
 
     // Parameters
-    const arith_uint256 powLimit = UintToArith256(params.powLimit);
+	UintToArith256(params.powTypeLimits[powType]);
     const int64_t spacingPerAlgo = params.nPowTargetSpacing * 2;
     const int64_t T = spacingPerAlgo;
     const int64_t N = params.lwmaAveragingWindow;
@@ -253,11 +253,11 @@ unsigned int GetNextWorkRequiredLWMA1(
         if (logThis) {
             LogPrintf("* Short chain [%d < %d], using powLimit\n", height, N+1);
         }
-        return powLimit.GetCompact();
+        return UintToArith256(params.powTypeLimits[powType]).GetCompact();
     }
     // Early exit if we have no last block
     if (!pindexLast) {
-        return powLimit.GetCompact();
+        return UintToArith256(params.powTypeLimits[powType]).GetCompact();
     }
 
     // Collect last N+1 same-type blocks
@@ -266,7 +266,9 @@ unsigned int GetNextWorkRequiredLWMA1(
 
     const int64_t lwmaTime = params.lwmaTimestamp;
     const CBlockIndex* walker = pindexLast;
-    while (walker && blocks.size() < N + 1) {
+    int scanned = 0;
+    const int maxDepth = 30;
+    while (walker && blocks.size() < N + 1 && scanned < maxDepth) {
         if (walker->GetBlockHeader().nTime >= lwmaTime &&
             walker->GetBlockHeader().GetPoWType() == powType) {
             blocks.push_back(walker);
@@ -274,13 +276,14 @@ unsigned int GetNextWorkRequiredLWMA1(
         // Early break if too far below fork height
         if (walker->nHeight <= params.lwmaHWCA - int(N)) break;
         walker = walker->pprev;
+		++scanned
     }
     if (blocks.size() < N + 1) {
         if (logThis) {
             LogPrintf("* Found only %zu/%d blocks, using powLimit\n",
                       blocks.size(), N+1);
         }
-        return powLimit.GetCompact();
+        return UintToArith256(params.powTypeLimits[powType]).GetCompact();
     }
 
     // Use 128-bit accumulator for weighted solve times, Compute LWMA
@@ -294,7 +297,7 @@ unsigned int GetNextWorkRequiredLWMA1(
         prevTime = b->GetBlockTime();
 
         // Bound solve time to [1, 4*T], old practice 6, new 4
-        dt = std::max<int64_t>(1, std::min<int64_t>(dt, 4 * T));
+        dt = std::max<int64_t>(1, std::min<int64_t>(dt, 3 * T));
         int weight = i + 1;  // 1 for oldest, N for newest
 
         int64_t wdt;
@@ -302,7 +305,7 @@ unsigned int GetNextWorkRequiredLWMA1(
             if (logThis) {
                 LogPrintf("ERROR: Overflow solving weight@height %d\n", b->nHeight);
             }
-            return powLimit.GetCompact();
+            return UintToArith256(params.powTypeLimits[powType]).GetCompact();
         }
         totalWeightedSolveTime += wdt;
 
@@ -324,15 +327,15 @@ unsigned int GetNextWorkRequiredLWMA1(
    arith_uint256 halfK        = K >> 1;  // same as K/2 for unsigned
    arith_uint256 nextTarget   = (numerator + halfK) / K;
 
-    // Clamp to [minTarget, powLimit]
-    arith_uint256 minTarget = powLimit >> 2;  // no harder than 4× the limit
+    // Clamp to [minTarget, powTypeLimits]
+    arith_uint256 minTarget = UintToArith256(params.powTypeLimits[powType]) >> 3;  // no harder than 4× the limit as in dt
     if (nextTarget < minTarget) {
         if (logThis) LogPrintf("* Raising target to lower clamp\n");
         nextTarget = minTarget;
     }
-    if (nextTarget > powLimit) {
+    if (nextTarget > UintToArith256(params.powTypeLimits[powType])) {
         if (logThis) LogPrintf("* Clamping target to powLimit\n");
-        nextTarget = powLimit;
+        nextTarget = UintToArith256(params.powTypeLimits[powType]);
     }
 
     // Last block's compact target
@@ -346,8 +349,8 @@ unsigned int GetNextWorkRequiredLWMA1(
         lastTarget * (EWMA_DEN - EWMA_NUM)
     ) / EWMA_DEN;
 
-    if (smoothed > powLimit) {
-        smoothed = powLimit;
+    if (smoothed > UintToArith256(params.powTypeLimits[powType])) {
+        smoothed = UintToArith256(params.powTypeLimits[powType]);
     }
 
     if (logThis) {
