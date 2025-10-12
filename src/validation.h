@@ -161,7 +161,7 @@ static constexpr int64_t BLOCK_DOWNLOAD_TIMEOUT_PER_PEER = 5000000;  //  75s
 // Check if Dual Algo is activated at given point
 bool IsDualAlgoEnabled(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params);
 
-static const int64_t DEFAULT_MAX_TIP_AGE = 60 * 60 * 12; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
+static const int64_t DEFAULT_MAX_TIP_AGE = 60 * 60 * 24; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
 // ~144 blocks behind -> 2 x fork detection time, was 24 * 60 * 60in v1, in 2.5*6, in v2=18*60 
 /** Maximum age of our tip in seconds for us to be considered current for fee estimation */
 static constexpr int64_t MAX_FEE_ESTIMATION_TIP_AGE = 2 * 60 * 60;
