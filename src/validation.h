@@ -87,7 +87,7 @@ static constexpr unsigned int DEFAULT_DESCENDANT_LIMIT = 200;
 /** Default for -limitdescendantsize, maximum kilobytes of in-mempool descendants */
 static constexpr unsigned int DEFAULT_DESCENDANT_SIZE_LIMIT = 250;
 /** Default for -cache.memoryPoolExpiry, nothing above one week, expiration time for mempool transactions in hours */
-static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 72; // default in BTC=336, oD,nN=72. 24,48. 15*2016=8.4, nDin=24
+static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 24; // default in BTC=336, oD,nN=72. 24,48. 15*2016=8.4, nDin=24
 /** Maximum kilobytes for transactions to store for processing during reorg.
 • Stores up to 20 000 “orphan” transactions awaiting parents. • With 4 MB blocks we might see bursts of orphans if many in‐flight parents arrive late—consider increasing to 50 000 if we notice frequent drop-outs. */
 static constexpr unsigned int MAX_DISCONNECTED_TX_POOL_SIZE = 60000; // def=20000
