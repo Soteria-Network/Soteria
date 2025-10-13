@@ -148,7 +148,7 @@ public:
         consensus.lwma1Height = 300000;
         consensus.lwma1Timestamp = 2147483647;
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // G > 0.15
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // C ~0.04
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // match the target
 
         consensus.BIP34LockedIn = 1;
 
@@ -304,7 +304,7 @@ public:
         consensus.lwmaAveragingWindow = 180;
         // consensus.diffRetarget = 1759967768;
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.lwma1Height = 300000;
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
