@@ -26,7 +26,7 @@ static constexpr int ASSETDATA_VERSION = 70017;
 static constexpr int DUALALGO_VERSION = 70035;
 
 //! asset activation
-static constexpr int ASSETS_VERSION = 70033;
+static constexpr int ASSETS_VERSION = 70034;
 
 //! disconnect from peers older than this proto version
 static constexpr int MIN_PEER_PROTO_VERSION = DUALALGO_VERSION;
