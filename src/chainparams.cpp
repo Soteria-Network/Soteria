@@ -109,8 +109,7 @@ public:
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // def=0.015
-        consensus.nPowTargetSpacing = 30;
-        consensus.lwmaTimestamp = 1759415968;
+        consensus.nPowTargetSpacing = 15; // 12s would be the default soon to avoid the lags between UTXO and Account model
         consensus.nPowTargetTimespan = 5400;
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -130,12 +129,14 @@ public:
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
         genesis.nTime = 1759415967;
+		consensus.lwmaTimestamp = 1759415968;
+        consensus.lwma1Timestamp = 2147483647;
         int64_t delta = consensus.lwmaTimestamp - genesis.nTime;
         int height = delta > 0
                 ? static_cast<int>(delta / consensus.nPowTargetSpacing)
                 : 0;
        
-        consensus.lwmaHWCA = height + 30;
+        consensus.lwmaHWCA = height + 40;
         consensus.nBlockTimeDivisor = 13;
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
@@ -144,9 +145,98 @@ public:
         consensus.nBurstFactorTenths = 1;
         consensus.lwmaAveragingWindow = 180;
         consensus.lwmaHeight = 1;
-		// consensus.diffRetarget = 1759967768;
-        consensus.lwma1Height = 300000;
-        consensus.lwma1Timestamp = 2147483647;
+
+        // Mainnet activation hardfork diff adjustments   
+/*      int baseHeight = 160000;
+        int interval = 2000;
+        int count = 40;
+        for (int i = 1; i <= count; ++i) {
+        int start = baseHeight + (i - 1) * interval;
+        int end = start + interval;
+        std::cout << "consensus.diffRetargetStartHeight" << i << " = " << start << ";\n";
+        std::cout << "consensus.diffRetargetEndHeight" << i << " = " << end << ";\n";
+        } */
+
+        // Testnet Hardfork diff adjustments w & w/o EMA
+		consensus.diffRetargetStartHeight1 = 85000;
+		consensus.diffRetargetEndHeight1 = 87000;
+		consensus.diffRetargetStartHeight2 = 87000;
+		consensus.diffRetargetEndHeight2 = 89000;
+		consensus.diffRetargetStartHeight3 = 89000;
+		consensus.diffRetargetEndHeight3 = 91000;
+		consensus.diffRetargetStartHeight4 = 91000;
+		consensus.diffRetargetEndHeight4 = 93000;
+		consensus.diffRetargetStartHeight5 = 93000;
+		consensus.diffRetargetEndHeight5 = 95000;
+		consensus.diffRetargetStartHeight6 = 95000;
+		consensus.diffRetargetEndHeight6 = 97000;
+		consensus.diffRetargetStartHeight7 = 97000;
+		consensus.diffRetargetEndHeight7 = 99000;
+		consensus.diffRetargetStartHeight8 = 99000;
+		consensus.diffRetargetEndHeight8 = 101000;
+		consensus.diffRetargetStartHeight9 = 101000;
+		consensus.diffRetargetEndHeight9 = 103000;
+		consensus.diffRetargetStartHeight10 = 103000;
+		consensus.diffRetargetEndHeight10 = 105000;
+		consensus.diffRetargetStartHeight11 = 105000;
+		consensus.diffRetargetEndHeight11 = 107000;
+		consensus.diffRetargetStartHeight12 = 107000;
+		consensus.diffRetargetEndHeight12 = 109000;
+		consensus.diffRetargetStartHeight13 = 109000;
+		consensus.diffRetargetEndHeight13 = 111000;
+		consensus.diffRetargetStartHeight14 = 111000;
+		consensus.diffRetargetEndHeight14 = 113000;
+		consensus.diffRetargetStartHeight15 = 113000;
+		consensus.diffRetargetEndHeight15 = 115000;
+		consensus.diffRetargetStartHeight16 = 115000;
+		consensus.diffRetargetEndHeight16 = 117000;
+		consensus.diffRetargetStartHeight17 = 117000;
+		consensus.diffRetargetEndHeight17 = 119000;
+		consensus.diffRetargetStartHeight18 = 119000;
+		consensus.diffRetargetEndHeight18 = 121000;
+		consensus.diffRetargetStartHeight19 = 121000;
+		consensus.diffRetargetEndHeight19 = 123000;
+		consensus.diffRetargetStartHeight20 = 123000;
+		consensus.diffRetargetEndHeight20 = 125000;
+		consensus.diffRetargetStartHeight21 = 125000;
+		consensus.diffRetargetEndHeight21 = 127000;
+		consensus.diffRetargetStartHeight22 = 127000;
+		consensus.diffRetargetEndHeight22 = 129000;
+		consensus.diffRetargetStartHeight23 = 129000;
+		consensus.diffRetargetEndHeight23 = 131000;
+		consensus.diffRetargetStartHeight24 = 131000;
+		consensus.diffRetargetEndHeight24 = 133000;
+		consensus.diffRetargetStartHeight25 = 133000;
+		consensus.diffRetargetEndHeight25 = 135000;
+		consensus.diffRetargetStartHeight26 = 135000;
+		consensus.diffRetargetEndHeight26 = 137000;
+		consensus.diffRetargetStartHeight27 = 137000;
+		consensus.diffRetargetEndHeight27 = 139000;
+		consensus.diffRetargetStartHeight28 = 139000;
+		consensus.diffRetargetEndHeight28 = 141000;
+		consensus.diffRetargetStartHeight29 = 141000;
+		consensus.diffRetargetEndHeight29 = 143000;
+		consensus.diffRetargetStartHeight30 = 143000;
+		consensus.diffRetargetEndHeight30 = 145000;
+		consensus.diffRetargetStartHeight31 = 145000;
+		consensus.diffRetargetEndHeight31 = 147000;
+		consensus.diffRetargetStartHeight32 = 147000;
+		consensus.diffRetargetEndHeight32 = 149000;
+		consensus.diffRetargetStartHeight33 = 149000;
+		consensus.diffRetargetEndHeight33 = 151000;
+		consensus.diffRetargetStartHeight34 = 151000;
+		consensus.diffRetargetEndHeight34 = 153000;
+		consensus.diffRetargetStartHeight35 = 153000;
+		consensus.diffRetargetEndHeight35 = 155000;
+		consensus.diffRetargetStartHeight36 = 155000;
+		consensus.diffRetargetEndHeight36 = 157000;
+		consensus.diffRetargetStartHeight37 = 157000;
+		consensus.diffRetargetEndHeight37 = 159000;
+		consensus.diffRetargetStartHeight38 = 159000;
+		consensus.diffRetargetEndHeight38 = 161000;
+		consensus.diffRetargetStartHeight39 = 161000;
+		consensus.diffRetargetEndHeight39 = 163000;
+		
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // G > 0.15
         consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // match the target
 
@@ -279,7 +369,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 2700; 
-        consensus.nPowTargetSpacing = 30;
+        consensus.nPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 135;
@@ -409,7 +499,7 @@ public:
         consensus.nSubsidyHalvingInterval = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 600;
-        consensus.nPowTargetSpacing = 30;
+        consensus.nPowTargetSpacing = 15;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 30; 
