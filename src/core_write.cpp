@@ -88,6 +88,12 @@ const std::map<unsigned char, std::string> mapSigHashTypes = {
     {static_cast<unsigned char>(SIGHASH_ALL|SIGHASH_ANYONECANPAY), std::string("ALL|ANYONECANPAY")},
     {static_cast<unsigned char>(SIGHASH_ALL|SIGHASH_FORKID), std::string("ALL|FORKID")},
     {static_cast<unsigned char>(SIGHASH_ALL|SIGHASH_FORKID|SIGHASH_ANYONECANPAY), std::string("ALL|FORKID|ANYONECANPAY")},
+    {static_cast<unsigned char>(SIGHASH_NONE), std::string("NONE")},
+    {static_cast<unsigned char>(SIGHASH_NONE|SIGHASH_ANYONECANPAY), std::string("NONE|ANYONECANPAY")},
+    {static_cast<unsigned char>(SIGHASH_NONE|SIGHASH_FORKID), std::string("NONE|FORKID")},
+    {static_cast<unsigned char>(SIGHASH_NONE|SIGHASH_FORKID|SIGHASH_ANYONECANPAY), std::string("NONE|FORKID|ANYONECANPAY")},
+    {static_cast<unsigned char>(SIGHASH_SINGLE|SIGHASH_FORKID), std::string("SINGLE|FORKID")},
+    {static_cast<unsigned char>(SIGHASH_SINGLE|SIGHASH_FORKID|SIGHASH_ANYONECANPAY), std::string("SINGLE|SIGHASH_FORKID|ANYONECANPAY")},
 };
 
 /**
@@ -129,22 +135,16 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
                     // checks in CheckSignatureEncoding.
 
                     uint32_t flags = SCRIPT_VERIFY_STRICTENC;
-                    if (vch.back() & SIGHASH_FORKID) { // This automatically handles new FORKID value
+                    if (vch.back() & SIGHASH_FORKID) {
+                        // If the transaction is using SIGHASH_FORKID, we need
+                        // to set the apropriate flag.
                         // TODO: Remove after the Hard Fork.
                         flags |= SCRIPT_ENABLE_SIGHASH_FORKID;
                     }
-                    // assert((vch.back() & 0x1f) == SIGHASH_ALL && "Only SIGHASH_ALL base is supported"); // for debug
-                    // Production validation (replaces assert)
-                    if ((vch.back() & 0x1f) != SIGHASH_ALL) {
-                       throw std::runtime_error(strprintf(
-                       "Invalid sighash type 0x%02x (Only SIGHASH_ALL is supported)",
-                       vch.back() & 0x1f
-                       ));
-                    }
-                    // The sighash validation is a hard requirement (not an alternative condition).
+
                     if (CheckSignatureEncoding(vch, flags , nullptr)) {
                         const unsigned char chSigHashType = vch.back();
-                     // std::cout << "chsSigHashType" << chSigHashType << std::endl;                        
+                        std::cout << "chsSigHashType" << chSigHashType << std::endl;
                         if (mapSigHashTypes.count(chSigHashType)) {
                             strSigHashDecode = "[" + mapSigHashTypes.find(chSigHashType)->second + "]";
                             vch.pop_back(); // remove the sighash type byte. it will be replaced by the decode.
@@ -161,7 +161,6 @@ std::string ScriptToAsmStr(const CScript& script, const bool fAttemptSighashDeco
     }
     return str;
 }
-
 std::string EncodeHexTx(const CTransaction& tx, const int serializeFlags)
 {
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION | serializeFlags);
