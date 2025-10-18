@@ -29,7 +29,7 @@ static constexpr int64_t MAX_BLOCK_SIGOPS_COST = 240000; // SC support // MAX_BL
 static constexpr int COINBASE_MATURITY = 5000; // 60Kblocks/Epoch =8mb
 
 /** Timestamp at which the UAHF starts. */
-static constexpr uint32_t DEFAULT_UAHF_START_TIME = 1759415967;
+static constexpr uint32_t DEFAULT_UAHF_START_TIME = 2147483647; // 1760052990; until the release of Electron wallet
 
 static constexpr int WITNESS_SCALE_FACTOR = 4;
 
