@@ -56,11 +56,11 @@ static constexpr unsigned int DEFAULT_KEYPOOL_SIZE = 200;
 //! -paytxfee default// SOTER/kb, moderate value between 0.001 and 0.1, ISO 0.01/kb
 static constexpr CAmount DEFAULT_TRANSACTION_FEE = 0;
 /** -fallbackfee default=0, fallbackfee as a safety mechanism is needed, otherwise the fee estimation fails for transactions in case of blockchain congestion, "Fee estimation failed. Fallbackfee is disabled" error. */
-static constexpr CAmount DEFAULT_FALLBACK_FEE = 1025000;
+static constexpr CAmount DEFAULT_FALLBACK_FEE = 102500; // def=1025000
 //! -m_discard_rate default
 static constexpr CAmount DEFAULT_DISCARD_FEE = 25000;
 //! -mintxfee default=1M
-static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 1000000;
+static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 100000; // def=1000000
 //! minimum recommended increment for BIP 125 replacement txs, default=5000
 static constexpr CAmount WALLET_INCREMENTAL_RELAY_FEE = 5000;
 //! target minimum change amount, COIN / 100
