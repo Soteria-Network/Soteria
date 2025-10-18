@@ -71,9 +71,9 @@ static constexpr bool DEFAULT_WHITELISTRELAY = true;
 /** Default for -whitelistforcerelay. */
 static constexpr bool DEFAULT_WHITELISTFORCERELAY = true;
 /** Default for -minrelaytxfee, minimum relay fee for transactions*/
-static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 1000000; // COIN / 10, 0.1 // def=1000000, 0.01
+static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 100000; // COIN / 10, 0.1 // def=1000000, 0.01
 //! -maxtxfee default (hard cap per TX)
-static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 1000 * COIN; // def=1000
+static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 100 * COIN; // def=1000
 //! Discourage users to set fees higher than this amount (in soterios) per kB (soft-warn)
 static constexpr CAmount HIGH_TX_FEE_PER_KB = 0.1 * COIN; //  10 * COIN, def= 0.1 * COIN
 //! -maxtxfee will warn if called with a higher fee than this amount (in soterios)
