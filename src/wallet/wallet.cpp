@@ -3117,7 +3117,7 @@ bool CWallet::SelectAssets(const std::map<std::string, std::vector<COutput> >& m
 }
 
 /** SOTER END */
-
+/*
 bool CWallet::SignTransaction(CMutableTransaction &tx)
 {
     AssertLockHeld(cs_wallet); // mapWallet
@@ -3155,6 +3155,53 @@ bool CWallet::SignTransaction(CMutableTransaction &tx)
 
     return true;
 }
+*/
+
+bool CWallet::SignTransaction(CMutableTransaction& tx)
+{
+    AssertLockHeld(cs_wallet); // Ensure wallet lock is held
+
+    CTransaction txConst(tx); // Create a constant copy of the transaction
+
+    for (size_t nIn = 0; nIn < tx.vin.size(); ++nIn) {
+        const CTxIn& input = tx.vin[nIn];
+
+        // Look up the previous transaction being spent
+        auto mi = mapWallet.find(input.prevout.hash);
+        if (mi == mapWallet.end()) {
+            LogPrintf("%s: Input not found: %s\n", __func__, input.prevout.hash.ToString());
+            return false;
+        }
+
+        // Validate output index
+        if (input.prevout.n >= mi->second.tx->vout.size()) {
+            LogPrintf("%s: Input out of range: %s:%u\n", __func__, input.prevout.hash.ToString(), input.prevout.n);
+            return false;
+        }
+
+        const CScript& scriptPubKey = mi->second.tx->vout[input.prevout.n].scriptPubKey;
+        const CAmount amount = mi->second.tx->vout[input.prevout.n].nValue;
+
+        // Determine hash type based on Fork ID support
+        uint32_t nHashType = SIGHASH_ALL;
+        if (IsUAHFenabledForCurrentBlock()) {
+            nHashType |= SIGHASH_FORKID;
+        }
+
+        SignatureData sigdata;
+        TransactionSignatureCreator creator(this, &txConst, nIn, amount, nHashType);
+
+        if (!ProduceSignature(creator, scriptPubKey, sigdata)) {
+            LogPrintf("%s: Failed to sign input %u\n", __func__, nIn);
+            return false;
+        }
+
+        UpdateTransaction(tx, nIn, sigdata);
+    }
+
+    return true;
+}
+
 
 bool CWallet::FundTransaction(CMutableTransaction& tx, CAmount& nFeeRet, int& nChangePosInOut, std::string& strFailReason, bool lockUnspents, const std::set<int>& setSubtractFeeFromOutputs, CCoinControl coinControl)
 {
@@ -3669,7 +3716,10 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 tempSet.insert(setAssets.begin(), setAssets.end());
 
                 // Fill in dummy signatures for fee calculation.
-                DummySignTx(txNew, tempSet);
+                if (!DummySignTx(txNew, tempSet)) {
+                    strFailReason = _("Signing transaction for fee calculation failed");
+                    return false;
+                }
 
                 nBytes = GetVirtualTransactionSize(txNew);
 
@@ -3757,12 +3807,14 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
 
         if (sign)
         {
-            uint32_t nHashType = SIGHASH_ALL | SIGHASH_FORKID;
+            uint32_t nHashType = SIGHASH_ALL;
             // If we already forked, use replay protected tx by default.
             // It is ok to use GetConfig here, because we'll just use replay
             // protected transaction only fairly soon anyway, so we can just
             // remove that call.
-            
+            if (IsUAHFenabledForCurrentBlock()) {
+                nHashType |= SIGHASH_FORKID;
+            }
             CTransaction txNewConst(txNew);
             int nIn = 0;
             for (const auto& coin : setCoins)
