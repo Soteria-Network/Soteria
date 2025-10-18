@@ -261,7 +261,9 @@ public:
 
         // Main seeders
         vSeeds.emplace_back("seed1.soteria-network.site", false);
-
+        vSeeds.emplace_back("soterianode.vpnopg.ru", false);
+        vSeeds.emplace_back("soter.rplant.xyz", false);
+		
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,125);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,160);
