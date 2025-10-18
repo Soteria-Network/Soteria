@@ -251,7 +251,8 @@ public:
         pchMessageStart[3] = 0x52; 
         static constexpr int nDefaultPort = 8323; // P2P port
         nPruneAfterHeight = 100000;
-
+        /** 14 * COIN / 100 = ~7200blocks/d = ~1000coins, to avoid in the future ~3s lag between UTXO & ACCOUNT Model, use ~12s instead of ~15s avg. 
+        10 * COIN / 100 = ~7200blocks/d = ~720coins UTXO + Account =< 39%, to decrease future inflation after adding account model and keep it at equal or below 1000 coins/d use 0.1block reward UTXO in the next release*/
         genesis = CreateGenesisBlock(1759415967, 31907241, 0x1e00ffff, 4, 18 * COIN / 100); // 36/100
 
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
