@@ -446,17 +446,20 @@ static bool IsCurrentForFeeEstimation()
     return true;
 }
 
-static bool IsUAHFenabled(int64_t) {
-    return true; // Hardcoded for genesis activation, Saves CPU cycles
+static bool IsUAHFenabledTime(int64_t nMedianTimePast) {
+    return nMedianTimePast >= DEFAULT_UAHF_START_TIME;
 }
 
-bool IsUAHFenabled(const CBlockIndex*) {
-    return true; // No nullcheck needed
+bool IsUAHFenabled(const CBlockIndex *pindexPrev) {
+    if (pindexPrev == nullptr) {
+        return false;
     }
+    return IsUAHFenabledTime(pindexPrev->GetMedianTimePast());
+}
 
 bool IsUAHFenabledForCurrentBlock() {
-    AssertLockHeld(cs_main); // Keep lock assertion
-    return true;
+    AssertLockHeld(cs_main);
+    return IsUAHFenabled(chainActive.Tip());
 }
 
 /* Make mempool consistent after a reorg, by re-adding or recursively erasing
@@ -1378,99 +1381,75 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensus
     }
     else if (nHeight < 3162240)
     {
-        nSubsidy = 24 * COIN / 100; // BURNING PHASE ACTIVATED || MERGED MINING || STAKING || TOKENIZATION PHASE
+        nSubsidy = 17 * COIN / 100; // BURNING PHASE ACTIVATED || MERGED MINING || STAKING || TOKENIZATION PHASE
     }
     else if (nHeight < 4216320)
     {
-        nSubsidy = 23 * COIN / 100;
+        nSubsidy = 16 * COIN / 100;
     }
     else if (nHeight < 5270400)
     {
-        nSubsidy = 22 * COIN / 100;
+        nSubsidy = 15 * COIN / 100;
     }
     else if (nHeight < 6324480) 
     {
-        nSubsidy = 21 * COIN / 100;
+        nSubsidy = 14 * COIN / 100;
     }
     else if (nHeight < 7378560)
     {
-        nSubsidy = 20 * COIN / 100;
+        nSubsidy = 13 * COIN / 100;
     }
     else if (nHeight < 8432640)
     {
-        nSubsidy = 19 * COIN / 100;
+        nSubsidy = 12 * COIN / 100;
     }
     else if (nHeight < 9486720)
     {
-        nSubsidy = 18 * COIN / 100;
+        nSubsidy = 11 * COIN / 100;
     }
     else if (nHeight < 10540800)
     {
-        nSubsidy = 17 * COIN / 100;
+        nSubsidy = 10 * COIN / 100;
     }
     else if (nHeight < 11594880)
     {
-        nSubsidy = 16 * COIN / 100;
+        nSubsidy = 9 * COIN / 100;
     }
     else if (nHeight < 12648960)
     {
-        nSubsidy = 15 * COIN / 100; 
+        nSubsidy = 8 * COIN / 100; 
     }
     else if (nHeight < 13703040)
     {
-        nSubsidy = 14 * COIN / 100; 
+        nSubsidy = 7 * COIN / 100; 
     }
     else if (nHeight < 14757120)
     {
-        nSubsidy = 13 * COIN / 100; 
+        nSubsidy = 6 * COIN / 100; 
     }
     else if (nHeight < 15811200)
     {
-        nSubsidy = 12 * COIN / 100; 
+        nSubsidy = 5 * COIN / 100; 
     }
     else if (nHeight < 16865280)
     {
-        nSubsidy = 11 * COIN / 100; 
+        nSubsidy = 4 * COIN / 100; 
     }
     else if (nHeight < 17919360)
     {
-        nSubsidy = 10 * COIN / 100; 
+        nSubsidy = 3 * COIN / 100; 
     }
     else if (nHeight < 18973440)
     {
-        nSubsidy = 9 * COIN / 100; 
+        nSubsidy = 2 * COIN / 100; 
     }
     else if (nHeight < 20027520)
     {
-        nSubsidy = 8 * COIN / 100; 
-    }
-    else if (nHeight < 21081600)
-    {
-        nSubsidy = 7 * COIN / 100; 
-    }
-    else if (nHeight < 22135680)
-    {
-        nSubsidy = 6 * COIN / 100; 
-    }
-    else if (nHeight < 23189760)
-    {
-        nSubsidy = 5 * COIN / 100; 
-    }
-    else if (nHeight < 24243840) 
-    {
-        nSubsidy = 4 * COIN / 100; 
-    }
-    else if (nHeight < 25297920)
-    {
-        nSubsidy = 3 * COIN / 100; 
-    }
-    else if (nHeight < 26352000) 
-    {
-        nSubsidy = 2 * COIN / 100; 
+        nSubsidy = 1 * COIN / 100; 
     }
     else
     {
-        nSubsidy = 1 * COIN / 100; 
+        nSubsidy = 50 * COIN / 1000; 
     }
 
     return nSubsidy;
@@ -4331,7 +4310,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
         int nCurrentNodeCount = g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL);
         bool bIsCurrentChainCaughtUp = (GetTime() - chainActive.Tip()->nTime) <= nMinReorgAge;
         if ((nCurrentNodeCount >= nMinReorgPeers) && bIsCurrentChainCaughtUp)
-            return state.DoS(10,
+            return state.DoS(5,
                              error("%s: forked chain older than max reorganization depth (height %d), with connections (count %d), and caught up with active chain (%s)",
                                    __func__, nHeight, nCurrentNodeCount, bIsCurrentChainCaughtUp ? "true" : "false"),
                              REJECT_MAXREORGDEPTH, "bad-fork-prior-to-maxreorgdepth");
