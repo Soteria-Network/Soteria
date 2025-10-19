@@ -395,10 +395,8 @@ public:
 		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 180;
-        // consensus.diffRetarget = 1759967768;
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.lwma1Height = 300000;
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
