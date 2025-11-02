@@ -7,18 +7,18 @@
 #include "serialize.h"
 #include "../../uint256.h"
 #include "sph_blake.h"
-#include "sph_bmw.h"
 #include "sph_groestl.h"
 #include "sph_jh.h"
 #include "sph_keccak.h"
 #include "sph_skein.h"
-#include "sph_luffa.h"
 #include "sph_cubehash.h"
 #include "sph_simd.h"
 #include "sph_echo.h"
 #include "sph_hamsi.h"
+#include "sph_fugue.h"
+#include "sph_shabal.h"
 #include "sph_sha2.h"
-#include "sph_shavite.h"
+
 #include "../../crypto/sha256.h"
 #include <vector>
 
@@ -138,29 +138,14 @@ uint256 SerializeHash(const T& obj, int nType=SER_GETHASH, int nVersion=PROTOCOL
 template<typename T1>
 inline uint256 HashX12R(const T1 pbegin, const T1 pend, const uint256 PrevBlockHash)
 {
-    int hashSelection;
-
-    sph_blake512_context     ctx_blake;      //0 2.1 J/Mhash
-    sph_keccak512_context    ctx_keccak;     //1 2.5 J/Mhash
-    sph_skein512_context     ctx_skein;      //2 3.2 J/Mhash
-    sph_luffa512_context     ctx_luffa;      //3 3.8 J/Mhash 
-    sph_cubehash512_context  ctx_cubehash;   //4 4.5 J/Mhash
-    sph_simd512_context      ctx_simd;       //5 5.1 J/Mhash
-    sph_hamsi512_context     ctx_hamsi;      //6 5.9 J/Mhash
-    sph_shavite512_context   ctx_shavite;    //7 7.2 J/Mhash
-    sph_jh512_context        ctx_jh;         //8 7.8 J/Mhash
-    sph_bmw512_context       ctx_bmw;        //9 8.4 J/Mhash
-    sph_groestl512_context   ctx_groestl;    //A 9.1 J/Mhash
-    sph_echo512_context      ctx_echo;       //B 10.3 J/Mhash      
-
     static unsigned char pblank[1];
-
     uint512 hash[12];
 
-    for (int i=0;i<12;i++)
+    for (int i = 0; i < 12; i++)
     {
         const void *toHash;
         int lenToHash;
+
         if (i == 0) {
             toHash = (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0]));
             lenToHash = (pend - pbegin) * sizeof(pbegin[0]);
@@ -169,69 +154,93 @@ inline uint256 HashX12R(const T1 pbegin, const T1 pend, const uint256 PrevBlockH
             lenToHash = 64;
         }
 
-        hashSelection = GetHashSelection(PrevBlockHash, i);
-/** We should avoid relying on the memory layout of the class (even though it's simple and without virtual functions). We explicitly state that we are passing the internal data buffer in each case */
-        switch(hashSelection) {
-            case 0:
-                sph_blake512_init(&ctx_blake);
-                sph_blake512 (&ctx_blake, toHash, lenToHash); 
-                sph_blake512_close(&ctx_blake, static_cast<void*>(hash[i].begin())); // For output
+        int hashSelection = GetHashSelection(PrevBlockHash, i);
+
+        switch (hashSelection) {
+            case 0: {
+                sph_blake512_context ctx;
+                sph_blake512_init(&ctx);
+                sph_blake512(&ctx, toHash, lenToHash);
+                sph_blake512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 1:
-                sph_bmw512_init(&ctx_bmw);
-                sph_bmw512 (&ctx_bmw, toHash, lenToHash);
-                sph_bmw512_close(&ctx_bmw, static_cast<void*>(hash[i].begin()));
+            }
+            case 1: {
+                sph_shabal512_context ctx;
+                sph_shabal512_init(&ctx);
+                sph_shabal512(&ctx, toHash, lenToHash);
+                sph_shabal512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 2:
-                sph_groestl512_init(&ctx_groestl);
-                sph_groestl512 (&ctx_groestl, toHash, lenToHash);
-                sph_groestl512_close(&ctx_groestl, static_cast<void*>(hash[i].begin()));
+            }
+            case 2: {
+                sph_groestl512_context ctx;
+                sph_groestl512_init(&ctx);
+                sph_groestl512(&ctx, toHash, lenToHash);
+                sph_groestl512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 3:
-                sph_jh512_init(&ctx_jh);
-                sph_jh512 (&ctx_jh, toHash, lenToHash);
-                sph_jh512_close(&ctx_jh, static_cast<void*>(hash[i].begin()));
+            }
+            case 3: {
+                sph_jh512_context ctx;
+                sph_jh512_init(&ctx);
+                sph_jh512(&ctx, toHash, lenToHash);
+                sph_jh512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 4:
-                sph_keccak512_init(&ctx_keccak);
-                sph_keccak512 (&ctx_keccak, toHash, lenToHash);
-                sph_keccak512_close(&ctx_keccak, static_cast<void*>(hash[i].begin()));
+            }
+            case 4: {
+                sph_keccak512_context ctx;
+                sph_keccak512_init(&ctx);
+                sph_keccak512(&ctx, toHash, lenToHash);
+                sph_keccak512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 5:
-                sph_skein512_init(&ctx_skein);
-                sph_skein512 (&ctx_skein, toHash, lenToHash);
-                sph_skein512_close(&ctx_skein, static_cast<void*>(hash[i].begin()));
+            }
+            case 5: {
+                sph_skein512_context ctx;
+                sph_skein512_init(&ctx);
+                sph_skein512(&ctx, toHash, lenToHash);
+                sph_skein512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 6:
-                sph_luffa512_init(&ctx_luffa);
-                sph_luffa512 (&ctx_luffa, toHash, lenToHash);
-                sph_luffa512_close(&ctx_luffa, static_cast<void*>(hash[i].begin()));
+            }
+            case 6: {
+                sph_fugue512_context ctx;
+                sph_fugue512_init(&ctx);
+                sph_fugue512(&ctx, toHash, lenToHash);
+                sph_fugue512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 7:
-                sph_cubehash512_init(&ctx_cubehash);
-                sph_cubehash512 (&ctx_cubehash, toHash, lenToHash);
-                sph_cubehash512_close(&ctx_cubehash, static_cast<void*>(hash[i].begin()));
+            }
+            case 7: {
+                sph_cubehash512_context ctx;
+                sph_cubehash512_init(&ctx);
+                sph_cubehash512(&ctx, toHash, lenToHash);
+                sph_cubehash512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 8:
-                sph_simd512_init(&ctx_simd);
-                sph_simd512 (&ctx_simd, toHash, lenToHash);
-                sph_simd512_close(&ctx_simd, static_cast<void*>(hash[i].begin()));
+            }
+            case 8: {
+                sph_simd512_context ctx;
+                sph_simd512_init(&ctx);
+                sph_simd512(&ctx, toHash, lenToHash);
+                sph_simd512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 9:
-                sph_echo512_init(&ctx_echo);
-                sph_echo512 (&ctx_echo, toHash, lenToHash);
-                sph_echo512_close(&ctx_echo, static_cast<void*>(hash[i].begin()));
+            }
+            case 9: {
+                sph_echo512_context ctx;
+                sph_echo512_init(&ctx);
+                sph_echo512(&ctx, toHash, lenToHash);
+                sph_echo512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 10:
-                sph_hamsi512_init(&ctx_hamsi);
-                sph_hamsi512 (&ctx_hamsi, toHash, lenToHash);
-                sph_hamsi512_close(&ctx_hamsi, static_cast<void*>(hash[i].begin()));
+            }
+            case 10: {
+                sph_hamsi512_context ctx;
+                sph_hamsi512_init(&ctx);
+                sph_hamsi512(&ctx, toHash, lenToHash);
+                sph_hamsi512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
-            case 11:
-                sph_shavite512_init(&ctx_shavite);
-                sph_shavite512(&ctx_shavite, toHash, lenToHash);
-                sph_shavite512_close(&ctx_shavite, static_cast<void*>(hash[i].begin()));
+            }
+            case 11: {
+                sph_sha512_context ctx;
+                sph_sha512_init(&ctx);
+                sph_sha512(&ctx, toHash, lenToHash);
+                sph_sha512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
+            }
         }
     }
     return hash[11].trim256();
