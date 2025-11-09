@@ -20,12 +20,12 @@ For detailed information, visit **Website:** [soteria-network.site] https://sote
 Key Features & Advantages
 Ultra-High Performance
 
-    Block reward is 0.18 coin/block with max daily emission equal 1000 coins.
-    Lightning-fast 15s block confirmations and buffer cap 13s.
+    Block reward is 0.14 coin/block with max daily emission equal 1000 coins.
+    Lightning-fast 12s block confirmations and buffer cap 10s.
     Industry-leading 1000+ TPS capacity.
     Smart contract supports using Lua VM integrated.
     3 MB blocks for maximum throughput.
-    Difficulity adjustment in 2 phases every 5 blocks and every 180 blocks using LMWA-EMA v3.
+    Difficulity adjustment every 90 blocks using LMWA-EMA v3.
     Optimized codebase for fast block time and minimum orphan rate.
     Modern C++ features, C++ best practices, best thread and memory management, updated dependencies to almost latest possible versions.
     Efficient and energy friendly algorithms for mining, crafted for Soteria Network.
