@@ -108,13 +108,13 @@ public:
         consensus.nBIP66Enabled = true;
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
-        consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); // def=0.015
-        consensus.nPowTargetSpacing = 15; // 12s would be the default soon to avoid the lags between UTXO and Account model
-        consensus.nPowTargetTimespan = 5400;
+        consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        consensus.nPowTargetSpacing = 12;
+        consensus.nPowTargetTimespan = 2160; // 180 blocks
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 340;
-        consensus.nMinerConfirmationWindow = 360;
+        consensus.nRuleChangeActivationThreshold = 170;
+        consensus.nMinerConfirmationWindow = 180;
 
         // BIP9 deployments
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
@@ -124,20 +124,20 @@ public:
         // Soteria network upgrades (hardforks)
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759415968;
-        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 1759415969;
+        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
         genesis.nTime = 1759415967;
 		consensus.lwmaTimestamp = 1759415968;
-        consensus.lwma1Timestamp = 2147483647;
+        consensus.lwma1Timestamp = 2147483647; // deactivate
         int64_t delta = consensus.lwmaTimestamp - genesis.nTime;
         int height = delta > 0
                 ? static_cast<int>(delta / consensus.nPowTargetSpacing)
                 : 0;
        
         consensus.lwmaHWCA = height + 40;
-        consensus.nBlockTimeDivisor = 13;
+        consensus.nBlockTimeDivisor = 10; // min allowed BT
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
         consensus.nNearBoundaryExtraBlocks = 1;
@@ -157,88 +157,131 @@ public:
         std::cout << "consensus.diffRetargetEndHeight" << i << " = " << end << ";\n";
         } */
 
-        // Testnet Hardfork diff adjustments w & w/o EMA
-		consensus.diffRetargetStartHeight1 = 85000;
-		consensus.diffRetargetEndHeight1 = 87000;
-		consensus.diffRetargetStartHeight2 = 87000;
-		consensus.diffRetargetEndHeight2 = 89000;
-		consensus.diffRetargetStartHeight3 = 89000;
-		consensus.diffRetargetEndHeight3 = 91000;
-		consensus.diffRetargetStartHeight4 = 91000;
-		consensus.diffRetargetEndHeight4 = 93000;
-		consensus.diffRetargetStartHeight5 = 93000;
-		consensus.diffRetargetEndHeight5 = 95000;
-		consensus.diffRetargetStartHeight6 = 95000;
-		consensus.diffRetargetEndHeight6 = 97000;
-		consensus.diffRetargetStartHeight7 = 97000;
-		consensus.diffRetargetEndHeight7 = 99000;
-		consensus.diffRetargetStartHeight8 = 99000;
-		consensus.diffRetargetEndHeight8 = 101000;
-		consensus.diffRetargetStartHeight9 = 101000;
-		consensus.diffRetargetEndHeight9 = 103000;
-		consensus.diffRetargetStartHeight10 = 103000;
-		consensus.diffRetargetEndHeight10 = 105000;
-		consensus.diffRetargetStartHeight11 = 105000;
-		consensus.diffRetargetEndHeight11 = 107000;
-		consensus.diffRetargetStartHeight12 = 107000;
-		consensus.diffRetargetEndHeight12 = 109000;
-		consensus.diffRetargetStartHeight13 = 109000;
-		consensus.diffRetargetEndHeight13 = 111000;
-		consensus.diffRetargetStartHeight14 = 111000;
-		consensus.diffRetargetEndHeight14 = 113000;
-		consensus.diffRetargetStartHeight15 = 113000;
-		consensus.diffRetargetEndHeight15 = 115000;
-		consensus.diffRetargetStartHeight16 = 115000;
-		consensus.diffRetargetEndHeight16 = 117000;
-		consensus.diffRetargetStartHeight17 = 117000;
-		consensus.diffRetargetEndHeight17 = 119000;
-		consensus.diffRetargetStartHeight18 = 119000;
-		consensus.diffRetargetEndHeight18 = 121000;
-		consensus.diffRetargetStartHeight19 = 121000;
-		consensus.diffRetargetEndHeight19 = 123000;
-		consensus.diffRetargetStartHeight20 = 123000;
-		consensus.diffRetargetEndHeight20 = 125000;
-		consensus.diffRetargetStartHeight21 = 125000;
-		consensus.diffRetargetEndHeight21 = 127000;
-		consensus.diffRetargetStartHeight22 = 127000;
-		consensus.diffRetargetEndHeight22 = 129000;
-		consensus.diffRetargetStartHeight23 = 129000;
-		consensus.diffRetargetEndHeight23 = 131000;
-		consensus.diffRetargetStartHeight24 = 131000;
-		consensus.diffRetargetEndHeight24 = 133000;
-		consensus.diffRetargetStartHeight25 = 133000;
-		consensus.diffRetargetEndHeight25 = 135000;
-		consensus.diffRetargetStartHeight26 = 135000;
-		consensus.diffRetargetEndHeight26 = 137000;
-		consensus.diffRetargetStartHeight27 = 137000;
-		consensus.diffRetargetEndHeight27 = 139000;
-		consensus.diffRetargetStartHeight28 = 139000;
-		consensus.diffRetargetEndHeight28 = 141000;
-		consensus.diffRetargetStartHeight29 = 141000;
-		consensus.diffRetargetEndHeight29 = 143000;
-		consensus.diffRetargetStartHeight30 = 143000;
-		consensus.diffRetargetEndHeight30 = 145000;
-		consensus.diffRetargetStartHeight31 = 145000;
-		consensus.diffRetargetEndHeight31 = 147000;
-		consensus.diffRetargetStartHeight32 = 147000;
-		consensus.diffRetargetEndHeight32 = 149000;
-		consensus.diffRetargetStartHeight33 = 149000;
-		consensus.diffRetargetEndHeight33 = 151000;
-		consensus.diffRetargetStartHeight34 = 151000;
-		consensus.diffRetargetEndHeight34 = 153000;
-		consensus.diffRetargetStartHeight35 = 153000;
-		consensus.diffRetargetEndHeight35 = 155000;
-		consensus.diffRetargetStartHeight36 = 155000;
-		consensus.diffRetargetEndHeight36 = 157000;
-		consensus.diffRetargetStartHeight37 = 157000;
-		consensus.diffRetargetEndHeight37 = 159000;
-		consensus.diffRetargetStartHeight38 = 159000;
-		consensus.diffRetargetEndHeight38 = 161000;
-		consensus.diffRetargetStartHeight39 = 161000;
-		consensus.diffRetargetEndHeight39 = 163000;
+		consensus.diffRetargetStartHeight = 1;
+		consensus.diffRetargetEndHeight = 2000;	// min difficulity only 2000 blocks									     
+		consensus.diffRetargetStartHeight1 = 2000;
+        consensus.diffRetargetEndHeight1   = 50000;
+
+		consensus.diffRetargetStartHeight2 = 50000;
+		consensus.diffRetargetEndHeight2   = 100000;
 		
-        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // G > 0.15
-        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // match the target
+		consensus.diffRetargetStartHeight3 = 100000;
+		consensus.diffRetargetEndHeight3   = 150000;
+		
+		consensus.diffRetargetStartHeight4 = 150000;
+		consensus.diffRetargetEndHeight4   = 200000;
+		
+		consensus.diffRetargetStartHeight5 = 200000;
+		consensus.diffRetargetEndHeight5   = 250000;
+		
+		consensus.diffRetargetStartHeight6 = 250000;
+		consensus.diffRetargetEndHeight6   = 300000;
+		
+		consensus.diffRetargetStartHeight7 = 300000;
+		consensus.diffRetargetEndHeight7   = 350000;
+		
+		consensus.diffRetargetStartHeight8 = 350000;
+		consensus.diffRetargetEndHeight8   = 400000;
+		
+		consensus.diffRetargetStartHeight9 = 400000;
+		consensus.diffRetargetEndHeight9   = 450000;
+		
+		consensus.diffRetargetStartHeight10 = 450000;
+		consensus.diffRetargetEndHeight10   = 500000;
+		
+		consensus.diffRetargetStartHeight11 = 500000;
+		consensus.diffRetargetEndHeight11   = 550000;
+		
+		consensus.diffRetargetStartHeight12 = 550000;
+		consensus.diffRetargetEndHeight12   = 600000;
+		
+		consensus.diffRetargetStartHeight13 = 600000;
+		consensus.diffRetargetEndHeight13   = 650000;
+		
+		consensus.diffRetargetStartHeight14 = 650000;
+		consensus.diffRetargetEndHeight14   = 700000;
+		
+		consensus.diffRetargetStartHeight15 = 700000;
+		consensus.diffRetargetEndHeight15   = 750000;
+		
+		consensus.diffRetargetStartHeight16 = 750000;
+		consensus.diffRetargetEndHeight16   = 800000;
+		
+		consensus.diffRetargetStartHeight17 = 800000;
+		consensus.diffRetargetEndHeight17   = 850000;
+		
+		consensus.diffRetargetStartHeight18 = 850000;
+		consensus.diffRetargetEndHeight18   = 900000; // First phase ~ 4mo
+
+		
+		consensus.diffRetargetStartHeight19 = 900000;
+		consensus.diffRetargetEndHeight19   = 950000;
+		
+		consensus.diffRetargetStartHeight20 = 950000;
+		consensus.diffRetargetEndHeight20   = 1000000;
+		
+		consensus.diffRetargetStartHeight21 = 1000000;
+		consensus.diffRetargetEndHeight21   = 1050000;
+		
+		consensus.diffRetargetStartHeight22 = 1050000;
+		consensus.diffRetargetEndHeight22   = 1100000;
+		
+		consensus.diffRetargetStartHeight23 = 1100000;
+		consensus.diffRetargetEndHeight23   = 1150000;
+		
+		consensus.diffRetargetStartHeight24 = 1150000;
+		consensus.diffRetargetEndHeight24   = 1200000;
+		
+		consensus.diffRetargetStartHeight25 = 1200000;
+		consensus.diffRetargetEndHeight25   = 1250000;
+		
+		consensus.diffRetargetStartHeight26 = 1250000;
+		consensus.diffRetargetEndHeight26   = 1300000;
+		
+		consensus.diffRetargetStartHeight27 = 1300000;
+		consensus.diffRetargetEndHeight27   = 1350000;
+		
+		consensus.diffRetargetStartHeight28 = 1350000;
+		consensus.diffRetargetEndHeight28   = 1400000;
+		
+		consensus.diffRetargetStartHeight29 = 1400000;
+		consensus.diffRetargetEndHeight29   = 1450000;
+		
+		consensus.diffRetargetStartHeight30 = 1450000;
+		consensus.diffRetargetEndHeight30   = 1500000;
+		
+		consensus.diffRetargetStartHeight31 = 1500000;
+		consensus.diffRetargetEndHeight31   = 1550000;
+		
+		consensus.diffRetargetStartHeight32 = 1550000;
+		consensus.diffRetargetEndHeight32   = 1600000;
+		
+		consensus.diffRetargetStartHeight33 = 1600000;
+		consensus.diffRetargetEndHeight33   = 1650000;
+		
+		consensus.diffRetargetStartHeight34 = 1650000;
+		consensus.diffRetargetEndHeight34   = 1700000;
+		
+		consensus.diffRetargetStartHeight35 = 1700000;
+		consensus.diffRetargetEndHeight35   = 1750000;
+		
+		consensus.diffRetargetStartHeight36 = 1750000;
+		consensus.diffRetargetEndHeight36   = 1800000;
+		
+		consensus.diffRetargetStartHeight37 = 1800000;
+		consensus.diffRetargetEndHeight37   = 1850000;
+		
+		consensus.diffRetargetStartHeight38 = 1850000;
+		consensus.diffRetargetEndHeight38   = 1900000;
+		
+		consensus.diffRetargetStartHeight39 = 1900000;
+		consensus.diffRetargetEndHeight39   = 1950000;
+		
+		consensus.diffRetargetStartHeight40 = 1950000;
+		consensus.diffRetargetEndHeight40   = 2000000; // activate burning
+		
+        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
 
         consensus.BIP34LockedIn = 1;
 
@@ -251,9 +294,8 @@ public:
         pchMessageStart[3] = 0x52; 
         static constexpr int nDefaultPort = 8323; // P2P port
         nPruneAfterHeight = 100000;
-        /** 14 * COIN / 100 = ~7200blocks/d = ~1000coins, to avoid in the future ~3s lag between UTXO & ACCOUNT Model, use ~12s instead of ~15s avg. 
-        10 * COIN / 100 = ~7200blocks/d = ~720coins UTXO + Account =< 39%, to decrease future inflation after adding account model and keep it at equal or below 1000 coins/d use 0.1block reward UTXO in the next release*/
-        genesis = CreateGenesisBlock(1759415967, 31907241, 0x1e00ffff, 4, 18 * COIN / 100); // 36/100
+        
+       genesis = CreateGenesisBlock(1759415967, 31907241, 0x1e00ffff, 4, 18 * COIN / 100);
 
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("0000001a6714182e55df603ab0232ce6c4b1bef6ef312e5fe40787f02c1477d5"));
@@ -371,8 +413,8 @@ public:
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
-        consensus.nPowTargetTimespan = 2700; 
-        consensus.nPowTargetSpacing = 15;
+        consensus.nPowTargetTimespan = 2160; // 180 blocks 
+        consensus.nPowTargetSpacing = 12;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 135;
@@ -386,7 +428,7 @@ public:
         // Soteria network upgrades (hardforks)
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759419050;
-        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 1759419051; 
+        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
@@ -396,7 +438,7 @@ public:
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 180;
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
@@ -408,7 +450,7 @@ public:
         static constexpr int nDefaultPort = 18323;
         static constexpr uint64_t nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1759419049, 12390692, 0x1e00ffff, 4, 18 * COIN / 100); // 36/100
+        genesis = CreateGenesisBlock(1759419049, 12390692, 0x1e00ffff, 4, 18 * COIN / 100);
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5"));
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
@@ -499,27 +541,26 @@ public:
         consensus.nCSVEnabled = true;
         consensus.nSubsidyHalvingInterval = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        consensus.nPowTargetTimespan = 600;
-        consensus.nPowTargetSpacing = 15;
+        consensus.nPowTargetTimespan = 1080; // nMinerConfirmationWindow * nPowTargetSpacing = 90 * 12 = 1080
+        consensus.nPowTargetSpacing = 12;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
-        consensus.nRuleChangeActivationThreshold = 30; 
-        consensus.nMinerConfirmationWindow = 40; 
+        consensus.nRuleChangeActivationThreshold = 65; 
+        consensus.nMinerConfirmationWindow = 90; 
 
         // BIP9 deployments
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;
 
-        // Soteria network upgrades (hardforks)
+        // Soteria network
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759421432; 
-        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 1759421433; 
+        consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP; 
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP; 
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
 
-        // Dual-Algo consensus
         consensus.lwmaTimestamp = 1759421432;        
         consensus.lwmaAveragingWindow = 180; 
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));  
@@ -535,7 +576,7 @@ public:
        static constexpr int nDefaultPort = 18310;
        static constexpr uint64_t nPruneAfterHeight = 1000;
 
-        genesis = CreateGenesisBlock(1759421431, 1, 0x207fffff, 4, 18 * COIN / 100); // 36/100
+        genesis = CreateGenesisBlock(1759421431, 1, 0x207fffff, 4, 18 * COIN / 100);
         consensus.hashGenesisBlock = genesis.GetSOTERGHash();
         assert(consensus.hashGenesisBlock == uint256S("606c795ca9d9ee08dba32d599dd65af25ba9e0b9aaeabc4b8a43533805e43136"));
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
