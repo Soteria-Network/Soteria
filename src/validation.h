@@ -71,13 +71,13 @@ static constexpr bool DEFAULT_WHITELISTRELAY = true;
 /** Default for -whitelistforcerelay. */
 static constexpr bool DEFAULT_WHITELISTFORCERELAY = true;
 /** Default for -minrelaytxfee, minimum relay fee for transactions*/
-static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 100000; // COIN / 10, 0.1 // def=1000000, 0.01
+static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 400000; // COIN / 10, 0.1 // def=1000000, 0.01
 //! -maxtxfee default (hard cap per TX)
-static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 100 * COIN; // def=1000
+static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 10 * COIN; // def=1000
 //! Discourage users to set fees higher than this amount (in soterios) per kB (soft-warn)
-static constexpr CAmount HIGH_TX_FEE_PER_KB = 0.1 * COIN; //  10 * COIN, def= 0.1 * COIN
+static constexpr CAmount HIGH_TX_FEE_PER_KB = 0.01 * COIN; //  10 * COIN, def= 0.1 * COIN
 //! -maxtxfee will warn if called with a higher fee than this amount (in soterios)
-static constexpr CAmount HIGH_MAX_TX_FEE = 100 * HIGH_TX_FEE_PER_KB;
+static constexpr CAmount HIGH_MAX_TX_FEE = 10 * HIGH_TX_FEE_PER_KB;
 /** Default for -limitancestorcount, max number of in-mempool ancestors */
 static constexpr unsigned int DEFAULT_ANCESTOR_LIMIT = 200;
 /** Default for -limitancestorsize, maximum kilobytes of tx + all in-mempool ancestors */
@@ -161,7 +161,7 @@ static constexpr int64_t BLOCK_DOWNLOAD_TIMEOUT_PER_PEER = 5000000;  //  75s
 // Check if Dual Algo is activated at given point
 bool IsDualAlgoEnabled(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params);
 
-static const int64_t DEFAULT_MAX_TIP_AGE = 60 * 60 * 24; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
+static const int64_t DEFAULT_MAX_TIP_AGE = 60 * 60 * 6; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
 // ~144 blocks behind -> 2 x fork detection time, was 24 * 60 * 60in v1, in 2.5*6, in v2=18*60 
 /** Maximum age of our tip in seconds for us to be considered current for fee estimation */
 static constexpr int64_t MAX_FEE_ESTIMATION_TIP_AGE = 2 * 60 * 60;
