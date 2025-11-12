@@ -1373,83 +1373,119 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensusParams)
 {
-    CAmount nSubsidy = 18 * COIN / 100; // Default subsidy (overridden by phase rules)
+        CAmount nSubsidy = 100 * COIN / 1000; // Default subsidy (overridden by phase rules)
 
-    if (nHeight < 2108160) // 1054080
+    if (nHeight < 3000000)
     { 
-        nSubsidy = 18 * COIN / 100;
+        nSubsidy = 140 * COIN / 1000;
     }
-    else if (nHeight < 3162240)
+    else if (nHeight < 6000000)
     {
-        nSubsidy = 17 * COIN / 100; // BURNING PHASE ACTIVATED || MERGED MINING || STAKING || TOKENIZATION PHASE
+        nSubsidy = 135 * COIN / 1000;
     }
-    else if (nHeight < 4216320)
+    else if (nHeight < 9000000)
     {
-        nSubsidy = 16 * COIN / 100;
+        nSubsidy = 130 * COIN / 1000;
     }
-    else if (nHeight < 5270400)
+    else if (nHeight < 12000000)
     {
-        nSubsidy = 15 * COIN / 100;
+        nSubsidy = 125 * COIN / 1000;
     }
-    else if (nHeight < 6324480) 
+    else if (nHeight < 15000000) 
     {
-        nSubsidy = 14 * COIN / 100;
+        nSubsidy = 120 * COIN / 1000;
     }
-    else if (nHeight < 7378560)
+    else if (nHeight < 18000000)
     {
-        nSubsidy = 13 * COIN / 100;
+        nSubsidy = 115 * COIN / 1000;
     }
-    else if (nHeight < 8432640)
+    else if (nHeight < 21000000)
     {
-        nSubsidy = 12 * COIN / 100;
+        nSubsidy = 110 * COIN / 1000;
     }
-    else if (nHeight < 9486720)
+    else if (nHeight < 24000000)
     {
-        nSubsidy = 11 * COIN / 100;
+        nSubsidy = 105 * COIN / 1000;
     }
-    else if (nHeight < 10540800)
+    else if (nHeight < 27000000)
     {
-        nSubsidy = 10 * COIN / 100;
+        nSubsidy = 100 * COIN / 1000;
     }
-    else if (nHeight < 11594880)
+    else if (nHeight < 30000000)
     {
-        nSubsidy = 9 * COIN / 100;
+        nSubsidy = 95 * COIN / 1000;
     }
-    else if (nHeight < 12648960)
+    else if (nHeight < 33000000)
     {
-        nSubsidy = 8 * COIN / 100; 
+        nSubsidy = 90 * COIN / 1000; 
     }
-    else if (nHeight < 13703040)
+    else if (nHeight < 36000000)
     {
-        nSubsidy = 7 * COIN / 100; 
+        nSubsidy = 85 * COIN / 1000; 
     }
-    else if (nHeight < 14757120)
+    else if (nHeight < 39000000)
     {
-        nSubsidy = 6 * COIN / 100; 
+        nSubsidy = 80 * COIN / 1000; 
     }
-    else if (nHeight < 15811200)
+    else if (nHeight < 42000000)
     {
-        nSubsidy = 5 * COIN / 100; 
+        nSubsidy = 75 * COIN / 1000; 
     }
-    else if (nHeight < 16865280)
+    else if (nHeight < 45000000)
     {
-        nSubsidy = 4 * COIN / 100; 
+        nSubsidy = 70 * COIN / 1000; 
     }
-    else if (nHeight < 17919360)
+    else if (nHeight < 48000000)
     {
-        nSubsidy = 3 * COIN / 100; 
+        nSubsidy = 65 * COIN / 1000; 
     }
-    else if (nHeight < 18973440)
+    else if (nHeight < 51000000)
     {
-        nSubsidy = 2 * COIN / 100; 
+        nSubsidy = 60 * COIN / 1000; 
     }
-    else if (nHeight < 20027520)
+    else if (nHeight < 54000000)
     {
-        nSubsidy = 1 * COIN / 100; 
+        nSubsidy = 55 * COIN / 1000; 
     }
-    else
+    else if (nHeight < 57000000)
     {
         nSubsidy = 50 * COIN / 1000; 
+    }
+    else if (nHeight < 60000000)
+    {
+        nSubsidy = 45 * COIN / 1000; 
+    }
+    else if (nHeight < 63000000)
+    {
+        nSubsidy = 40 * COIN / 1000; 
+    }
+    else if (nHeight < 66000000)
+    {
+        nSubsidy = 35 * COIN / 1000; 
+    }
+    else if (nHeight < 69000000)
+    {
+        nSubsidy = 30 * COIN / 1000; 
+    }
+    else if (nHeight < 72000000)
+    {
+        nSubsidy = 25 * COIN / 1000; 
+    }
+    else if (nHeight < 75000000)
+    {
+        nSubsidy = 20 * COIN / 1000; 
+    }
+    else if (nHeight < 78000000)
+    {
+        nSubsidy = 15 * COIN / 1000; 
+    }   
+    else if (nHeight < 81000000)
+    {
+        nSubsidy = 10 * COIN / 1000; 
+    }                  
+    else
+    {
+        nSubsidy = 5 * COIN / 1000; // Forever 13000 coins/yr
     }
 
     return nSubsidy;
