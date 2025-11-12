@@ -26,7 +26,7 @@ static constexpr unsigned int MAX_BLOCK_WEIGHT = 3000000;
 /** The maximum allowed number of signature check operations in a block (network rule) */
 static constexpr int64_t MAX_BLOCK_SIGOPS_COST = 240000; // SC support // MAX_BLOCK_WEIGHT/50
 /** Coinbase transaction outputs can only be spent after this number of new blocks (network rule) */
-static constexpr int COINBASE_MATURITY = 5000; // 60Kblocks/Epoch =8mb
+static constexpr int COINBASE_MATURITY = 4800; // 60Kblocks/Epoch =8mb ~16h
 
 /** Timestamp at which the UAHF starts. */
 static constexpr uint32_t DEFAULT_UAHF_START_TIME = 2147483647; // 1760052990; until the release of Electron wallet
