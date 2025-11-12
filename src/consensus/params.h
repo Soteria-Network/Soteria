@@ -129,7 +129,9 @@ struct ConsensusParams {
     int64_t lwma1Timestamp;
     int64_t lwmaHWCA;
     int64_t lwmaHeight;
-
+    // Mainnet diff with superblocks in periods until burning activation
+    int64_t diffRetargetStartHeight; 
+    int64_t diffRetargetEndHeight;   
     int64_t diffRetargetStartHeight1; 
     int64_t diffRetargetEndHeight1;   
     int64_t diffRetargetStartHeight2; 
@@ -208,6 +210,9 @@ struct ConsensusParams {
     int64_t diffRetargetEndHeight38;
     int64_t diffRetargetStartHeight39; 
     int64_t diffRetargetEndHeight39;
+    int64_t diffRetargetStartHeight40; 
+    int64_t diffRetargetEndHeight40;
+
     int64_t lwmaAveragingWindow;        // Averaging window size for LWMA-EMA3 diff adjust
     std::vector<uint256> powTypeLimits; // Limits for each pow type (with future-proofing space; can't pick up NUM_BLOCK_TYPES here)
     
