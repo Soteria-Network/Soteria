@@ -209,10 +209,10 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     coinbaseTx.vout.resize(2);
     
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
-    coinbaseTx.vout[0].nValue = (100-nFoundationReserveFund) * nSubsidy / 100;
+    coinbaseTx.vout[0].nValue = nFees + ((100-nFoundationReserveFund) * nSubsidy / 100 );
 	
     // Assign the set % in chainparams.cpp to the TX
-    std::string  GetFoundationReserveAddress 	= Params().FoundationReserveAddress();
+    std::string  GetFoundationReserveAddress = Params().FoundationReserveAddress();
     CTxDestination destFoundationReserve = DecodeDestination(GetFoundationReserveAddress);
     if (!IsValidDestination(destFoundationReserve)) {
 		LogPrintf("IsValidDestination: Invalid Soteria address %s \n", GetFoundationReserveAddress);
@@ -222,7 +222,7 @@ std::unique_ptr<CBlockTemplate> BlockAssembler::CreateNewBlock(const CScript& sc
     CScript scriptPubKeyFoundationReserve = GetScriptForDestination(destFoundationReserve);
 	
     coinbaseTx.vout[1].scriptPubKey = scriptPubKeyFoundationReserve;
-    coinbaseTx.vout[1].nValue = nFees + (nSubsidy*nFoundationReserveFund/100);
+    coinbaseTx.vout[1].nValue = nSubsidy*nFoundationReserveFund/100;
 	LogPrintf("nSubsidy: ====================================================\n");
 	LogPrintf("Miner: %ld \n", coinbaseTx.vout[0].nValue);
 	LogPrintf("scriptPubKeyIn: %s \n", HexStr(scriptPubKeyIn));
