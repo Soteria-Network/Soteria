@@ -32,7 +32,7 @@ struct Farm {
     sph_hamsi512_context context_hamsi;
     sph_jh512_context context_jh;
     sph_keccak512_context context_keccak;
-    sph_fugue512_context context_fugue;
+    sph_luffa512_context context_luffa;
     sph_simd512_context context_simd;
     sph_skein512_context context_skein;
     sph_sha512_context context_sha2;
@@ -82,10 +82,10 @@ static inline void run_keccak(Farm* f, const void* in, void* out) {
     sph_keccak512(&f->context_keccak, in, 64);
     sph_keccak512_close(&f->context_keccak, out);
 }
-static inline void run_fugue(Farm* f, const void* in, void* out) {
-    sph_fugue512_init(&f->context_fugue);
-    sph_fugue512(&f->context_fugue, in, 64);
-    sph_fugue512_close(&f->context_fugue, out);
+static inline void run_luffa(Farm* f, const void* in, void* out) {
+    sph_luffa512_init(&f->context_luffa);
+    sph_luffa512(&f->context_luffa, in, 64);
+    sph_luffa512_close(&f->context_luffa, out);
 }
 static inline void run_groestl(Farm* f, const void* in, void* out) {
     sph_groestl512_init(&f->context_groestl);
@@ -122,7 +122,7 @@ inline void GetHash_Write(const uint512& inputHash, Farm* farm, unsigned int alg
         case 4: run_sha512(farm, in, outp); break;
         case 5: run_jh(farm, in, outp); break;
         case 6: run_keccak(farm, in, outp); break;
-        case 7: run_fugue(farm, in, outp); break;
+        case 7: run_luffa(farm, in, outp); break;
         case 8: run_groestl(farm, in, outp); break;
         case 9: run_simd(farm, in, outp); break;
         case 10: run_skein(farm, in, outp); break;
