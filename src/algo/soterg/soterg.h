@@ -15,7 +15,7 @@
 #include "sph_simd.h"
 #include "sph_echo.h"
 #include "sph_hamsi.h"
-#include "sph_fugue.h"
+#include "sph_luffa.h"
 #include "sph_shabal.h"
 #include "sph_sha2.h"
 
@@ -200,10 +200,10 @@ inline uint256 HashX12R(const T1 pbegin, const T1 pend, const uint256 PrevBlockH
                 break;
             }
             case 6: {
-                sph_fugue512_context ctx;
-                sph_fugue512_init(&ctx);
-                sph_fugue512(&ctx, toHash, lenToHash);
-                sph_fugue512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_luffa512_context ctx;
+                sph_luffa512_init(&ctx);
+                sph_luffa512(&ctx, toHash, lenToHash);
+                sph_luffa512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
             }
             case 7: {
