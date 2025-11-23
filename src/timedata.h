@@ -14,7 +14,7 @@
 #include <vector>
 #include "chain.h"
 
-static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 360; // 5-10m max
+static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 180; // increase security 
 
 class CNetAddr;
 
