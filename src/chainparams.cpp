@@ -158,127 +158,126 @@ public:
         } */
 
 		consensus.diffRetargetStartHeight = 1;
-		consensus.diffRetargetEndHeight = 2000;	// min difficulity only 2000 blocks									     
+		consensus.diffRetargetEndHeight = 2000;										     
 		consensus.diffRetargetStartHeight1 = 2000;
-        consensus.diffRetargetEndHeight1   = 50000;
+        consensus.diffRetargetEndHeight1   = 70000;
 
-		consensus.diffRetargetStartHeight2 = 50000;
-		consensus.diffRetargetEndHeight2   = 100000;
+		consensus.diffRetargetStartHeight2 = 70000;
+		consensus.diffRetargetEndHeight2   = 140000;
 		
-		consensus.diffRetargetStartHeight3 = 100000;
-		consensus.diffRetargetEndHeight3   = 150000;
+		consensus.diffRetargetStartHeight3 = 140000;
+		consensus.diffRetargetEndHeight3   = 210000;
 		
-		consensus.diffRetargetStartHeight4 = 150000;
-		consensus.diffRetargetEndHeight4   = 200000;
+		consensus.diffRetargetStartHeight4 = 210000;
+		consensus.diffRetargetEndHeight4   = 280000;
 		
-		consensus.diffRetargetStartHeight5 = 200000;
-		consensus.diffRetargetEndHeight5   = 250000;
+		consensus.diffRetargetStartHeight5 = 280000;
+		consensus.diffRetargetEndHeight5   = 350000;
 		
-		consensus.diffRetargetStartHeight6 = 250000;
-		consensus.diffRetargetEndHeight6   = 300000;
+		consensus.diffRetargetStartHeight6 = 350000;
+		consensus.diffRetargetEndHeight6   = 420000;
 		
-		consensus.diffRetargetStartHeight7 = 300000;
-		consensus.diffRetargetEndHeight7   = 350000;
+		consensus.diffRetargetStartHeight7 = 420000;
+		consensus.diffRetargetEndHeight7   = 490000;
 		
-		consensus.diffRetargetStartHeight8 = 350000;
-		consensus.diffRetargetEndHeight8   = 400000;
+		consensus.diffRetargetStartHeight8 = 490000;
+		consensus.diffRetargetEndHeight8   = 560000;
 		
-		consensus.diffRetargetStartHeight9 = 400000;
-		consensus.diffRetargetEndHeight9   = 450000;
+		consensus.diffRetargetStartHeight9 = 560000;
+		consensus.diffRetargetEndHeight9   = 630000;
 		
-		consensus.diffRetargetStartHeight10 = 450000;
-		consensus.diffRetargetEndHeight10   = 500000;
+		consensus.diffRetargetStartHeight10 = 630000;
+		consensus.diffRetargetEndHeight10   = 700000;
 		
-		consensus.diffRetargetStartHeight11 = 500000;
-		consensus.diffRetargetEndHeight11   = 550000;
+		consensus.diffRetargetStartHeight11 = 700000;
+		consensus.diffRetargetEndHeight11   = 770000;
 		
-		consensus.diffRetargetStartHeight12 = 550000;
-		consensus.diffRetargetEndHeight12   = 600000;
+		consensus.diffRetargetStartHeight12 = 770000;
+		consensus.diffRetargetEndHeight12   = 840000;
 		
-		consensus.diffRetargetStartHeight13 = 600000;
-		consensus.diffRetargetEndHeight13   = 650000;
+		consensus.diffRetargetStartHeight13 = 840000;
+		consensus.diffRetargetEndHeight13   = 910000;
 		
-		consensus.diffRetargetStartHeight14 = 650000;
-		consensus.diffRetargetEndHeight14   = 700000;
+		consensus.diffRetargetStartHeight14 = 910000;
+		consensus.diffRetargetEndHeight14   = 980000;
 		
-		consensus.diffRetargetStartHeight15 = 700000;
-		consensus.diffRetargetEndHeight15   = 750000;
+		consensus.diffRetargetStartHeight15 = 980000;
+		consensus.diffRetargetEndHeight15   = 1050000;
 		
-		consensus.diffRetargetStartHeight16 = 750000;
-		consensus.diffRetargetEndHeight16   = 800000;
+		consensus.diffRetargetStartHeight16 = 1050000;
+		consensus.diffRetargetEndHeight16   = 1120000;
 		
-		consensus.diffRetargetStartHeight17 = 800000;
-		consensus.diffRetargetEndHeight17   = 850000;
+		consensus.diffRetargetStartHeight17 = 1120000;
+		consensus.diffRetargetEndHeight17   = 1190000;
 		
-		consensus.diffRetargetStartHeight18 = 850000;
-		consensus.diffRetargetEndHeight18   = 900000; // First phase ~ 4mo
-
+		consensus.diffRetargetStartHeight18 = 1190000;
+		consensus.diffRetargetEndHeight18   = 1260000; // ~6mo -First Phase
 		
-		consensus.diffRetargetStartHeight19 = 900000;
-		consensus.diffRetargetEndHeight19   = 950000;
+		consensus.diffRetargetStartHeight19 = 1260000;
+		consensus.diffRetargetEndHeight19   = 1330000;
 		
-		consensus.diffRetargetStartHeight20 = 950000;
-		consensus.diffRetargetEndHeight20   = 1000000;
+		consensus.diffRetargetStartHeight20 = 1330000;
+		consensus.diffRetargetEndHeight20   = 1400000;
 		
-		consensus.diffRetargetStartHeight21 = 1000000;
-		consensus.diffRetargetEndHeight21   = 1050000;
+		consensus.diffRetargetStartHeight21 = 1400000;
+		consensus.diffRetargetEndHeight21   = 1470000;
 		
-		consensus.diffRetargetStartHeight22 = 1050000;
-		consensus.diffRetargetEndHeight22   = 1100000;
+		consensus.diffRetargetStartHeight22 = 1470000;
+		consensus.diffRetargetEndHeight22   = 1540000;
 		
-		consensus.diffRetargetStartHeight23 = 1100000;
-		consensus.diffRetargetEndHeight23   = 1150000;
+		consensus.diffRetargetStartHeight23 = 1540000;
+		consensus.diffRetargetEndHeight23   = 1610000;
 		
-		consensus.diffRetargetStartHeight24 = 1150000;
-		consensus.diffRetargetEndHeight24   = 1200000;
+		consensus.diffRetargetStartHeight24 = 1610000;
+		consensus.diffRetargetEndHeight24   = 1680000;
 		
-		consensus.diffRetargetStartHeight25 = 1200000;
-		consensus.diffRetargetEndHeight25   = 1250000;
+		consensus.diffRetargetStartHeight25 = 1680000;
+		consensus.diffRetargetEndHeight25   = 1750000;
 		
-		consensus.diffRetargetStartHeight26 = 1250000;
-		consensus.diffRetargetEndHeight26   = 1300000;
+		consensus.diffRetargetStartHeight26 = 1750000;
+		consensus.diffRetargetEndHeight26   = 1820000;
 		
-		consensus.diffRetargetStartHeight27 = 1300000;
-		consensus.diffRetargetEndHeight27   = 1350000;
+		consensus.diffRetargetStartHeight27 = 1820000;
+		consensus.diffRetargetEndHeight27   = 1890000;
 		
-		consensus.diffRetargetStartHeight28 = 1350000;
-		consensus.diffRetargetEndHeight28   = 1400000;
+		consensus.diffRetargetStartHeight28 = 1890000;
+		consensus.diffRetargetEndHeight28   = 1960000;
 		
-		consensus.diffRetargetStartHeight29 = 1400000;
-		consensus.diffRetargetEndHeight29   = 1450000;
+		consensus.diffRetargetStartHeight29 = 1960000;
+		consensus.diffRetargetEndHeight29   = 2030000;
 		
-		consensus.diffRetargetStartHeight30 = 1450000;
-		consensus.diffRetargetEndHeight30   = 1500000;
+		consensus.diffRetargetStartHeight30 = 2030000;
+		consensus.diffRetargetEndHeight30   = 2100000;
 		
-		consensus.diffRetargetStartHeight31 = 1500000;
-		consensus.diffRetargetEndHeight31   = 1550000;
+		consensus.diffRetargetStartHeight31 = 2100000;
+		consensus.diffRetargetEndHeight31   = 2170000;
 		
-		consensus.diffRetargetStartHeight32 = 1550000;
-		consensus.diffRetargetEndHeight32   = 1600000;
+		consensus.diffRetargetStartHeight32 = 2170000;
+		consensus.diffRetargetEndHeight32   = 2240000;
 		
-		consensus.diffRetargetStartHeight33 = 1600000;
-		consensus.diffRetargetEndHeight33   = 1650000;
+		consensus.diffRetargetStartHeight33 = 2240000;
+		consensus.diffRetargetEndHeight33   = 2310000;
 		
-		consensus.diffRetargetStartHeight34 = 1650000;
-		consensus.diffRetargetEndHeight34   = 1700000;
+		consensus.diffRetargetStartHeight34 = 2310000;
+		consensus.diffRetargetEndHeight34   = 2380000;
 		
-		consensus.diffRetargetStartHeight35 = 1700000;
-		consensus.diffRetargetEndHeight35   = 1750000;
+		consensus.diffRetargetStartHeight35 = 2380000;
+		consensus.diffRetargetEndHeight35   = 2450000;
 		
-		consensus.diffRetargetStartHeight36 = 1750000;
-		consensus.diffRetargetEndHeight36   = 1800000;
+		consensus.diffRetargetStartHeight36 = 2450000;
+		consensus.diffRetargetEndHeight36   = 2520000;
 		
-		consensus.diffRetargetStartHeight37 = 1800000;
-		consensus.diffRetargetEndHeight37   = 1850000;
+		consensus.diffRetargetStartHeight37 = 2520000;
+		consensus.diffRetargetEndHeight37   = 2590000;
 		
-		consensus.diffRetargetStartHeight38 = 1850000;
-		consensus.diffRetargetEndHeight38   = 1900000;
+		consensus.diffRetargetStartHeight38 = 2590000;
+		consensus.diffRetargetEndHeight38   = 2660000;
 		
-		consensus.diffRetargetStartHeight39 = 1900000;
-		consensus.diffRetargetEndHeight39   = 1950000;
+		consensus.diffRetargetStartHeight39 = 2660000;
+		consensus.diffRetargetEndHeight39   = 2730000;
 		
-		consensus.diffRetargetStartHeight40 = 1950000;
-		consensus.diffRetargetEndHeight40   = 2000000; // activate burning
+		consensus.diffRetargetStartHeight40 = 2730000;
+		consensus.diffRetargetEndHeight40   = 2800000; // activate burning
 		
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
