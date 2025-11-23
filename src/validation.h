@@ -87,7 +87,7 @@ static constexpr unsigned int DEFAULT_DESCENDANT_LIMIT = 200;
 /** Default for -limitdescendantsize, maximum kilobytes of in-mempool descendants */
 static constexpr unsigned int DEFAULT_DESCENDANT_SIZE_LIMIT = 250;
 /** Default for -cache.memoryPoolExpiry, nothing above one week, expiration time for mempool transactions in hours */
-static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 24; // default in BTC=336, oD,nN=72. 24,48. 15*2016=8.4, nDin=24
+static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 72; // default in BTC=336, oD,nN=72. 24,48. 15*2016=8.4, nDin=24
 /** Maximum kilobytes for transactions to store for processing during reorg.
 • Stores up to 20 000 “orphan” transactions awaiting parents. • With 4 MB blocks we might see bursts of orphans if many in‐flight parents arrive late—consider increasing to 50 000 if we notice frequent drop-outs. */
 static constexpr unsigned int MAX_DISCONNECTED_TX_POOL_SIZE = 60000; // def=20000
@@ -161,10 +161,10 @@ static constexpr int64_t BLOCK_DOWNLOAD_TIMEOUT_PER_PEER = 5000000;  //  75s
 // Check if Dual Algo is activated at given point
 bool IsDualAlgoEnabled(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params);
 
-static const int64_t DEFAULT_MAX_TIP_AGE = 60 * 60 * 6; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
+static const int64_t DEFAULT_MAX_TIP_AGE = 48 * 60; /** 144 blocks = 2160, in nReb is 18, in oReb is 36, at the start 6-24h, 72 blocks in LLC. 2160, for fast chains better to choose 72 than 144 conserv */
 // ~144 blocks behind -> 2 x fork detection time, was 24 * 60 * 60in v1, in 2.5*6, in v2=18*60 
 /** Maximum age of our tip in seconds for us to be considered current for fee estimation */
-static constexpr int64_t MAX_FEE_ESTIMATION_TIP_AGE = 2 * 60 * 60;
+static constexpr int64_t MAX_FEE_ESTIMATION_TIP_AGE = 48 * 60;
 
 /** Default for -permitbaremultisig */
 static constexpr bool DEFAULT_PERMIT_BAREMULTISIG = true;
