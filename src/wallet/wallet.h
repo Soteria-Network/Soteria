@@ -53,10 +53,8 @@ extern std::string my_words;
 extern std::string my_passphrase;
 // BTC Default for -keypool=1000
 static constexpr unsigned int DEFAULT_KEYPOOL_SIZE = 250;
-// Raise the default transaction fee from 0 to a reasonable base
-static constexpr CAmount DEFAULT_TRANSACTION_FEE = 100000; // 0.001 SOTER
 //! -paytxfee default// SOTER/kb, moderate value between 0.001 and 0.1, ISO 0.01/kb
-//static constexpr CAmount DEFAULT_TRANSACTION_FEE = 0;
+static constexpr CAmount DEFAULT_TRANSACTION_FEE = 0;
 /** -fallbackfee default=0, fallbackfee as a safety mechanism is needed, otherwise the fee estimation fails for transactions in case of blockchain congestion, "Fee estimation failed. Fallbackfee is disabled" error. */
 static constexpr CAmount DEFAULT_FALLBACK_FEE = 500000; // def=1025000 // def1=102500
 //! -m_discard_rate default
