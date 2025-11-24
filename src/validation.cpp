@@ -1375,12 +1375,7 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensus
 {
    CAmount nSubsidy = 100 * COIN / 1000; // Default subsidy (overridden by phase rules)
 
-   // Premine rewards
-   if (nHeight < 5)
-    { 
-        nSubsidy = 25000 * COIN;
-    }
-    else if (nHeight < 3000000)
+  if (nHeight < 3000000)
     { 
         nSubsidy = 140 * COIN / 1000;
     }
