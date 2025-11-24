@@ -136,7 +136,7 @@ public:
                 ? static_cast<int>(delta / consensus.nPowTargetSpacing)
                 : 0;
        
-        consensus.lwmaHWCA = height + 40;
+        consensus.lwmaHWCA = height + 30;
         consensus.nBlockTimeDivisor = 10; // min allowed BT
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
