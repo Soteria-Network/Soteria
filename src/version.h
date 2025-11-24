@@ -11,7 +11,7 @@
  * network protocol versioning
  */
 
-static constexpr int PROTOCOL_VERSION = 70038;
+static constexpr int PROTOCOL_VERSION = 70040;
 
 //! initial proto version, to be increased after version/verack negotiation
 static constexpr int INIT_PROTO_VERSION = 209;
@@ -23,7 +23,7 @@ static constexpr int GETHEADERS_VERSION = 31800;
 static constexpr int ASSETDATA_VERSION = 70017;
 
 //! soterg + soterc algo
-static constexpr int DUALALGO_VERSION = 70035;
+static constexpr int DUALALGO_VERSION = 70039;
 
 //! asset activation
 static constexpr int ASSETS_VERSION = 70034;
