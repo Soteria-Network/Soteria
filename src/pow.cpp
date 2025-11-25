@@ -697,80 +697,55 @@ unsigned int GetNextWorkRequiredLWMA2(
     return smoothed.GetCompact();
 }
 
-// LWMA3 180, dt 4, pt 2, ewma 1/4
 unsigned int GetNextWorkRequiredLWMA3(
     const CBlockIndex* pindexLast,
     const CBlockHeader* pblock,
     const Consensus::ConsensusParams& params,
     const POW_TYPE powType)
 {
- // Logging throttle per POW_TYPE
- // const size_t TYPE_COUNT = sizeof(POW_TYPE_NAMES) / sizeof(POW_TYPE_NAMES[0]);
-    const size_t TYPE_COUNT = std::size(POW_TYPE_NAMES);
-    static std::array<int64_t, TYPE_COUNT> lastLogTime = {};
-    bool verbose = LogAcceptCategory(BCLog::SOTERC_SWITCH);
-    int64_t now = GetTime();
-    bool logThis = verbose && (now - lastLogTime[static_cast<size_t>(powType)] > 60); // def=30
-    if (logThis) lastLogTime[static_cast<size_t>(powType)] = now;
-
-    // Parameters
+    // Basic guards
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
-    const int64_t T = params.nPowTargetSpacing;
-    const int64_t N = 180;
-    const __int128 k = (__int128(N) * (N + 1) / 2) * T;             // weighted sum timespan
-    const int64_t height = pindexLast->nHeight + 1; 
-    
-    // Input validation
     if (!pindexLast || !pblock) {
-        LogPrintf("ERROR: Null input in GetNextWorkRequiredLWMA3\n");
         return powTypeLimit.GetCompact();
     }
-
-    // Chain continuity
     if (pindexLast->nHeight > 0 && !pindexLast->pprev) {
-        LogPrintf("ERROR: Broken chain at height %d\n", pindexLast->nHeight);
         return powTypeLimit.GetCompact();
     }
 
-    // Early exit on short chain
+    // Target spacing and window (agreed parameters)
+    const int64_t T = 12;   // expected: 12 seconds
+    const int64_t N = 60;                         // responsive window
+    const __int128 k = (__int128(N) * (N + 1) / 2) * T;
+    const int64_t height = pindexLast->nHeight + 1;
+
+    // Bootstrap
     if (height < N + 1) {
-        if (logThis) {
-            LogPrintf("* Short chain [%d < %d], using powTypeLimit\n", height, N+1);
-        }
-        return powTypeLimit.GetCompact();
-    }
-    // Early exit if we have no last block
-    if (!pindexLast) {
         return powTypeLimit.GetCompact();
     }
 
-    // Collect last N+1 same-type blocks
+    // Collect last N+1 blocks of the same powType
     std::vector<const CBlockIndex*> blocks;
     blocks.reserve(N + 1);
-
-    //const int64_t lwmaTime = params.lwma1Timestamp;
     const CBlockIndex* walker = pindexLast;
     int scanned = 0;
-    const int maxDepth = 300;
-    while (walker && blocks.size() < N + 1 && scanned < maxDepth) {
+    const int maxDepth = 5 * (int)N; // deeper scan to ensure enough same-type blocks
+
+    while (walker && (int)blocks.size() < N + 1 && scanned < maxDepth) {
         if (walker->GetBlockHeader().GetPoWType() == powType) {
             blocks.push_back(walker);
         }
-        // Early break if too far below fork height
-        if (walker->nHeight <= params.lwmaHWCA - int(N)) break;
         walker = walker->pprev;
         ++scanned;
     }
-    if (blocks.size() < N + 1) {
-        if (logThis) {
-            LogPrintf("* Found only %zu/%d blocks, using powTypeLimit\n",
-                      blocks.size(), N+1);
-        }
-        return powTypeLimit.GetCompact();
 
+    if ((int)blocks.size() < N + 1) {
+        // Conservative fallback: blend last target with limit so we don't snap to easiest
+        arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
+        arith_uint256 fallback = (lastTarget * 3 + powTypeLimit) / 4; // 75% last, 25% limit
+        return fallback.GetCompact();
     }
 
-    // Use 128-bit accumulator for weighted solve times, Compute LWMA
+    // LWMA core
     __int128 totalWeightedSolveTime = 0;
     arith_uint256 totalTarget = 0;
     int64_t prevTime = blocks.back()->GetBlockTime();
@@ -780,67 +755,44 @@ unsigned int GetNextWorkRequiredLWMA3(
         int64_t dt = b->GetBlockTime() - prevTime;
         prevTime = b->GetBlockTime();
 
-        // Bound solve time to [1, 4*T], old practice 6, new 4, if 2 is conservative we can increase it to 3
-        dt = std::max<int64_t>(1, std::min<int64_t>(dt, 4 * T)); // def=4 , 2 is too strict, 4 standard, 3 balanced
-        int weight = i + 1;  // 1 for oldest, N for newest
+        // Bound dt to [1, 4*T] (balanced cap per recommendation)
+        if (dt < 1) dt = 1;
+        const int64_t dtCap = 4 * T;
+        if (dt > dtCap) dt = dtCap;
+
+        const int weight = i + 1;              // 1 for oldest, N for newest
         int64_t wdt;
         if (!SafeMultiply(dt, weight, wdt)) {
-            if (logThis) {
-                LogPrintf("ERROR: Overflow solving weight@height %d\n", b->nHeight);
-            }
             return powTypeLimit.GetCompact();
-
         }
+
         totalWeightedSolveTime += wdt;
+
         arith_uint256 tgt;
         tgt.SetCompact(b->nBits);
         totalTarget += tgt;
     }
 
-   // Compute avgTarget
-   arith_uint256 avgTarget = totalTarget / N;
+    arith_uint256 avgTarget = totalTarget / N;
+    arith_uint256 weightedTime = arith_uint256(totalWeightedSolveTime);
+    arith_uint256 K = arith_uint256(k);
 
-   // Build up numerator and denominator as 256-bit words
-   arith_uint256 weightedTime = arith_uint256(totalWeightedSolveTime);
-   arith_uint256 K            = arith_uint256(k);
+    // Round-to-nearest
+    arith_uint256 numerator = avgTarget * weightedTime;
+    arith_uint256 halfK = K >> 1;
+    arith_uint256 nextTarget = (numerator + halfK) / K;
 
-   // Round-to-nearest: (numerator + K/2) / K
-   // This avoids the “always-floor” bias of integer division.
-   arith_uint256 numerator    = avgTarget * weightedTime;
-   arith_uint256 halfK        = K >> 1;  // same as K/2 for unsigned
-   arith_uint256 nextTarget   = (numerator + halfK) / K;
+    // Clamp: allow difficulty to get up to 8× harder than limit (>>3)
+    // Smaller target => harder difficulty; powTypeLimit is easiest (max target)
+    arith_uint256 minTarget = powTypeLimit >> 3;
+    if (nextTarget < minTarget) nextTarget = minTarget;
+    if (nextTarget > powTypeLimit) nextTarget = powTypeLimit;
 
-    // Clamp to [minTarget, powTypeLimit]
-    arith_uint256 minTarget = powTypeLimit >> 2; // 2
-  // no harder than 2× the limit, def =2, 1 = 2× harder, 2 = 4× harder, 3 = 8× harder, 4 = 16× harder
-    if (nextTarget < minTarget) {
-        if (logThis) LogPrintf("* Raising target to lower clamp\n");
-        nextTarget = minTarget;
-    }
-    if (nextTarget > powTypeLimit) {
-        if (logThis) LogPrintf("* Clamping target to powTypeLimit\n");
-        nextTarget = powTypeLimit;
-    }
-
-    // Last block's compact target
-    arith_uint256 lastTarget;
-    lastTarget.SetCompact(pindexLast->nBits);
-    
-    // EWA overlay to smooth random noise, α = 1/8 => newWeight = 1, oldWeight = 7
-    constexpr uint64_t EWMA_NUM = 1, EWMA_DEN = 4; // 2 , 4
-    arith_uint256 smoothed = (
-        nextTarget * EWMA_NUM +
-        lastTarget * (EWMA_DEN - EWMA_NUM)
-    ) / EWMA_DEN;
-
-    if (smoothed > powTypeLimit) {
-        smoothed = powTypeLimit;
-    }
-
-    if (logThis) {
-        LogPrintf("* lwma_target=%s ewa_smoothed=%s\n",
-                  nextTarget.ToString(), smoothed.ToString());
-    }
+    // EWMA smoothing: 75% new, 25% old
+    arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
+    constexpr uint64_t EWMA_NUM = 3, EWMA_DEN = 4;
+    arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
+    if (smoothed > powTypeLimit) smoothed = powTypeLimit;
 
     return smoothed.GetCompact();
 }
