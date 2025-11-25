@@ -163,121 +163,125 @@ public:
         consensus.diffRetargetEndHeight1   = 70000;
 
 		consensus.diffRetargetStartHeight2 = 70000;
-		consensus.diffRetargetEndHeight2   = 140000;
+		consensus.diffRetargetEndHeight2   = 350000;
 		
-		consensus.diffRetargetStartHeight3 = 140000;
-		consensus.diffRetargetEndHeight3   = 210000;
+		consensus.diffRetargetStartHeight3  = 300000;
+		consensus.diffRetargetEndHeight3    = 400000;
 		
-		consensus.diffRetargetStartHeight4 = 210000;
-		consensus.diffRetargetEndHeight4   = 280000;
+		consensus.diffRetargetStartHeight4  = 400000;
+		consensus.diffRetargetEndHeight4    = 500000;
 		
-		consensus.diffRetargetStartHeight5 = 280000;
-		consensus.diffRetargetEndHeight5   = 350000;
+		consensus.diffRetargetStartHeight5  = 500000;
+		consensus.diffRetargetEndHeight5    = 1500000;
 		
-		consensus.diffRetargetStartHeight6 = 350000;
-		consensus.diffRetargetEndHeight6   = 420000;
+		consensus.diffRetargetStartHeight6  = 1500000;
+		consensus.diffRetargetEndHeight6    = 2500000;
 		
-		consensus.diffRetargetStartHeight7 = 420000;
-		consensus.diffRetargetEndHeight7   = 490000;
+		consensus.diffRetargetStartHeight7  = 2500000;
+		consensus.diffRetargetEndHeight7    = 3500000;
 		
-		consensus.diffRetargetStartHeight8 = 490000;
-		consensus.diffRetargetEndHeight8   = 560000;
+		consensus.diffRetargetStartHeight8  = 3500000;
+		consensus.diffRetargetEndHeight8    = 4500000;
 		
-		consensus.diffRetargetStartHeight9 = 560000;
-		consensus.diffRetargetEndHeight9   = 630000;
+		consensus.diffRetargetStartHeight9  = 4500000;
+		consensus.diffRetargetEndHeight9    = 5500000;
 		
-		consensus.diffRetargetStartHeight10 = 630000;
-		consensus.diffRetargetEndHeight10   = 700000;
+		consensus.diffRetargetStartHeight10 = 5500000;
+		consensus.diffRetargetEndHeight10   = 6500000;
 		
-		consensus.diffRetargetStartHeight11 = 700000;
-		consensus.diffRetargetEndHeight11   = 770000;
+		consensus.diffRetargetStartHeight11 = 6500000;
+		consensus.diffRetargetEndHeight11   = 7500000;
 		
-		consensus.diffRetargetStartHeight12 = 770000;
-		consensus.diffRetargetEndHeight12   = 840000;
+		consensus.diffRetargetStartHeight12 = 7500000;
+		consensus.diffRetargetEndHeight12   = 8500000;
 		
-		consensus.diffRetargetStartHeight13 = 840000;
-		consensus.diffRetargetEndHeight13   = 910000;
+		consensus.diffRetargetStartHeight13 = 8500000;
+		consensus.diffRetargetEndHeight13   = 9500000;
 		
-		consensus.diffRetargetStartHeight14 = 910000;
-		consensus.diffRetargetEndHeight14   = 980000;
+		consensus.diffRetargetStartHeight14 = 9500000;
+		consensus.diffRetargetEndHeight14   = 10500000;
 		
-		consensus.diffRetargetStartHeight15 = 980000;
-		consensus.diffRetargetEndHeight15   = 1050000;
+		consensus.diffRetargetStartHeight15 = 10500000;
+		consensus.diffRetargetEndHeight15   = 11500000;
 		
-		consensus.diffRetargetStartHeight16 = 1050000;
-		consensus.diffRetargetEndHeight16   = 1120000;
+		consensus.diffRetargetStartHeight16 = 11500000;
+		consensus.diffRetargetEndHeight16   = 12500000;
 		
-		consensus.diffRetargetStartHeight17 = 1120000;
-		consensus.diffRetargetEndHeight17   = 1190000;
+		consensus.diffRetargetStartHeight17 = 12500000;
+		consensus.diffRetargetEndHeight17   = 13500000;
 		
-		consensus.diffRetargetStartHeight18 = 1190000;
-		consensus.diffRetargetEndHeight18   = 1260000; // ~6mo -First Phase
+		consensus.diffRetargetStartHeight18 = 13500000;
+		consensus.diffRetargetEndHeight18   = 14500000;
 		
-		consensus.diffRetargetStartHeight19 = 1260000;
-		consensus.diffRetargetEndHeight19   = 1330000;
+		consensus.diffRetargetStartHeight19 = 14500000;
+		consensus.diffRetargetEndHeight19   = 15500000;
 		
-		consensus.diffRetargetStartHeight20 = 1330000;
-		consensus.diffRetargetEndHeight20   = 1400000;
+		consensus.diffRetargetStartHeight20 = 15500000;
+		consensus.diffRetargetEndHeight20   = 16500000;
 		
-		consensus.diffRetargetStartHeight21 = 1400000;
-		consensus.diffRetargetEndHeight21   = 1470000;
+		consensus.diffRetargetStartHeight21 = 16500000;
+		consensus.diffRetargetEndHeight21   = 17500000;
 		
-		consensus.diffRetargetStartHeight22 = 1470000;
-		consensus.diffRetargetEndHeight22   = 1540000;
+		consensus.diffRetargetStartHeight22 = 17500000;
+		consensus.diffRetargetEndHeight22   = 18500000;
 		
-		consensus.diffRetargetStartHeight23 = 1540000;
-		consensus.diffRetargetEndHeight23   = 1610000;
+		consensus.diffRetargetStartHeight23 = 18500000;
+		consensus.diffRetargetEndHeight23   = 19500000;
 		
-		consensus.diffRetargetStartHeight24 = 1610000;
-		consensus.diffRetargetEndHeight24   = 1680000;
+		consensus.diffRetargetStartHeight24 = 19500000;
+		consensus.diffRetargetEndHeight24   = 20500000;
 		
-		consensus.diffRetargetStartHeight25 = 1680000;
-		consensus.diffRetargetEndHeight25   = 1750000;
+		consensus.diffRetargetStartHeight25 = 20500000;
+		consensus.diffRetargetEndHeight25   = 21500000;
 		
-		consensus.diffRetargetStartHeight26 = 1750000;
-		consensus.diffRetargetEndHeight26   = 1820000;
+		consensus.diffRetargetStartHeight26 = 21500000;
+		consensus.diffRetargetEndHeight26   = 22500000;
 		
-		consensus.diffRetargetStartHeight27 = 1820000;
-		consensus.diffRetargetEndHeight27   = 1890000;
+		consensus.diffRetargetStartHeight27 = 22500000;
+		consensus.diffRetargetEndHeight27   = 23500000;
 		
-		consensus.diffRetargetStartHeight28 = 1890000;
-		consensus.diffRetargetEndHeight28   = 1960000;
+		consensus.diffRetargetStartHeight28 = 23500000;
+		consensus.diffRetargetEndHeight28   = 24500000;
 		
-		consensus.diffRetargetStartHeight29 = 1960000;
-		consensus.diffRetargetEndHeight29   = 2030000;
+		consensus.diffRetargetStartHeight29 = 24500000;
+		consensus.diffRetargetEndHeight29   = 25500000;
 		
-		consensus.diffRetargetStartHeight30 = 2030000;
-		consensus.diffRetargetEndHeight30   = 2100000;
+		consensus.diffRetargetStartHeight30 = 25500000;
+		consensus.diffRetargetEndHeight30   = 26500000;
 		
-		consensus.diffRetargetStartHeight31 = 2100000;
-		consensus.diffRetargetEndHeight31   = 2170000;
+		consensus.diffRetargetStartHeight31 = 26500000;
+		consensus.diffRetargetEndHeight31   = 27500000;
 		
-		consensus.diffRetargetStartHeight32 = 2170000;
-		consensus.diffRetargetEndHeight32   = 2240000;
+		consensus.diffRetargetStartHeight32 = 27500000;
+		consensus.diffRetargetEndHeight32   = 28500000;
 		
-		consensus.diffRetargetStartHeight33 = 2240000;
-		consensus.diffRetargetEndHeight33   = 2310000;
+		consensus.diffRetargetStartHeight33 = 28500000;
+		consensus.diffRetargetEndHeight33   = 29500000;
 		
-		consensus.diffRetargetStartHeight34 = 2310000;
-		consensus.diffRetargetEndHeight34   = 2380000;
+		consensus.diffRetargetStartHeight34 = 29500000;
+		consensus.diffRetargetEndHeight34   = 30500000;
 		
-		consensus.diffRetargetStartHeight35 = 2380000;
-		consensus.diffRetargetEndHeight35   = 2450000;
+		consensus.diffRetargetStartHeight35 = 30500000;
+		consensus.diffRetargetEndHeight35   = 31500000;
 		
-		consensus.diffRetargetStartHeight36 = 2450000;
-		consensus.diffRetargetEndHeight36   = 2520000;
+		consensus.diffRetargetStartHeight36 = 31500000;
+		consensus.diffRetargetEndHeight36   = 32500000;
 		
-		consensus.diffRetargetStartHeight37 = 2520000;
-		consensus.diffRetargetEndHeight37   = 2590000;
+		consensus.diffRetargetStartHeight37 = 32500000;
+		consensus.diffRetargetEndHeight37   = 33500000;
 		
-		consensus.diffRetargetStartHeight38 = 2590000;
-		consensus.diffRetargetEndHeight38   = 2660000;
+		consensus.diffRetargetStartHeight38 = 33500000;
+		consensus.diffRetargetEndHeight38   = 34500000;
 		
-		consensus.diffRetargetStartHeight39 = 2660000;
-		consensus.diffRetargetEndHeight39   = 2730000;
+		consensus.diffRetargetStartHeight39 = 34500000;
+		consensus.diffRetargetEndHeight39   = 35500000;
 		
-		consensus.diffRetargetStartHeight40 = 2730000;
-		consensus.diffRetargetEndHeight40   = 2800000; // activate burning
+		consensus.diffRetargetStartHeight40 = 35500000;
+		consensus.diffRetargetEndHeight40   = 36500000;
+
+		
+		consensus.diffRetargetStartHeight41 = 36500000;
+		consensus.diffRetargetEndHeight41   = 40000000; // activate burning	
 		
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
