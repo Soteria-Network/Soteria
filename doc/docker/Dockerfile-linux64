@@ -1,0 +1,41 @@
+# docker build -t soteria-linux64
+
+FROM debian:12
+
+LABEL maintainer="Random"
+
+LABEL version="1.0.8"
+
+LABEL description="Soteria 1.0.8 | Docker for linux x64"
+
+ARG DEBIAN_FRONTEND=nointeractive
+
+RUN apt update
+
+RUN apt-get install -y git unzip wget
+
+WORKDIR /root
+
+RUN git clone https://github.com/Soteria-Network/Soteria.git
+
+WORKDIR /root/Soteria
+
+RUN scripts/00-install-deps.sh linux
+
+WORKDIR /root/Soteria/depends
+
+RUN make HOST=x86_64-pc-linux-gnu -j4
+
+WORKDIR /root/Soteria
+
+RUN ./autogen.sh
+
+RUN contrib/install_db4.sh ../
+
+RUN export BDB_PREFIX=/root/db4
+
+RUN CONFIG_SITE=$PWD/depends/x86_64-pc-linux-gnu/share/config.site ./configure --prefix=$PWD/depends/x86_64-pc-linux-gnu --disable-tests --disable-gui-tests --disable-man LDFLAGS="-L${BDB_PREFIX}/lib/" CPPFLAGS="-I${BDB_PREFIX}/include/"
+
+RUN make -j4
+
+CMD ["tail", "-f", "/dev/null"]
