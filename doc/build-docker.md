@@ -6,14 +6,14 @@ Overview
 ---------------------
 - Install a recent Docker Engine.
 - Clone the Soteria source locally so the Docker build context includes the repository files.
-- The Dockerfiles live under `doc/docker/` and currently target Linux (`Dockerfile-Linux64-bin`) and Windows (`Dockerfile-Win64-bin`) artifacts.
+- The Dockerfiles live under `doc/docker/` and currently target Linux (`Dockerfile-Linux64`) and Windows (`Dockerfile-Win64`) artifacts.
 - The images compile Soteria inside `/root/Soteria` and leave the build products in that directory. The container keeps running (`tail -f /dev/null`) so you can copy files out after the build completes.
 
 Building Linux x86_64 binaries
 ---------------------
 1. From the repository root, build the image:
    ```bash
-docker build -f doc/docker/Dockerfile-Linux64-bin -t soteria-linux64-build .
+docker build -f doc/docker/Dockerfile-Linux64 -t soteria-linux64-build .
 ```
 2. Create a stopped container from that image:
    ```bash
@@ -46,7 +46,7 @@ Building Windows x86_64 binaries
 ---------------------
 1. Build the cross-compilation image:
    ```bash
-docker build -f doc/docker/Dockerfile-Win64-bin -t soteria-win64-build .
+docker build -f doc/docker/Dockerfile-Win64 -t soteria-win64-build .
 ```
 2. Create a container from the image:
    ```bash
