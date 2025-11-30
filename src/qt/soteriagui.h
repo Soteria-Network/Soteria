@@ -129,6 +129,36 @@ private:
     QAction *openAction = nullptr;
     QAction *showHelpMessageAction = nullptr;
 
+
+    /** Soteria menu actions */
+    QAction *websiteAction = nullptr;
+    QAction *explorerAction = nullptr;
+    QAction *ecosystemAction = nullptr;
+    QAction *roadmapAction = nullptr;   
+    QAction *rdAction = nullptr;
+    QAction *servicesAction = nullptr;
+    QAction *whitepaperAction = nullptr;   
+    QAction *githubAction = nullptr;
+
+    /** Socials menu actions */
+    QAction *telegramAction = nullptr;
+    QAction *twitterAction = nullptr;
+    QAction *discordAction = nullptr;    
+    QAction *blueskyAction = nullptr;    
+    QAction *mediumAction = nullptr;
+    QAction *youtubeAction = nullptr;
+    QAction *tiktokAction = nullptr;
+    QAction *facebookAction = nullptr;    
+
+    /** Investment menu actions */
+    QAction *donationAction = nullptr;
+    QAction *premiumAction = nullptr;
+    QAction *membershipAction = nullptr;    
+    QAction *whitelistAction = nullptr;    
+    QAction *multichainAction = nullptr;
+    QAction *stakingAction = nullptr;
+    QAction *waitlistAction = nullptr;
+
     /** SOTER START */
     QAction *transferAssetAction = nullptr;
     QAction *createAssetAction = nullptr;
@@ -293,6 +323,35 @@ private Q_SLOTS:
     /** Handle tray icon clicked */
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
 #endif
+
+    /** Open external soteria links */
+    void openWebsite();
+    void openExplorer();
+    void openEcosystem();
+    void openRoadmap();
+    void openRD();
+    void openServices();
+    void openWhitepaper();
+    void openGithub();
+
+    /** Open external socials links */
+    void openTelegram();
+    void openTwitter();    
+    void openDiscord();
+    void openBluesky();
+    void openMedium();
+    void openYoutube();
+    void openTiktok();
+    void openFacebook();
+    
+    /** Open external investment links */
+    void openDonation();
+    void openPremium();    
+    void openMembership();
+    void openWhitelist();
+    void openMultichain();
+    void openStaking();
+    void openWaitlist();
 
     /** Show Smartcontracts*/
     void showSmartcontracts();
