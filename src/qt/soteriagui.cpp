@@ -532,6 +532,65 @@ void SoteriaGUI::createActions()
     showHelpMessageAction = new QAction(platformStyle->TextColorIcon(":/icons/info"), tr("&Command-line options"), this);
     showHelpMessageAction->setMenuRole(QAction::NoRole);
     showHelpMessageAction->setStatusTip(tr("Show the %1 help message to get a list with possible Soteria command-line options").arg(tr(PACKAGE_NAME)));
+
+    /** Soteria menu actions */
+
+    websiteAction = new QAction(tr("&Website"), this);
+    websiteAction->setStatusTip(tr("Open Soteria Network website"));
+    explorerAction = new QAction(tr("&Explorer"), this);
+    explorerAction->setStatusTip(tr("Open Soteria Network explorer"));
+    ecosystemAction = new QAction(tr("&Ecosystem"), this);
+    ecosystemAction->setStatusTip(tr("Open Soteria Network ecosystem"));
+    roadmapAction = new QAction(tr("&Roadmap"), this);
+    roadmapAction->setStatusTip(tr("Open Soteria Network roadmap"));  
+    rdAction = new QAction(tr("&R&D"), this);
+    rdAction->setStatusTip(tr("Open Soteria Network R&D"));
+    servicesAction = new QAction(tr("&Services"), this);
+    servicesAction->setStatusTip(tr("Open Soteria Network services"));   
+    whitepaperAction = new QAction(tr("&Whitepaper"), this);
+    whitepaperAction->setStatusTip(tr("Open Soteria Network whitepaper"));
+    githubAction = new QAction(tr("&Github"), this);
+    githubAction->setStatusTip(tr("Open Soteria Network github"));     
+
+/*    webWalletAction = new QAction(tr("&WebWallet"), this);
+    webWalletAction->setStatusTip(tr("Open Soteria Network web wallet, coming soon")); */       
+        
+    /** Socials menu actions */
+    
+    telegramAction = new QAction(tr("&Telegram"), this);
+    telegramAction->setStatusTip(tr("Open Soteria Network Telegram group"));
+    twitterAction = new QAction(tr("&X (Twitter)"), this);
+    twitterAction->setStatusTip(tr("Open Soteria Network X (Twitter) page"));  
+    discordAction = new QAction(tr("&Discord"), this);
+    discordAction->setStatusTip(tr("Open Soteria Network Discord group"));
+    blueskyAction = new QAction(tr("&BlueSky"), this);
+    blueskyAction->setStatusTip(tr("Open Soteria Network bluesky"));
+    mediumAction = new QAction(tr("&Medium"), this);
+    mediumAction->setStatusTip(tr("Open Soteria Network Medium"));
+    youtubeAction = new QAction(tr("&Youtube"), this);
+    youtubeAction->setStatusTip(tr("Open Soteria Network Youtube channel"));
+    tiktokAction = new QAction(tr("&Tiktok"), this);
+    tiktokAction->setStatusTip(tr("Open Soteria Network Tiktok page"));    
+    facebookAction = new QAction(tr("&Facebook"), this);
+    facebookAction->setStatusTip(tr("Open Soteria Network Facebook page"));      
+   
+    /** Investment menu actions */
+
+    donationAction = new QAction(tr("&Donation"), this);
+    donationAction->setStatusTip(tr("Open Soteria donation page"));
+    premiumAction = new QAction(tr("&Premium"), this);
+    premiumAction->setStatusTip(tr("Open Soteria premium mining page"));
+    membershipAction = new QAction(tr("&Membership"), this);
+    membershipAction->setStatusTip(tr("Open Soteria membership page"));
+    whitelistAction = new QAction(tr("&Whitelist"), this);
+    whitelistAction->setStatusTip(tr("Open Soteria whitelist page"));
+    multichainAction = new QAction(tr("&Multichain"), this);
+    multichainAction->setStatusTip(tr("Open Soteria multichain page"));
+    stakingAction = new QAction(tr("&Staking"), this);
+    stakingAction->setStatusTip(tr("Open Soteria staking page")); 
+    waitlistAction = new QAction(tr("&Waitlist"), this);
+    waitlistAction->setStatusTip(tr("Open Soteria waitlist page"));    
+    
     
     /** SOTER START */
     openSmartcontractsAction = new QAction(platformStyle->TextColorIcon(":/icons/soteria"), tr("&Manage Soteria Smart Plans"), this);
@@ -546,6 +605,36 @@ void SoteriaGUI::createActions()
     connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
     connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
     connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
+    
+    /** Connect soteria actions */
+    connect(websiteAction, SIGNAL(triggered()), this, SLOT(openWebsite()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(openExplorer()));
+    connect(ecosystemAction, SIGNAL(triggered()), this, SLOT(openEcosystem()));
+    connect(roadmapAction, SIGNAL(triggered()), this, SLOT(openRoadmap()));
+    connect(rdAction, SIGNAL(triggered()), this, SLOT(openRD()));    
+    connect(servicesAction, SIGNAL(triggered()), this, SLOT(openServices()));   
+    connect(whitepaperAction, SIGNAL(triggered()), this, SLOT(openWhitepaper()));    
+    connect(githubAction, SIGNAL(triggered()), this, SLOT(openGithub()));
+       
+    /** Connect socials actions */
+    connect(telegramAction, SIGNAL(triggered()), this, SLOT(openTelegram()));
+    connect(twitterAction, SIGNAL(triggered()), this, SLOT(openTwitter()));
+    connect(discordAction, SIGNAL(triggered()), this, SLOT(openDiscord()));        
+    connect(blueskyAction, SIGNAL(triggered()), this, SLOT(openBlueSky()));      
+    connect(mediumAction, SIGNAL(triggered()), this, SLOT(openMedium()));
+    connect(youtubeAction, SIGNAL(triggered()), this, SLOT(openYoutube()));
+    connect(tiktokAction, SIGNAL(triggered()), this, SLOT(openTiktok()));  
+    connect(facebookAction, SIGNAL(triggered()), this, SLOT(openFacebook()));  
+    
+    /** Connect investment actions */
+    connect(donationAction, SIGNAL(triggered()), this, SLOT(openDonation()));
+    connect(premiumAction, SIGNAL(triggered()), this, SLOT(openPremium()));
+    connect(membershipAction, SIGNAL(triggered()), this, SLOT(openMembership()));        
+    connect(whitelistAction, SIGNAL(triggered()), this, SLOT(openWhitelist()));      
+    connect(multichainAction, SIGNAL(triggered()), this, SLOT(openMultichain()));
+    connect(stakingAction, SIGNAL(triggered()), this, SLOT(openStaking()));
+    connect(waitlistAction, SIGNAL(triggered()), this, SLOT(openWaitlist()));  
+  
     connect(openRPCConsoleAction, SIGNAL(triggered()), this, SLOT(showDebugWindow()));
     // prevents an open debug window from becoming stuck/unusable on client shutdown
     connect(quitAction, SIGNAL(triggered()), rpcConsole, SLOT(hide()));
@@ -619,7 +708,34 @@ void SoteriaGUI::createMenuBar()
     extra->addAction(openSmartcontractsAction);
     extra->addSeparator();
 
-    /** SOTER END */
+    QMenu *soteria = appMenuBar->addMenu(tr("&Soteria"));
+    soteria->addAction(websiteAction);
+    soteria->addAction(explorerAction);
+    soteria->addAction(ecosystemAction);
+    soteria->addAction(roadmapAction);
+    soteria->addAction(rdAction);
+    soteria->addAction(servicesAction);        
+    soteria->addAction(whitepaperAction);
+    soteria->addAction(githubAction);  
+        
+    QMenu *socials = appMenuBar->addMenu(tr("&Socials"));
+    socials->addAction(telegramAction);
+    socials->addAction(twitterAction);
+    socials->addAction(discordAction);    
+    socials->addAction(blueskyAction);     
+    socials->addAction(mediumAction);
+    socials->addAction(youtubeAction);
+    socials->addAction(tiktokAction); 
+    socials->addAction(facebookAction);     
+
+    QMenu *investment = appMenuBar->addMenu(tr("&Investment"));
+    investment->addAction(donationAction);
+    investment->addAction(premiumAction);
+    investment->addAction(membershipAction);    
+    investment->addAction(whitelistAction);     
+    investment->addAction(multichainAction);
+    investment->addAction(stakingAction);
+    investment->addAction(waitlistAction); 
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
     if(walletFrame)
@@ -631,7 +747,9 @@ void SoteriaGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
+
 }
+    /** SOTER END */
 
 void SoteriaGUI::createToolBars()
 {
@@ -1977,5 +2095,104 @@ void SoteriaGUI::getLatestVersion()
     versionRequest->setSslConfiguration(sslConfiguration);
     versionRequest->setUrl(QUrl("https://api.github.com/repos/soteria-network/soteria/releases"));
     networkVersionManager->get(*versionRequest);
+}
+
+/** Soteria opening slots */
+	void SoteriaGUI::openWebsite()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site"));
+}
+	void SoteriaGUI::openExplorer()
+{
+    QDesktopServices::openUrl(QUrl("https://explorer.soteria-network.site"));
+}
+	void SoteriaGUI::openEcosystem()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/ecosystem.html"));
+}
+	void SoteriaGUI::openRoadmap()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/roadmap.html"));
+}
+	void SoteriaGUI::openRD()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/r&d.html"));
+}
+	void SoteriaGUI::openServices()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/services.html"));
+}
+	void SoteriaGUI::openWhitepaper()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/Soteria-Network/Soteria-Whitepaper/releases/download/v1/Night.pdf"));
+}
+	void SoteriaGUI::openGithub()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/Soteria-Network"));
+}
+
+
+/** Socials opening slots */
+	void SoteriaGUI::openTelegram()
+{
+    QDesktopServices::openUrl(QUrl("https://t.me/soteria_official"));
+}
+	void SoteriaGUI::openTwitter()
+{
+    QDesktopServices::openUrl(QUrl("https://x.com/Soteria_Network"));
+}
+	void SoteriaGUI::openDiscord()
+{
+    QDesktopServices::openUrl(QUrl("https://discord.gg/Uv4bBnGc2C"));
+}
+	void SoteriaGUI::openBluesky()
+{
+    QDesktopServices::openUrl(QUrl("https://bsky.app/profile/soteriaofficial.bsky.social"));
+}
+	void SoteriaGUI::openMedium()
+{
+    QDesktopServices::openUrl(QUrl("https://soteriaofficial.medium.com/"));
+}
+	void SoteriaGUI::openYoutube()
+{
+    QDesktopServices::openUrl(QUrl("https://www.youtube.com"));
+}
+	void SoteriaGUI::openTiktok()
+{
+    QDesktopServices::openUrl(QUrl("https://www.tiktok.com/@soteriafoundation"));
+}
+	void SoteriaGUI::openFacebook()
+{
+    QDesktopServices::openUrl(QUrl("https://www.facebook.com/SoteriaNetworkOfficial/"));
+}
+
+/** Investment opening slots */
+	void SoteriaGUI::openDonation()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/crowdfunding.html"));
+}
+	void SoteriaGUI::openPremium()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/finance.html#premium"));
+}
+	void SoteriaGUI::openMembership()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/programs.html#membership"));
+}
+	void SoteriaGUI::openWhitelist()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/finance.html#whitelist"));
+}
+	void SoteriaGUI::openMultichain()
+{
+    QDesktopServices::openUrl(QUrl(""));
+}
+	void SoteriaGUI::openStaking()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/finance.html#stake"));
+}
+	void SoteriaGUI::openWaitlist()
+{
+    QDesktopServices::openUrl(QUrl("https://soteria-network.site/events.html#waitlist"));
 }
 
