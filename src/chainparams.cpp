@@ -146,7 +146,7 @@ public:
         consensus.lwmaAveragingWindow = 60;
         consensus.lwmaHeight = 1;
 
-        // Mainnet activation hardfork diff adjustments   
+        // Activation hardfork diff adjustments   
 /*      int baseHeight = 160000;
         int interval = 2000;
         int count = 40;
@@ -156,25 +156,26 @@ public:
         std::cout << "consensus.diffRetargetStartHeight" << i << " = " << start << ";\n";
         std::cout << "consensus.diffRetargetEndHeight" << i << " = " << end << ";\n";
         } */
+// TODO clean all this up after removing the ceil
+		consensus.diffRetargetStartHeight3  = 1; // LWMA-3
+		consensus.diffRetargetEndHeight3    = 1400000; 
+			
+		consensus.diffRetargetStartHeight = 1400000;
+		consensus.diffRetargetEndHeight = 1420000;
+											     
+		consensus.diffRetargetStartHeight1 = 1420000; 
+        consensus.diffRetargetEndHeight1   = 1440000;
 
-		consensus.diffRetargetStartHeight = 1;
-		consensus.diffRetargetEndHeight = 2000;										     
-		consensus.diffRetargetStartHeight1 = 2000;
-        consensus.diffRetargetEndHeight1   = 70000;
-
-		consensus.diffRetargetStartHeight2 = 70000;
-		consensus.diffRetargetEndHeight2   = 350000;
+		consensus.diffRetargetStartHeight2 = 1440000; 
+		consensus.diffRetargetEndHeight2   = 1450000;
 		
-		consensus.diffRetargetStartHeight3  = 300000;
-		consensus.diffRetargetEndHeight3    = 400000;
+		consensus.diffRetargetStartHeight4  = 1450000;
+		consensus.diffRetargetEndHeight4    = 1500000;
 		
-		consensus.diffRetargetStartHeight4  = 400000;
-		consensus.diffRetargetEndHeight4    = 500000;
+		consensus.diffRetargetStartHeight5  = 1500000;
+		consensus.diffRetargetEndHeight5    = 2000000;
 		
-		consensus.diffRetargetStartHeight5  = 500000;
-		consensus.diffRetargetEndHeight5    = 1500000;
-		
-		consensus.diffRetargetStartHeight6  = 1500000;
+		consensus.diffRetargetStartHeight6  = 2000000;
 		consensus.diffRetargetEndHeight6    = 2500000;
 		
 		consensus.diffRetargetStartHeight7  = 2500000;
