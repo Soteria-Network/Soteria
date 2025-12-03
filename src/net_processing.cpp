@@ -111,7 +111,6 @@ static constexpr int STALE_RELAY_AGE_LIMIT = 30 * 24 * 60 * 60;
 /// limiting block relay. Set to one week, denominated in seconds.
 static constexpr int HISTORICAL_BLOCK_AGE = 7 * 24 * 60 * 60;
 
-/** Phicoin implementation with little modification */
 // Function to parse SOTERIA client version from user agent string
 // Expected format: "/SOTERIA:x.y.z/" or "/SOTERIA:x.y.z(comments)/"
 bool ParseClientVersion(const std::string& userAgent, int& major, int& minor, int& revision) {
@@ -173,19 +172,24 @@ bool ParseClientVersion(const std::string& userAgent, int& major, int& minor, in
     }
 }
 
-// Function to check if client version is below minimum required (1.0.0)
-bool IsClientVersionBelowMinimum(const std::string& userAgent) {
-    int major, minor, revision;
+bool IsClientVersionBelowMinimum(const std::string& userAgent)
+{
+    // Minimum allowed version
+    constexpr int MIN_MAJOR = 1;
+    constexpr int MIN_MINOR = 0;
+    constexpr int MIN_REV  = 9;
+
+    int major = 0, minor = 0, revision = 0;
     if (!ParseClientVersion(userAgent, major, minor, revision)) {
-        // If we can't parse the version, assume it's an old/unknown client
+        // If we can't parse the version, treat it as unknown/too old
         return true;
     }
-    
-    // Minimum allowed is 1.0.0
-    if (major  < 1) return true;              // anything 0.x.x is too old
-    if (major == 1 && minor < 1) return true; // 1.0.x is too old
-    if (major == 1 && minor == 0 && revision < 0) return true; // 1.0.0 is the minimum
-    return false;
+
+    // Guard against negative or nonsensical parsed values
+    if (major < 0 || minor < 0 || revision < 0) return true;
+
+    // Lexicographic comparison: returns true if parsed version < minimum
+    return std::tie(major, minor, revision) < std::tie(MIN_MAJOR, MIN_MINOR, MIN_REV);
 }
 
 // Internal stuff
