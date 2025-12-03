@@ -136,14 +136,14 @@ public:
                 ? static_cast<int>(delta / consensus.nPowTargetSpacing)
                 : 0;
        
-        consensus.lwmaHWCA = height + 30;
-        consensus.nBlockTimeDivisor = 10; // min allowed BT
+        consensus.lwmaHWCA = height + 5;
+        consensus.nBlockTimeDivisor = 9; // min allowed BT
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
         consensus.nNearBoundaryExtraBlocks = 1;
         consensus.nBurstWindowSeconds = 60;
         consensus.nBurstFactorTenths = 1;
-        consensus.lwmaAveragingWindow = 180;
+        consensus.lwmaAveragingWindow = 60;
         consensus.lwmaHeight = 1;
 
         // Mainnet activation hardfork diff adjustments   
@@ -439,7 +439,7 @@ public:
         // Dual-algo consensus
 		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
-        consensus.lwmaAveragingWindow = 180;
+        consensus.lwmaAveragingWindow = 60;
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.lwma1Timestamp = 2147483647;
