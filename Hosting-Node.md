@@ -100,10 +100,13 @@ soteria-cli stop
 ## 6. 🔒 Security Hardening
 ### Firewall (UFW)
 ```bash
+sudo apt install ufw 
 sudo ufw allow 22/tcp    # SSH
 sudo ufw allow 8323/tcp  # Soteria P2P
 sudo ufw allow 7896/tcp  # Soteria RPC
+sudo ufw allow 443 # optional only in case you wanted to use tls
 sudo ufw enable
+sudo ufw status // To check status
 ```
 
 ### SSH Security
@@ -140,7 +143,8 @@ soteria-cli getpeerinfo
 
 ## 8. 🛡️ Maintenance
 - Backup `wallet.dat` if using wallet functionality.  
-- Monitor logs (`~/.soteria/debug.log`).  
+- Monitor logs (`~/.soteria/debug.log`).
+- Check logs (tail -f ~/.soteria/debug.log).
 - Restart node after system updates.  
 - Run under a non‑root user for extra safety.
 
@@ -159,7 +163,7 @@ Description=Soteria Full Node
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/soteriad -daemon -conf=/home/YOURUSER/.soteria/soteria.conf -datadir=/home/YOURUSER/.soteria
+ExecStart=/usr/local/bin/soteriad -conf=/home/YOURUSER/.soteria/soteria.conf -datadir=/home/YOURUSER/.soteria
 ExecStop=/usr/local/bin/soteria-cli stop
 Restart=always
 RestartSec=10
