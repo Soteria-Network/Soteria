@@ -229,24 +229,33 @@ Test manually without systemd. Run the same command systemd is using:
 
 If it fails, you’ll see the error directly in your shell.
 
+
 ✅ How to locate the actual binary
 
 Run one of these to find where the daemon lives:
+
 ps -ef | grep soteriad
 
 This will show the full path of the running process.
+
 Or:
+
 which soteriad
+
 If it’s in your $PATH, this will print the location.
 
 Or a broader search:
+
 find / -type f -name soteriad 2>/dev/null
+
 That will crawl the filesystem and show you the binary’s location.
 
 ⚙️ Fixing the unit file
 
 Once you know the real path (say it’s /usr/bin/soteriad or /home/root/soteriad or another path), update your unit file:
+
 ExecStart=/path/to/soteriad -conf=/home/root/.soteria/soteria.conf -datadir=/home/root/.soteria
+
 ExecStop=/path/to/soteria-cli stop
 
 Making Binaries Accessible System‑Wide
@@ -254,7 +263,9 @@ Making Binaries Accessible System‑Wide
 When you download binaries, they often land in your current working directory (for example, /root/ after extraction). To avoid having to cd into that folder every time, you can place them in a standard system path like /usr/local/bin. This ensures they’re available globally and can be called from anywhere.
 
 Run:
+
 sudo cp soteriad /usr/local/bin/
+
 sudo cp soteria-cli /usr/local/bin/
 
 After this step, you can launch the node or use the CLI from any directory:
