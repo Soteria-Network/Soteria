@@ -203,7 +203,7 @@ Monitoring: use systemctl status soteriad or journalctl to watch for warnings li
 
 🎯 Troubleshooting
 
-Your unit file failed because:
+Unit file failed because:
 
     Wrong path (/home/username/... instead of /username/...).
 
@@ -223,7 +223,7 @@ Look for errors like “invalid argument,” “cannot open database,” “conf
 
 Verify config file path Your unit file points to.
 
-Test manually without systemd Run the same command systemd is using:
+Test manually without systemd. Run the same command systemd is using:
 /username/soteriad -conf=/username/.soteria/soteria.conf -datadir=/username/.soteria
 If it fails, you’ll see the error directly in your shell.
 
