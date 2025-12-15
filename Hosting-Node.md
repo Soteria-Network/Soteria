@@ -48,6 +48,8 @@ nano ~/.soteria/soteria.conf
 server=1
 daemon=1
 listen=1
+shrinkdebugfile=1
+deprecatedrpc=accounts 
 
 # --- RPC Settings ---
 rpcuser=yourStrongUser
