@@ -1373,8 +1373,8 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensusParams)
 {
-   CAmount nSubsidy = 80 * COIN / 1000; // Default subsidy (overridden by phase rules)
-
+   CAmount nSubsidy = 60 * COIN / 1000; // Default subsidy (overridden by phase rules)
+  // TODO: Next release subsidy -1% every 300K|600K until the supply is over
   if (nHeight < 3000000)
     { 
         nSubsidy = 80 * COIN / 1000;
