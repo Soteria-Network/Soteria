@@ -15,13 +15,14 @@ The network prioritizes usability, automation, and low fees to make asset mintin
 simple, affordable, and secure. The network's economy runs on SOTER, our native coin that can be
 mined on a dual algorithm setup using either GPUs or CPUs.
 
-For detailed information, visit **Website:** [soteria-network.site] https://soteria-network.site
+For detailed information, visit **Website:** [soteria-network.online] https://soteria-network.online
 
 Key Features & Advantages
 Ultra-High Performance
 
-    Block reward is 0.14 coin/block with max daily emission equal 1000 coins.
-    Lightning-fast 12s block confirmations and buffer cap 10s.
+    Block reward is 0.08 coin/block with max daily emission equal 1000 coins.
+    Lightning-fast 12‑second block confirmations with a 10‑second buffer cap.
+    Planned hardfork to 9‑second block confirmations with a 6‑second buffer cap.
     Industry-leading 1000+ TPS capacity.
     Smart contract supports using Lua VM integrated.
     3 MB blocks for maximum throughput.
