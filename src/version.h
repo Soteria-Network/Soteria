@@ -11,7 +11,7 @@
  * network protocol versioning
  */
 
-static constexpr int PROTOCOL_VERSION = 70054;
+static constexpr int PROTOCOL_VERSION = 70056;
 
 //! initial proto version, to be increased after version/verack negotiation
 static constexpr int INIT_PROTO_VERSION = 209;
