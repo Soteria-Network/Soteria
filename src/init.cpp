@@ -692,7 +692,10 @@ std::string HelpMessage(HelpMessageMode mode)
     }
     // Allow switching of default pow algo via conf / command line, for miners that can't easily adjust their getblocktemplate calls
     strUsage += HelpMessageOpt("-powalgo=soterg|soterc", strprintf(_("Default pow mining algorithm. Miners who can't easily adjust their getblocktemplate calls should use this argument to set their preferred mining algorithm. (default: %s)"), DEFAULT_POW_TYPE));
-    // Smartplan: Show how to enable smartcontracts
+    strUsage += HelpMessageOpt("-powhashcache=<n>", _("Size of the PoW cache in megabytes (default: built-in default)"));
+    if (showDebug)
+        strUsage += HelpMessageOpt("-powcachevalidate", _("Enable/disable PoW cache validation (default: disabled)"));
+    // Show how to enable smartcontracts
     strUsage += HelpMessageOpt("-smartcontracts", strprintf(_("Enable Soteria Smartcontracts for use via JSON-RPC")));
     return strUsage;
 }
