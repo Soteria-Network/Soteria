@@ -138,10 +138,10 @@ static const int MAX_URI_LENGTH = 255;
 #define QAPP_APP_NAME_REGTEST "Soteria-Qt-regtest"
 
 /* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.site/tx/?txid=%s|https://blockexplorer.soteria-network.site/tx/%s"
-//#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer-eu.soteria-network.site/tx/%s|https://explorer-us.soteria-network.site/tx/%s"
+#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.online/tx/?txid=%s|https://explorer.soteria-network.online/tx/%s"
+//#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.site/tx/%s|https://explorer.soteria-network.site/tx/%s"
 /* Default IPFS viewer */
-#define DEFAULT_IPFS_VIEWER "https://ipfs.io/ipfs/%s"
+#define DEFAULT_IPFS_VIEWER "https://ipfs.soteria-network/ipfs/%s"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1000000000};
