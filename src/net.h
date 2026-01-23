@@ -95,7 +95,7 @@ static constexpr bool DEFAULT_FORCEDNSSEED = false;
 static constexpr size_t DEFAULT_MAXRECEIVEBUFFER = 500 * 1000;
 static constexpr size_t DEFAULT_MAXSENDBUFFER    = 100 * 1000;
 // NOTE: When adjusting this, update rpcnet:setban's help ("24h")
-static constexpr unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 60 * 24;
+static constexpr unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 60 * 72;
 typedef int64_t NodeId;
 struct AddedNodeInfo
 {
