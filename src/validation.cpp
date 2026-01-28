@@ -1373,71 +1373,80 @@ bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensusParams)
 {
-   CAmount nSubsidy = 60 * COIN / 1000; // Default subsidy (overridden by phase rules)
-  // TODO: Next release subsidy -1% every 300K|600K until the supply is over
-  if (nHeight < 3000000)
+  
+   CAmount nSubsidy = COIN; // Default subsidy (overridden by phase rules)
+
+    if (nHeight < 180000)
     { 
         nSubsidy = 80 * COIN / 1000;
     }
     else if (nHeight < 6000000)
     {
-        nSubsidy = 75 * COIN / 1000;
+        nSubsidy = 60 * COIN / 1000;
     }
     else if (nHeight < 9000000)
     {
-        nSubsidy = 70 * COIN / 1000;
+        nSubsidy = 55 * COIN / 1000;
     }
     else if (nHeight < 12000000)
     {
-        nSubsidy = 65 * COIN / 1000;
+        nSubsidy = 50 * COIN / 1000;
     }
     else if (nHeight < 15000000) 
     {
-        nSubsidy = 60 * COIN / 1000;
+        nSubsidy = 45 * COIN / 1000;
     }
     else if (nHeight < 18000000)
     {
-        nSubsidy = 55 * COIN / 1000;
+        nSubsidy = 40 * COIN / 1000;
     }
     else if (nHeight < 21000000)
     {
-        nSubsidy = 50 * COIN / 1000;
+        nSubsidy = 35 * COIN / 1000;
     }
     else if (nHeight < 24000000)
     {
-        nSubsidy = 45 * COIN / 1000;
+        nSubsidy = 30 * COIN / 1000;
     }
     else if (nHeight < 27000000)
     {
-        nSubsidy = 40 * COIN / 1000;
+        nSubsidy = 25 * COIN / 1000;
     }
     else if (nHeight < 30000000)
     {
-        nSubsidy = 35 * COIN / 1000;
+        nSubsidy = 20 * COIN / 1000;
     }
     else if (nHeight < 33000000)
     {
-        nSubsidy = 30 * COIN / 1000; 
+        nSubsidy = 15 * COIN / 1000; 
     }
     else if (nHeight < 36000000)
     {
-        nSubsidy = 25 * COIN / 1000; 
+        nSubsidy = 10 * COIN / 1000; 
     }
     else if (nHeight < 39000000)
     {
-        nSubsidy = 20 * COIN / 1000; 
+        nSubsidy = 5 * COIN / 1000; 
     }
     else if (nHeight < 42000000)
     {
-        nSubsidy = 15 * COIN / 1000; 
-    }
+        nSubsidy = 4 * COIN / 1000; 
+    } 
     else if (nHeight < 45000000)
     {
-        nSubsidy = 10 * COIN / 1000; 
+        nSubsidy = 3 * COIN / 1000; 
     }
+    else if (nHeight < 48000000)
+    {
+        nSubsidy = 2 * COIN / 1000; 
+    }
+    else if (nHeight < 51000000)
+    {
+        nSubsidy = 1 * COIN / 1000; 
+    }                 
     else
     {
-        nSubsidy = 5 * COIN / 1000; // Forever 13000 coins/yr
+        nSubsidy = 5 * COIN / 10000; 
     }
 
     return nSubsidy;
