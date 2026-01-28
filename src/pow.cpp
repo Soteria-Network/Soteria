@@ -639,8 +639,8 @@ unsigned int GetNextWorkRequiredLWMA7(
     arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
 
     // ===== Per-block ratio clamp =====
-    arith_uint256 downBound = (lastTarget * 70) / 100;   // −30%
-    arith_uint256 upBound   = (lastTarget * 135) / 100;  // +35%
+    arith_uint256 downBound = (lastTarget * 60) / 100;   // −40%
+    arith_uint256 upBound   = (lastTarget * 150) / 100;  // +50%
 
     if (nextTarget < downBound) nextTarget = downBound;
     if (nextTarget > upBound)   nextTarget = upBound;
