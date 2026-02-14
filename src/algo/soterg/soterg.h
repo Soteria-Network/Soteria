@@ -36,7 +36,7 @@ class CBlockHeader;
 
 inline int GetHashSelection(const uint256& PrevBlockHash, int index) {
     assert(index >= 0 && index < 12); // Preserve bounds check
-    constexpr int START = 48;
+    constexpr int START = 52;
     constexpr int MASK  = 0xF;
     int pos = START + (index & MASK);
     
