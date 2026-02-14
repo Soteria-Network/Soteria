@@ -109,8 +109,8 @@ public:
         consensus.nSegwitEnabled = true;
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        // 4492800/446568=10 this is more accurate, so will use 10s hardcoded as POW avg in the next release, there is no increase in orphan rates with it.
-		consensus.nPowTargetSpacing = 12; 
+        // 4492800/446568=10 this is more accurate, so will use 11s hardcoded as POW avg in the next release, there is no increase in orphan rates with it.
+		consensus.nPowTargetSpacing = 11; 
         consensus.nPowTargetTimespan = 2160; // 180 blocks
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -138,7 +138,7 @@ public:
                 : 0;
        
         consensus.lwmaHWCA = height + 5;
-        consensus.nBlockTimeDivisor = 9; // min allowed BT
+        consensus.nBlockTimeDivisor = 6; // min allowed BT
         consensus.nOutboundCycleSeconds = 24 * 60 * 60;
         consensus.nEndCycleMarginPct = 25;
         consensus.nNearBoundaryExtraBlocks = 1;
@@ -291,7 +291,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 2160; // 180 blocks 
-        consensus.nPowTargetSpacing = 12;
+        consensus.nPowTargetSpacing = 11;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 135;
@@ -419,7 +419,7 @@ public:
         consensus.nSubsidyHalvingInterval = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 1080; // nMinerConfirmationWindow * nPowTargetSpacing = 90 * 12 = 1080
-        consensus.nPowTargetSpacing = 12;
+        consensus.nPowTargetSpacing = 11;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 65; 
