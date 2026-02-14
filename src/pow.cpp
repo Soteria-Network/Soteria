@@ -441,7 +441,7 @@ unsigned int GetNextWorkRequiredLWMA6(
     const POW_TYPE powType)
 {
     // ===== Parameters =====
-    const int64_t T = 12;             // target block time (seconds)
+    const int64_t T = 11;             // target block time (seconds)
     const int64_t N = 60;             // LWMA window
 
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
@@ -528,14 +528,14 @@ unsigned int GetNextWorkRequiredLWMA6(
     arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
     // ===== Per-block ratio clamp =====
     // Aggressive correction to escape fast/slow bursts
-    arith_uint256 downBound = (lastTarget * 60) / 100;   // −40%
-    arith_uint256 upBound   = (lastTarget * 150) / 100;  // +50%
+    arith_uint256 downBound = (lastTarget * 69) / 100;   // −31%
+    arith_uint256 upBound   = (lastTarget * 137) / 100;  // +37%
 
     if (nextTarget < downBound) nextTarget = downBound;
     if (nextTarget > upBound)   nextTarget = upBound;
 
     // ===== EWMA smoothing (future test 2/3 weighting, 3/4) =====
-    constexpr uint64_t EWMA_NUM = 2, EWMA_DEN = 3;  // was 1:2
+    constexpr uint64_t EWMA_NUM = 3, EWMA_DEN = 5;  // old 50, new 60
     arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
 
     // Final safety clamps
@@ -552,7 +552,7 @@ unsigned int GetNextWorkRequiredLWMA7(
     const POW_TYPE powType)
 {
     // ===== Parameters =====
-    const int64_t T = 12;             // target block time (seconds)
+    const int64_t T = 10;             // target block time (seconds)
     const int64_t N = 60;             // LWMA window
 
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
@@ -639,14 +639,14 @@ unsigned int GetNextWorkRequiredLWMA7(
     arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
 
     // ===== Per-block ratio clamp =====
-    arith_uint256 downBound = (lastTarget * 60) / 100;   // −40%
-    arith_uint256 upBound   = (lastTarget * 150) / 100;  // +50%
+    arith_uint256 downBound = (lastTarget * 69) / 100;   // −31%
+    arith_uint256 upBound   = (lastTarget * 137) / 100;  // +37%
 
     if (nextTarget < downBound) nextTarget = downBound;
     if (nextTarget > upBound)   nextTarget = upBound;
 
-    // ===== EWMA smoothing (future test 2/3 weighting, 3/4) =====
-    constexpr uint64_t EWMA_NUM = 3, EWMA_DEN = 4;
+    // ===== EWMA smoothing (1/2 sluggish react, future test 2/3 weighting, 3/4) =====
+    constexpr uint64_t EWMA_NUM = 3, EWMA_DEN = 5;
     arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
 
     // Final safety clamps
