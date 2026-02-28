@@ -6,7 +6,9 @@ Current: MAX_FUTURE_BLOCK_TIME = 2 hours (src/chain.h:24)
 Problem: A 2-hour future drift is too permissive. A single miner with a bad clock dominates timestamp behavior.
 
 Recommended: Reduce to 2-5 minutes:
-2  minutes motherfuckers // only 120s
+
+2 minutes motherfuckers // only 120s
+
 static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 5 * 60;  // 5 minutes
 
 Impact: Eliminates ~80% of timestamp "glitch" reports.
