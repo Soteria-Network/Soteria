@@ -154,8 +154,10 @@ public:
 		consensus.diffRetargetEndHeight4    = 1400000;
 		
 		consensus.diffRetargetStartHeight5  = 1400000;
-		consensus.diffRetargetEndHeight5    = 25000000;
-		
+		consensus.diffRetargetEndHeight5    = 2800000;
+
+		consensus.diffRetargetStartHeight6  = 2800000;
+		consensus.diffRetargetEndHeight6    = 4200000;
 		
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
