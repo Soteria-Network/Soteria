@@ -7,9 +7,9 @@ Problem: A 2-hour future drift is too permissive. A single miner with a bad cloc
 
 Recommended: Reduce to 2-5 minutes:
 
-2 minutes motherfuckers // only 120s
+only 120s for small chains
 
-static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 5 * 60;  // 5 minutes
+static constexpr int64_t MAX_FUTURE_BLOCK_TIME = 5 * 60;
 
 Impact: Eliminates ~80% of timestamp "glitch" reports.
 
