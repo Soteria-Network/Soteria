@@ -13,8 +13,19 @@
 #include <stdint.h>
 #include <vector>
 #include "chain.h"
-Maximum allowed deviation – 180 s is 25 % of the whole window 60blocks*12s=720s, 60*11=660*25%=165, 60*10=600*25%=150
+
+/* Maximum allowed deviation – 180 s is 25 % of the whole window 60blocks*12s=720s, 60*11=660*25%=165, 60*10=600*25%=150 */
 static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 165; // increase security 
+/* Formula
+
+MaxAdjustment=α×(RetargetInterval×TargetBlockTime)
+
+where
+
+    α ≈ 0.25 (25 %)
+    RetargetInterval = number of blocks between difficulty updates (here 60)
+    TargetBlockTime = desired average time per block (seconds)
+*/
 
 class CNetAddr;
 
