@@ -13,8 +13,8 @@
 #include <stdint.h>
 #include <vector>
 #include "chain.h"
-
-static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 180; // increase security 
+Maximum allowed deviation – 180 s is 25 % of the whole window 60blocks*12s=720s, 60*11=660*25%=165, 60*10=600*25%=150
+static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 165; // increase security 
 
 class CNetAddr;
 
