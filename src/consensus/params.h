@@ -136,7 +136,8 @@ struct ConsensusParams {
     int64_t diffRetargetEndHeight4;   
     int64_t diffRetargetStartHeight5; 
     int64_t diffRetargetEndHeight5;   
-  
+    int64_t diffRetargetStartHeight6; 
+    int64_t diffRetargetEndHeight6;
 
     int64_t lwmaAveragingWindow;        // Averaging window size for LWMA-EMA3 diff adjust
     std::vector<uint256> powTypeLimits; // Limits for each pow type (with future-proofing space; can't pick up NUM_BLOCK_TYPES here)
