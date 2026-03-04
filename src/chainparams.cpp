@@ -161,7 +161,7 @@ public:
 		
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-
+        // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
         consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000"); 
