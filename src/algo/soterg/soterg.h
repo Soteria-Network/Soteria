@@ -381,24 +381,28 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
         int hashSelection = GetHashSelection(PrevBlockHash, i);
 
         switch (hashSelection) {
-        case 0:
+        case 0:{
                 sph_blake512_context ctx;
                 sph_blake512_init(&ctx);
                 sph_blake512(&ctx, toHash, lenToHash);
                 sph_blake512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 1:
+        }
+        case 1:{
                 sph_whirlpool_context ctx;
                 sph_whirlpool_init(&ctx);
                 sph_whirlpool(&ctx, toHash, lenToHash);
                 sph_whirlpool_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 2:
+        }
+        case 2:{
                 sph_jh512_context ctx;
                 sph_jh512_init(&ctx);
                 sph_jh512(&ctx, toHash, lenToHash);
                 sph_jh512_close(&ctx, static_cast<void*>(hash[i].begin()));
-        case 3:
+            break;
+        }
+        case 3:{
                 sph_tiger_context ctx;
                 sph_tiger_init(&ctx);
                 sph_tiger(&ctx, toHash, lenToHash);
@@ -409,13 +413,15 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
                 sph_keccak512(&ctx, toHash, lenToHash);
                 sph_keccak512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 4:
+        }
+        case 4:{
                 sph_skein512_context ctx;
                 sph_skein512_init(&ctx);
                 sph_skein512(&ctx, toHash, lenToHash);
                 sph_skein512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 5:
+        }
+        case 5:{
                 sph_tiger_context ctx;
                 sph_tiger_init(&ctx);
                 sph_tiger(&ctx, toHash, lenToHash);
@@ -426,37 +432,43 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
                 sph_luffa512(&ctx, toHash, lenToHash);
                 sph_luffa512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 6:
+        }
+        case 6:{
                 sph_cubehash512_context ctx;
                 sph_cubehash512_init(&ctx);
                 sph_cubehash512(&ctx, toHash, lenToHash);
                 sph_cubehash512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 7:
+        }
+        case 7:{
                 sph_shavite512_context ctx;
                 sph_shavite512_init(&ctx);
                 sph_shavite512(&ctx, toHash, lenToHash);
                 sph_shavite512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 8:
+        }
+        case 8:{
                 sph_simd512_context ctx;
                 sph_simd512_init(&ctx);
                 sph_simd512(&ctx, toHash, lenToHash);
                 sph_simd512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 9:
+        }
+        case 9:{
                 sph_echo512_context ctx;
                 sph_echo512_init(&ctx);
                 sph_echo512(&ctx, toHash, lenToHash);
                 sph_echo512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-        case 10:
+        }
+        case 10:{
                 sph_sha512_context ctx;
                 sph_sha512_init(&ctx);
                 sph_sha512(&ctx, toHash, lenToHash);
                 sph_sha512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
-         case 11:
+        }
+         case 11:{
                 sph_shabal512_context ctx;
                 sph_shabal512_init(&ctx);
                 sph_shabal512(&ctx, toHash, lenToHash);
@@ -465,7 +477,132 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
         }
     }
  }
-    return hash[15].trim256();
+    return hash[11].trim256();
+}
+// SoterG-lite v1
+template<typename T1>
+inline uint256 HashXSGL(const T1 pbegin, const T1 pend, const uint256 PrevBlockHash)
+{
+    static unsigned char pblank[1];
+    uint512 hash[4];
+
+    for (int i = 0; i < 4; i++)
+    {
+        const void *toHash;
+        int lenToHash;
+
+        if (i == 0) {
+            toHash = (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0]));
+            lenToHash = (pend - pbegin) * sizeof(pbegin[0]);
+        } else {
+            toHash = static_cast<const void*>(hash[i-1].begin()); // For input
+            lenToHash = 64;
+        }
+
+        int hashSelection = GetHashSelection(PrevBlockHash, i);
+
+        switch (hashSelection) {
+        case 0:{
+                sph_blake512_context ctx;
+                sph_blake512_init(&ctx);
+                sph_blake512(&ctx, toHash, lenToHash);
+                sph_blake512_close(&ctx, static_cast<void*>(hash[i].begin()));
+            break;
+        }
+        case 1:{
+                sph_skein512_context ctx;
+                sph_skein512_init(&ctx);
+                sph_skein512(&ctx, toHash, lenToHash);
+                sph_skein512_close(&ctx, static_cast<void*>(hash[i].begin()));
+            break;
+        }
+        case 2:{
+                sph_bmw512_context ctx;
+                sph_bmw512_init(&ctx);
+                sph_bmw512(&ctx, toHash, lenToHash);
+                sph_bmw512_close(&ctx, static_cast<void*>(hash[i].begin()));
+            break;
+        }
+        case 3:{
+                sph_sha512_context ctx;
+                sph_sha512_init(&ctx);
+                sph_sha512(&ctx, toHash, lenToHash);
+                sph_sha512_close(&ctx, static_cast<void*>(hash[i].begin()));
+            break;
+        }
+    }
+ }
+    return hash[3].trim256();
 }
 
+// SoterG-lite v2
+template<typename T1>
+inline uint256 HashXSGLV2(const T1 pbegin, const T1 pend, const uint256 PrevBlockHash)
+{
+    static unsigned char pblank[1];
+    uint512 hash[6];
+
+    for (int i = 0; i < 6; i++)
+    {
+        const void *toHash;
+        int lenToHash;
+
+        if (i == 0) {
+            toHash = (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0]));
+            lenToHash = (pend - pbegin) * sizeof(pbegin[0]);
+        } else {
+            toHash = static_cast<const void*>(hash[i-1].begin()); // For input
+            lenToHash = 64;
+        }
+
+        int hashSelection = GetHashSelection(PrevBlockHash, i);
+
+        switch (hashSelection) {
+            case 0: {
+                sph_blake512_context ctx;
+                sph_blake512_init(&ctx);
+                sph_blake512(&ctx, toHash, lenToHash);
+                sph_blake512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 1: {
+                sph_shabal512_context ctx;
+                sph_shabal512_init(&ctx);
+                sph_shabal512(&ctx, toHash, lenToHash);
+                sph_shabal512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 2: {
+                sph_keccak512_context ctx;
+                sph_keccak512_init(&ctx);
+                sph_keccak512(&ctx, toHash, lenToHash);
+                sph_keccak512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 3: {
+                sph_skein512_context ctx;
+                sph_skein512_init(&ctx);
+                sph_skein512(&ctx, toHash, lenToHash);
+                sph_skein512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 4: {
+                sph_bmw512_context ctx;
+                sph_bmw512_init(&ctx);
+                sph_bmw512(&ctx, toHash, lenToHash);
+                sph_bmw512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 5: {
+                sph_sha512_context ctx;
+                sph_sha512_init(&ctx);
+                sph_sha512(&ctx, toHash, lenToHash);
+                sph_sha512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+        }
+    }
+    return hash[5].trim256();
+}
+// V3 COMBINED
 #endif // SOTER_HASHALGOS_H
