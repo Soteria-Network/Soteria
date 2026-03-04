@@ -451,10 +451,10 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
                 sph_echo512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
         case 10:
-                sph_hamsi512_context ctx;
-                sph_hamsi512_init(&ctx);
-                sph_hamsi512(&ctx, toHash, lenToHash);
-                sph_hamsi512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_sha512_context ctx;
+                sph_sha512_init(&ctx);
+                sph_sha512(&ctx, toHash, lenToHash);
+                sph_sha512_close(&ctx, static_cast<void*>(hash[i].begin()));
             break;
          case 11:
                 sph_shabal512_context ctx;
