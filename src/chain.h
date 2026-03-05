@@ -23,6 +23,7 @@
  * current network-adjusted time before the block will be accepted.
  */
 // increase more security against timestamp manipulation
+/* This needs to be revisited in the next releases, depending either on real-time BT monitoring (recommended) or avg hardcoded BT (default): avg BT  * 3t (used hardcoded t), max BT * 3t (uses accumulated max real-time t). 12*3=36, 25*3=75, hardforks 10*3=30, 20*3=60*/
 static const int64_t MAX_FUTURE_BLOCK_TIME = 60; 
 static const int64_t MAX_FUTURE_BLOCK_TIME_DGW = 60;
 static const int64_t MAX_FUTURE_BLOCK_TIME_DALGO = 60;
