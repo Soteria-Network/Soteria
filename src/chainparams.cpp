@@ -110,7 +110,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // 4492800/446568=10 this is more accurate, so will use 11s hardcoded as POW avg in the next release, there is no increase in orphan rates with it.
-		consensus.nPowTargetSpacing = 11; 
+		consensus.nPowTargetSpacing = 12; 
         consensus.nPowTargetTimespan = 2160; // 180 blocks
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
@@ -181,7 +181,7 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
 
         // Main seeders
-        vSeeds.emplace_back("seed1.soteria-network.site", false);
+        vSeeds.emplace_back("seed1.soteria-network.online", false);
         vSeeds.emplace_back("soterianode.vpnopg.ru", false);
         vSeeds.emplace_back("soter.rplant.xyz", false);
 		
@@ -293,7 +293,7 @@ public:
         consensus.nCSVEnabled = true;
         consensus.powLimit = uint256S("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"); 
         consensus.nPowTargetTimespan = 2160; // 180 blocks 
-        consensus.nPowTargetSpacing = 11;
+        consensus.nPowTargetSpacing = 12;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
         consensus.nRuleChangeActivationThreshold = 135;
@@ -421,7 +421,7 @@ public:
         consensus.nSubsidyHalvingInterval = 0;
         consensus.powLimit = uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         consensus.nPowTargetTimespan = 1080; // nMinerConfirmationWindow * nPowTargetSpacing = 90 * 12 = 1080
-        consensus.nPowTargetSpacing = 11;
+        consensus.nPowTargetSpacing = 12;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 65; 
