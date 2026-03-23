@@ -11,6 +11,9 @@
 #include "sph_jh.h"
 #include "sph_keccak.h"
 #include "sph_skein.h"
+#include "sph_bwm.h"
+#include "sph_shavite.h"
+#include "sph_tiger.h"
 #include "sph_cubehash.h"
 #include "sph_simd.h"
 #include "sph_echo.h"
@@ -36,7 +39,7 @@ class CBlockHeader;
 
 inline int GetHashSelection(const uint256& PrevBlockHash, int index) {
     assert(index >= 0 && index < 12); // Preserve bounds check
-    constexpr int START = 52;
+    constexpr int START = 48; // use 52 after hardfork
     constexpr int MASK  = 0xF;
     int pos = START + (index & MASK);
     
