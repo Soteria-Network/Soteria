@@ -163,16 +163,23 @@ bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader *
 }
 
 unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params, const POW_TYPE powType)
-{
-    // Stage-based activation by height
-    if (!pindexLast || pindexLast->nHeight >= params.diffRetargetStartHeight3 && pindexLast->nHeight < params.diffRetargetEndHeight3)
-        return GetNextWorkRequiredLWMA4(pindexLast, pblock, params, powType);
-    else if (!pindexLast || pindexLast->nHeight >= params.diffRetargetStartHeight4 && pindexLast->nHeight < params.diffRetargetEndHeight4)
-        return GetNextWorkRequiredLWMA5(pindexLast, pblock, params, powType);
-    else if (!pindexLast || pindexLast->nHeight >= params.diffRetargetStartHeight5 && pindexLast->nHeight < params.diffRetargetEndHeight5)
-        return GetNextWorkRequiredLWMA6(pindexLast, pblock, params, powType);
-   else if (!pindexLast || pindexLast->nHeight >= params.diffRetargetStartHeight6 && pindexLast->nHeight < params.diffRetargetEndHeight6)
-        return GetNextWorkRequiredLWMA7(pindexLast, pblock, params, powType);    
+{    
+    // handle null prior index up-front and choose LWMA5 as the default, since it is first phase after bootstrap    
+    if (!pindexLast)        
+		return GetNextWorkRequiredLWMA5(pindexLast, pblock, params, powType);
+
+   // Stage-based activation by height
+   if ((pindexLast->nHeight >= params.diffRetargetStartHeight3) && (pindexLast->nHeight < params.diffRetargetEndHeight3))
+	   return GetNextWorkRequiredLWMA4(pindexLast, pblock, params, powType);    
+   else if ((pindexLast->nHeight >= params.diffRetargetStartHeight4) && (pindexLast->nHeight < params.diffRetargetEndHeight4))        
+	   return GetNextWorkRequiredLWMA5(pindexLast, pblock, params, powType);    
+   else if ((pindexLast->nHeight >= params.diffRetargetStartHeight5) && (pindexLast->nHeight < params.diffRetargetEndHeight5))        
+	   return GetNextWorkRequiredLWMA6(pindexLast, pblock, params, powType);    
+   else if ((pindexLast->nHeight >= params.diffRetargetStartHeight6) && (pindexLast->nHeight < params.diffRetargetEndHeight6))        
+	   return GetNextWorkRequiredLWMA7(pindexLast, pblock, params, powType);
+
+    // default fallback if no stage matched    
+    return GetNextWorkRequiredLWMA5(pindexLast, pblock, params, powType);
 }
 
 //  Height3
