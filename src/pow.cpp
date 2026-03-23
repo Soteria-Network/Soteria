@@ -448,7 +448,7 @@ unsigned int GetNextWorkRequiredLWMA6(
     const POW_TYPE powType)
 {
     // ===== Parameters =====
-    const int64_t T = 11;             // target block time (seconds)
+    const int64_t T = 12;             // target block time (seconds)
     const int64_t N = 60;             // LWMA window
 
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
@@ -559,7 +559,7 @@ unsigned int GetNextWorkRequiredLWMA7(
     const POW_TYPE powType)
 {
     // ===== Parameters =====
-    const int64_t T = 10;             // target block time (seconds)
+    const int64_t T = 12;             // target block time (seconds)
     const int64_t N = 60;             // LWMA window
 
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
