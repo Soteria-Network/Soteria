@@ -406,15 +406,15 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
             break;
         }
         case 3:{
-                sph_tiger_context ctx;
-                sph_tiger_init(&ctx);
-                sph_tiger(&ctx, toHash, lenToHash);
-                sph_tiger_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_tiger_context ctx_tiger;
+                sph_tiger_init(&ctx_tiger);
+                sph_tiger(&ctx_tiger, toHash, lenToHash);
+                sph_tiger_close(&ctx_tiger, static_cast<void*>(hash[i].begin()));
 
-                sph_keccak512_context ctx;
-                sph_keccak512_init(&ctx);
-                sph_keccak512(&ctx, toHash, lenToHash);
-                sph_keccak512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_keccak512_context ctx_keccak;
+                sph_keccak512_init(&ctx_keccak);
+                sph_keccak512(&ctx_keccak, toHash, lenToHash);
+                sph_keccak512_close(&ctx_keccak, static_cast<void*>(hash[i].begin()));
             break;
         }
         case 4:{
@@ -425,15 +425,15 @@ inline uint256 HashX12RV3(const T1 pbegin, const T1 pend, const uint256 PrevBloc
             break;
         }
         case 5:{
-                sph_tiger_context ctx;
-                sph_tiger_init(&ctx);
-                sph_tiger(&ctx, toHash, lenToHash);
-                sph_tiger_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_tiger_context ctx_tiger;
+                sph_tiger_init(&ctx_tiger);
+                sph_tiger(&ctx_tiger, toHash, lenToHash);
+                sph_tiger_close(&ctx_tiger, static_cast<void*>(hash[i].begin()));
 
-                sph_luffa512_context ctx;
-                sph_luffa512_init(&ctx);
-                sph_luffa512(&ctx, toHash, lenToHash);
-                sph_luffa512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_luffa512_context ctx_luffa;
+                sph_luffa512_init(&ctx_luffa);
+                sph_luffa512(&ctx_luffa, toHash, lenToHash);
+                sph_luffa512_close(&ctx_luffa, static_cast<void*>(hash[i].begin()));
             break;
         }
         case 6:{
