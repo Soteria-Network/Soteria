@@ -43,7 +43,7 @@ Keep these files (do NOT delete):
 ---
 
 ## Extract bootstrap-date.zip
-1. After safely stopping the daemon, extract `bootstrap.zip` into the data directory.
+1. After safely stopping the daemon, extract `bootstrap-20260408.zip` into the data directory.
 2. Place the new `blocks` and `chainstate` in your Soteria data directory.
    - Do NOT overwrite `wallet.dat` as this will lead to lose all your balance forever.
 
@@ -71,7 +71,7 @@ cp ~/.soteria/wallet.dat ~/wallet-backups/wallet.dat.backup
 rm -rf ~/.soteria/blocks ~/.soteria/chainstate ~/.soteria/assets ~/.soteria/smartcontracts ~/.soteria/messages ~/.soteria/myrestricted ~/.soteria/rewards ~/.soteria/database
 rm -f ~/.soteria/*.lock ~/.soteria/db.log ~/.soteria/debug.log
 # Extract
-unzip /path/to/bootstrap-date.zip -d ~/.soteria
+unzip bootstrap-20260408.zip -d ~/.soteria
 # Permissions
 chown -R $USER:$USER ~/.soteria
 chmod -R 700 ~/.soteria
@@ -95,7 +95,7 @@ Remove-Item "$datadir\chainstate" -Recurse -Force
 Remove-Item "$datadir\assets","$datadir\messages","$datadir\rewards","$datadir\smartcontracts" -Recurse -Force
 Remove-Item "$datadir\*.lock","$datadir\db.log","$datadir\debug.log" -Force
 # Extract
-Expand-Archive -Path C:\path\to\bootstrap.zip -DestinationPath $datadir -Force
+Expand-Archive -Path C:\path\to\bootstrap-20260408.zip -DestinationPath $datadir -Force
 # Start
 Start-Process "C:\Path\To\Soteria\soteriad.exe"
 ```
@@ -113,7 +113,7 @@ cp "$DATADIR/wallet.dat" ~/wallet-backups/wallet.dat.backup
 rm -rf "$DATADIR/blocks" "$DATADIR/chainstate" "$DATADIR/assets" "$DATADIR/smartcontracts" "$DATADIR/messages" "$DATADIR/rewards" "$DATADIR/database"
 rm -f "$DATADIR"/*.lock "$DATADIR/db.log" "$DATADIR/debug.log"
 # Extract
-unzip /path/to/bootstrap.zip -d "$DATADIR"
+unzip bootstrap-20260408.zip -d "$DATADIR"
 # Start (use native arm64 binary on Apple Silicon when available)
 soteriad
 ```
