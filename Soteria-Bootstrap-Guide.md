@@ -2,12 +2,14 @@
 
 ##### Hint: This is a draft version which we will improve it with time with more detailed instructions
 
+##### A new bootstrap will be posted every 2 weeks to simplify and speed up the wallet synchronization process.
+
 Important: **always back up wallet.dat** to multiple secure locations before making any changes. Do NOT delete wallet.dat if it contains any balance you still use.
 
 ---
 
 ## Safe shutdown before modifying data
-- **Close the Qt wallet GUI** and wait until it fully exits.
+- **Close the Qt wallet GUI or soteriad in case you are using soteria-cli instead of QT** and wait until it fully exits.
 - **Preferred:** run `soteria-cli stop` (or `soteria-cli -datadir=<path> stop`) and wait for the daemon to exit — this cleanly flushes and closes databases.
 - If the CLI is unresponsive, only then use `pkill soteriad` (Linux/macOS) or stop the process in Task Manager / `Stop-Process -Name soteriad` (Windows).
 - Confirm shutdown before changing files: verify no soteriad process is running.
