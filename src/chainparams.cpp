@@ -164,8 +164,8 @@ public:
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
-        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000"); 
-        consensus.defaultAssumeValid = uint256S("0000001a6714182e55df603ab0232ce6c4b1bef6ef312e5fe40787f02c1477d5"); 
+        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); 
+        consensus.defaultAssumeValid = uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8"); 
 
         pchMessageStart[0] = 0x53; 
         pchMessageStart[1] = 0x4F; 
@@ -183,7 +183,7 @@ public:
         // Main seeders
         vSeeds.emplace_back("seed1.soteria-network.online", false);
         vSeeds.emplace_back("soterianode.vpnopg.ru", false);
-        vSeeds.emplace_back("soter.rplant.xyz", false);
+        vSeeds.emplace_back("soteria-demon.favoritcoin.ru", false);
 		
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,125);
@@ -202,16 +202,31 @@ public:
 
         checkpointData = (CCheckpointData) {
             {
-               { 0, uint256S("0000001a6714182e55df603ab0232ce6c4b1bef6ef312e5fe40787f02c1477d5")}
+                    { 0, uint256S("0000001a6714182e55df603ab0232ce6c4b1bef6ef312e5fe40787f02c1477d5")},
+                 { 1500, uint256S("000000014eee83c194a981a06029b29edf6819a6ea9ef183915a9620f886bddc")},
+                 { 3000, uint256S("00000001466d04b3d4fa2b695c4c832351a11843f4403074c388b8a6ed3f4855")},
+                { 10000, uint256S("0000000003edccc969ff837ace49d6c96a7db108577b83c781ac1800c61f0d74")},
+                { 50000, uint256S("0000000045fd082411d0215a9622aa1b61eeb0d8ffdb15bebd6bec39fc1d3ac0")},
+               { 100000, uint256S("0000000084100e675aaead560c121003b9bb80fab19449aecb2ad8df03cdfc9b")},
+               { 200000, uint256S("00000000242dbf57cc2e41dfd0f7b1e1f45a07718a9e4b1ac8a9aca2c1cb5e47")},
+               { 300000, uint256S("000000003417c28de0a82ffeb67ef9678db0dc550f121b1d1b66c513349fb64c")},
+               { 400000, uint256S("0000000003af57b6072c3b16e8395233dd112e77ec896acf9f30d77558ad8333")},
+               { 500000, uint256S("00000000663bb2d3bf97a629f7201eb8955b2c7b0677efdc75f01846fa24ae4c")},
+               { 600000, uint256S("000000000251290289a5327479b88ef1de7ce683911c4c736849786a09e1a7b7")},
+               { 700000, uint256S("000000009b078b9388331d295ddebd10f13c3c3f09cb018a2147ccccb41acf85")},
+               { 800000, uint256S("0000000108651e8d03279a7951e5e517bc97d2291e59458435ac2bd5b927525e")},
+               { 900000, uint256S("0000000210c67c684e425633bf9bbf6a1a94c675156680230cc9ab807e71697d")},
+              { 1000000, uint256S("00000000b7c5b7cfaa0bff5f2d5711cf3431f1e9658b43bda3be727d6e938f29")},
+              { 1050000, uint256S("00000000ba4f0c8cace65d8bde602c19ee67a6f2e83aa7de3c716de8db47b8ac")},
+              { 1100000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}
                 
             }
         };
 
         chainTxData = ChainTxData{
-            1759415967, // * UNIX timestamp of last known number of transactions
-            0,    // * total number of transactions between genesis and that timestamp
-                        //   (the tx=... number in the SetBestChain debug.log lines)
-            0.0        // * estimated number of transactions per second after that timestamp
+            1777648875, 
+            1131085,    
+            0.08139744759179966           
         };
 
       // Amounts & Addresses of the Tokenomics
