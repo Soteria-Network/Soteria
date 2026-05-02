@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #ifndef SOTERIA_WALLET_WALLET_H
 #define SOTERIA_WALLET_WALLET_H
@@ -56,15 +54,15 @@ static constexpr unsigned int DEFAULT_KEYPOOL_SIZE = 250;
 //! -paytxfee default// SOTER/kb, moderate value between 0.001 and 0.1, ISO 0.01/kb
 static constexpr CAmount DEFAULT_TRANSACTION_FEE = 0;
 /** -fallbackfee default=0, fallbackfee as a safety mechanism is needed, otherwise the fee estimation fails for transactions in case of blockchain congestion, "Fee estimation failed. Fallbackfee is disabled" error. */
-static constexpr CAmount DEFAULT_FALLBACK_FEE = 500000; // def=1025000 // def1=102500
+static constexpr CAmount DEFAULT_FALLBACK_FEE = 100000; 
 //! -m_discard_rate default
-static constexpr CAmount DEFAULT_DISCARD_FEE = 50000;
+static constexpr CAmount DEFAULT_DISCARD_FEE = 10000;
 //! -mintxfee default=1M
-static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 400000; // def=1000000
-//! minimum recommended increment for BIP 125 replacement txs, default=5000
-static constexpr CAmount WALLET_INCREMENTAL_RELAY_FEE = 5000;
-//! target minimum change amount, COIN / 100
-static constexpr CAmount MIN_CHANGE = CENT;
+static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 80000;
+//! minimum recommended increment for BIP 125 replacement txs
+static constexpr CAmount WALLET_INCREMENTAL_RELAY_FEE = 1000;
+//! target minimum change amount
+static constexpr CAmount MIN_CHANGE = CENT/5;
 //! final minimum change amount after paying for fees, MIN_CHANGE/10
 static constexpr CAmount MIN_FINAL_CHANGE = MIN_CHANGE/2;
 //! Default for -spendzeroconfchange, Prevent accidental double‐spends by waiting for at least 1 confirmation on change outputs.
