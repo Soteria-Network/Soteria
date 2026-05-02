@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #ifndef SOTER_VALIDATION_H
 #define SOTER_VALIDATION_H
@@ -71,11 +69,11 @@ static constexpr bool DEFAULT_WHITELISTRELAY = true;
 /** Default for -whitelistforcerelay. */
 static constexpr bool DEFAULT_WHITELISTFORCERELAY = true;
 /** Default for -minrelaytxfee, minimum relay fee for transactions*/
-static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 400000; // COIN / 10, 0.1 // def=1000000, 0.01
+static constexpr unsigned int DEFAULT_MIN_RELAY_TX_FEE = 80000;
 //! -maxtxfee default (hard cap per TX)
-static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 10 * COIN; // def=1000
+static constexpr CAmount DEFAULT_TRANSACTION_MAXFEE = 10 * COIN; 
 //! Discourage users to set fees higher than this amount (in soterios) per kB (soft-warn)
-static constexpr CAmount HIGH_TX_FEE_PER_KB = 0.01 * COIN; //  10 * COIN, def= 0.1 * COIN
+static constexpr CAmount HIGH_TX_FEE_PER_KB = 0.01 * COIN; 
 //! -maxtxfee will warn if called with a higher fee than this amount (in soterios)
 static constexpr CAmount HIGH_MAX_TX_FEE = 10 * HIGH_TX_FEE_PER_KB;
 /** Default for -limitancestorcount, max number of in-mempool ancestors */
@@ -106,24 +104,24 @@ static constexpr int MAX_SCRIPTCHECK_THREADS = 16;
 /** -par default (number of script-checking threads, 0 = auto) */
 static constexpr int DEFAULT_SCRIPTCHECK_THREADS = 0;
 /** Number of blocks that can be requested at any given time from a single peer. ~32×0.32s ≃ 10s */
-static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 256; // 16nR, 32oD, 128nD, 256nV. 32 in-smart = 32 × 4MB = 128MB RAM
+static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 256;
 /** Timeout in seconds during which a peer must stall block download progress before being disconnected. */
 /** A 2 second timeout is only 13 percent of a 15 second block interval. At 4 seconds it becomes 27 percent, giving peers more breathing room to finish sending large blocks before we drop them */
-static constexpr unsigned int BLOCK_STALLING_TIMEOUT = 4; /** 4R increase with no.peers to avoid false positives and give a litle more headroom than def=2 for slow peers */
+static constexpr unsigned int BLOCK_STALLING_TIMEOUT = 4; 
 /** Number of headers sent in one getheaders result. We rely on the assumption that if a peer sends
  *  less than this number, we reached its tip. Changing this value is a protocol upgrade. messages (~ 160 bytes × 2000 ≃ 320 KiB)*/
-static constexpr unsigned int MAX_HEADERS_RESULTS = 10000; /** default=2000, 10000 oD 80 KiB under ~1 MiB, 20000 experimental, 20K above ~1.5MiB so we should consider it carefully because it increases DOS */
+static constexpr unsigned int MAX_HEADERS_RESULTS = 10000;
 /** Maximum depth of blocks we're willing to serve as compact blocks to peers
  *  when requested. For older blocks, a regular BLOCK response will be sent. def=5 */
 static constexpr int MAX_CMPCTBLOCK_DEPTH = 64;
-/** Maximum depth of blocks we're willing to respond to GETBLOCKTXN requests for. def =10*/
+/** Maximum depth of blocks we're willing to respond to GETBLOCKTXN requests for*/
 static constexpr int MAX_BLOCKTXN_DEPTH = 64;
 /** Size of the "block download window": how far ahead of our current height do we fetch?
  *  Larger windows tolerate larger download speed differences between peer, but increase the potential
  *  degree of disordering of blocks on disk (which make reindexing and pruning harder). We'll probably
  *  want to make this a per-peer adaptive value at some point. */
 /**   If your nodes have limited RAM (< 4 GB), lower this to 1024–2048.  If we want faster initial sync on beefy hardware, you can push this higher to 6144-8192. */
-static constexpr unsigned int BLOCK_DOWNLOAD_WINDOW = 4096; // ~17 hours coverage
+static constexpr unsigned int BLOCK_DOWNLOAD_WINDOW = 4096;
 /** Time to wait (in seconds) between writing blocks/block index to disk. */
 static constexpr unsigned int DATABASE_WRITE_INTERVAL = 60 * 6;
 /** Time to wait (in seconds) between flushing chainstate to disk. */
