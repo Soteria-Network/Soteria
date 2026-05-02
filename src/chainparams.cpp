@@ -181,7 +181,7 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
 
         // Main seeders
-        vSeeds.emplace_back("seed1.soteria-network.online", false);
+        vSeeds.emplace_back("seed.soteria-network.online", false);
         vSeeds.emplace_back("soterianode.vpnopg.ru", false);
         vSeeds.emplace_back("soteria-demon.favoritcoin.ru", false);
 		
