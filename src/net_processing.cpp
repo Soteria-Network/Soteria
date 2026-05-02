@@ -176,8 +176,8 @@ bool IsClientVersionBelowMinimum(const std::string& userAgent)
 {
     // Minimum allowed version
     constexpr int MIN_MAJOR = 1;
-    constexpr int MIN_MINOR = 0;
-    constexpr int MIN_REV  = 9;
+    constexpr int MIN_MINOR = 1;
+    constexpr int MIN_REV  = 0;
 
     int major = 0, minor = 0, revision = 0;
     if (!ParseClientVersion(userAgent, major, minor, revision)) {
