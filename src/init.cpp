@@ -703,7 +703,7 @@ std::string HelpMessage(HelpMessageMode mode)
 std::string LicenseInfo()
 {
     const std::string URL_SOURCE_CODE = "<https://github.com/Soteria-Network/Soteria>";
-    const std::string URL_WEBSITE = "<https://Soteria-Network.site>";
+    const std::string URL_WEBSITE = "<https://Soteria-Network.online>";
  // const std::string URL_WEBSITE2 = "<https://soteria.org>";
  // URL_WEBSITE2
  // return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2025, COPYRIGHT_YEAR) + " ") + "\n" +
