@@ -9,11 +9,11 @@ Soteria Network [SOTER]
 Soteria Network based on RVN/BTC Core designed for efficient and interoperable asset management. 
 Taking development cues from Ravencoin and latest versions of Bitcoin, Soteria Network currently
 employs a completely new variant of dynamic and timestamped energy friendly hashing algorithms, 
-SoterG for GPU and SoterC for CPU. The assets in Soteria can be automated using Soteria Smart Plans
+SoterG for GPU. The assets in Soteria can be automated using Soteria Smart Plans
 allowing the creation of decentralized applications using Lua VM.
 The network prioritizes usability, automation, and low fees to make asset minting and management
 simple, affordable, and secure. The network's economy runs on SOTER, our native coin that can be
-mined on a dual algorithm setup using either GPUs or CPUs.
+mined using GPUs.
 
 For detailed information, visit **Website:** [soteria-network.online] https://soteria-network.online
 
