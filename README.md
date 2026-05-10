@@ -17,7 +17,7 @@ mined on a dual algorithm setup using either GPUs or CPUs.
 
 For detailed information, visit **Website:** [soteria-network.online] https://soteria-network.online
 
-### Coin Specs
+### Soter Specs
 
 <table>
 <tr><td>Name & ticker</td><td>Soteria Network (SOTER)</td></tr>
@@ -33,6 +33,7 @@ For detailed information, visit **Website:** [soteria-network.online] https://so
 <tr><td>Transaction Maturity</td><td>6 confirmations</td></tr>
 <tr><td>Difficulty Readjustment</td><td>Every 60 blocks (LWMA4-EMA)</td></tr>
 </table>
+
 
 
 Key Features & Advantages
