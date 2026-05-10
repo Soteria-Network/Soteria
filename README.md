@@ -17,6 +17,24 @@ mined on a dual algorithm setup using either GPUs or CPUs.
 
 For detailed information, visit **Website:** [soteria-network.online] https://soteria-network.online
 
+### Coin Specs
+
+<table>
+<tr><td>Name & ticker</td><td>Soteria Network (SOTER)</td></tr>
+<tr><td>Consensus algorithm</td><td>PoW</td></tr>
+<tr><td>PoW block reward</td><td>Dynamic starting from 0.18 SOTER at genesis, reduced continously</td></tr>
+<tr><td>Hashing algorithm</td><td>SoterG</td></tr>
+<tr><td>Maximum SOTER supply</td><td>1,500,000</td></tr>
+<tr><td>Premine</td><td>0 SOTER</td></tr>
+<tr><td>Blocksize</td><td>3 MB</td></tr>
+<tr><td>Blocktime average</td><td>12 seconds (LWMA4-EMA)</td></tr>
+<tr><td>Number of transaction confirmations</td><td>6</td></tr>
+<tr><td>Mined Maturity</td><td>4201 confirmations</td></tr>
+<tr><td>Transaction Maturity</td><td>6 confirmations</td></tr>
+<tr><td>Difficulty Readjustment</td><td>Every 60 blocks (LWMA4-EMA)</td></tr>
+</table>
+
+
 Key Features & Advantages
 Ultra-High Performance
 
