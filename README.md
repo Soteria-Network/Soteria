@@ -27,25 +27,23 @@ For detailed information, visit **Website:** [soteria-network.online] https://so
 <tr><td>Maximum SOTER supply</td><td>1,500,000</td></tr>
 <tr><td>Premine</td><td>0 SOTER</td></tr>
 <tr><td>Blocksize</td><td>3 MB</td></tr>
-<tr><td>Blocktime average</td><td>12 seconds (LWMA4-EMA)</td></tr>
+<tr><td>Blocktime average</td><td>12 seconds (LWMA-EMA v3)</td></tr>
 <tr><td>Number of transaction confirmations</td><td>6</td></tr>
 <tr><td>Mined Maturity</td><td>4201 confirmations</td></tr>
 <tr><td>Transaction Maturity</td><td>6 confirmations</td></tr>
-<tr><td>Difficulty Readjustment</td><td>Every 60 blocks (LWMA4-EMA)</td></tr>
+<tr><td>Difficulty Readjustment</td><td>Every 60 blocks (LWMA-EMA v3)</td></tr>
 </table>
 
 
 
-Key Features & Advantages
-Ultra-High Performance
+### Key Features & Advantages
 
-    Block reward is 0.08 coin/block with max daily emission equal 1000 coins.
-    Lightning-fast 12‑second block confirmations with a 10‑second buffer cap.
-    Planned hardfork to 9‑second block confirmations with a 6‑second buffer cap.
+##### Ultra-High Performance
+
+    Lightning-fast 12‑second block confirmations with a 9‑second buffer cap.
     Industry-leading 1000+ TPS capacity.
     Smart contract supports using Lua VM integrated.
     3 MB blocks for maximum throughput.
-    Difficulity adjustment every 90 blocks using LMWA-EMA v3.
     Optimized codebase for fast block time and minimum orphan rate.
     Modern C++ features, C++ best practices, best thread and memory management, updated dependencies to almost latest possible versions.
     Efficient and energy friendly algorithms for mining, crafted for Soteria Network.
@@ -53,7 +51,7 @@ Ultra-High Performance
     The total supply is so limited that emission is controlled.
     6 months of development until release to bring the best possible features and we will keep developing days and nights.
     
-Bank-Grade Security
+##### Bank-Grade Security
 
     FORK ID integrated from genesis to prevent against replay attacks.
     Multi-layered consensus security using best and latest modern practices.
@@ -61,7 +59,7 @@ Bank-Grade Security
     Comprehensive testing and audit framework.
     Resistance against common attack vectors, surface attacks, race conditions, warp timestamp attacks and manipulations.
 
-Wallet Features
+##### Wallet Features
 
     IPFS content browser integration.
     Advanced transaction controls and low transaction fees.
@@ -69,11 +67,6 @@ Wallet Features
     Multi-signature support.
     Hardware wallet compatibility.
    
-
-#### Version strategy
-Version numbers are following ```major.minor.patch``` semantics.
-
-Soteria is open source and community driven. The development process is publicly visible and anyone can contribute.
 
 ### Branches
 
