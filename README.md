@@ -17,7 +17,7 @@ mined on a dual algorithm setup using either GPUs or CPUs.
 
 For detailed information, visit **Website:** [soteria-network.online] https://soteria-network.online
 
-### Soter Specs
+### Coin Specs
 
 <table>
 <tr><td>Name & ticker</td><td>Soteria Network (SOTER)</td></tr>
