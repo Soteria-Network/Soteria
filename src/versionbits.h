@@ -1,6 +1,6 @@
 // Copyright (c) 2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -35,7 +35,7 @@ typedef std::map<const CBlockIndex*, ThresholdState> ThresholdConditionCache;
 
 struct VBDeploymentInfo {
     /** Deployment name */
-    const char *name;
+    const char* name;
     /** Whether GBT clients can safely ignore this rule in simplified usage */
     bool gbt_force;
 };
@@ -53,13 +53,14 @@ extern const struct VBDeploymentInfo VersionBitsDeploymentInfo[];
 /**
  * Abstract class that implements BIP9-style threshold logic, and caches results.
  */
-class AbstractThresholdConditionChecker {
+class AbstractThresholdConditionChecker
+{
 protected:
-    virtual bool Condition(const CBlockIndex* pindex, const Consensus::ConsensusParams& params) const =0;
-    virtual int64_t BeginTime(const Consensus::ConsensusParams& params) const =0;
-    virtual int64_t EndTime(const Consensus::ConsensusParams& params) const =0;
-    virtual int Period(const Consensus::ConsensusParams& params) const =0;
-    virtual int Threshold(const Consensus::ConsensusParams& params) const =0;
+    virtual bool Condition(const CBlockIndex* pindex, const Consensus::ConsensusParams& params) const = 0;
+    virtual int64_t BeginTime(const Consensus::ConsensusParams& params) const = 0;
+    virtual int64_t EndTime(const Consensus::ConsensusParams& params) const = 0;
+    virtual int Period(const Consensus::ConsensusParams& params) const = 0;
+    virtual int Threshold(const Consensus::ConsensusParams& params) const = 0;
 
 public:
     BIP9Stats GetStateStatisticsFor(const CBlockIndex* pindex, const Consensus::ConsensusParams& params) const;
@@ -68,8 +69,7 @@ public:
     int GetStateSinceHeightFor(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params, ThresholdConditionCache& cache) const;
 };
 
-struct VersionBitsCache
-{
+struct VersionBitsCache {
     ThresholdConditionCache caches[Consensus::MAX_VERSION_BITS_DEPLOYMENTS];
 
     void Clear();
