@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2017 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef BITCOIN_UINT256_H
 #define BITCOIN_UINT256_H
@@ -18,12 +16,13 @@
 #include <crypto/common.h>
 
 /** Template base class for fixed-sized opaque blobs. */
-template<unsigned int BITS>
+template <unsigned int BITS>
 class base_blob
 {
 protected:
-    static const int WIDTH = BITS / 8;
+    static constexpr int WIDTH = BITS / 8;
     uint8_t data[WIDTH];
+
 public:
     base_blob()
     {
@@ -94,13 +93,13 @@ public:
                ((uint64_t)ptr[7]) << 56;
     }
 
-    template<typename Stream>
+    template <typename Stream>
     void Serialize(Stream& s) const
     {
         s.write((char*)data, sizeof(data));
     }
 
-    template<typename Stream>
+    template <typename Stream>
     void Unserialize(Stream& s)
     {
         s.read((char*)data, sizeof(data));
@@ -111,7 +110,8 @@ public:
  * @note This type is called uint160 for historical reasons only. It is an opaque
  * blob of 160 bits and has no integer operations.
  */
-class uint160 : public base_blob<160> {
+class uint160 : public base_blob<160>
+{
 public:
     uint160() {}
     explicit uint160(const std::vector<unsigned char>& vch) : base_blob<160>(vch) {}
@@ -122,7 +122,8 @@ public:
  * opaque blob of 256 bits and has no integer operations. Use arith_uint256 if
  * those are required.
  */
-class uint256 : public base_blob<256> {
+class uint256 : public base_blob<256>
+{
 public:
     uint256() {}
     uint256(const base_blob<256>& b) : base_blob<256>(b) {}
@@ -131,16 +132,17 @@ public:
     explicit uint256(const std::vector<unsigned char>& vch) : base_blob<256>(vch) {}
 
     // Truncate a uint512 to a uint256
-    uint256(base_blob<512>& dat){
+    uint256(base_blob<512>& dat)
+    {
         memcpy(begin(), dat.begin(), size());
     }
 
-    int GetNibble(int index) const 
+    int GetNibble(int index) const
     {
         index = 63 - index;
         if (index % 2 == 1)
-            return(data[index / 2] >> 4);
-        return(data[index / 2] & 0x0F); 
+            return (data[index / 2] >> 4);
+        return (data[index / 2] & 0x0F);
     }
     /** A cheap hash function that just returns 64 bits from the result, it can be
      * used when the contents are considered uniformly random. It is not appropriate
@@ -154,12 +156,14 @@ public:
 };
 
 // Dual algo: 512-bit opaque blob
-class uint512 : public base_blob<512> {
+class uint512 : public base_blob<512>
+{
 public:
     uint512() {}
     explicit uint512(const std::vector<unsigned char>& vch) : base_blob<512>(vch) {}
 
-    unsigned char ByteAt(unsigned int n) {
+    unsigned char ByteAt(unsigned int n)
+    {
         return data[n];
     }
 
@@ -176,7 +180,7 @@ public:
  * This is a separate function because the constructor uint256(const char*) can result
  * in dangerously catching uint256(0).
  */
-inline uint256 uint256S(const char *str)
+inline uint256 uint256S(const char* str)
 {
     uint256 rv;
     rv.SetHex(str);
@@ -193,15 +197,15 @@ inline uint256 uint256S(const std::string& str)
     return rv;
 }
 
-namespace std {
-    template <>
-    struct hash<uint256>
+namespace std
+{
+template <>
+struct hash<uint256> {
+    std::size_t operator()(const uint256& k) const
     {
-        std::size_t operator()(const uint256& k) const
-        {
-            return (std::size_t)k.GetCheapHash();
-        }
-    };
-}
+        return (std::size_t)k.GetCheapHash();
+    }
+};
+} // namespace std
 
-#endif // BITCOIN_UINT256_H
+#endif // SOTERIA_UINT256_H
