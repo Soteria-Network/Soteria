@@ -1,13 +1,13 @@
+
 // Copyright (c) 2011-2017 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_RPC_MINING_H
 #define SOTERIA_RPC_MINING_H
 
 #include <script/script.h>
+#include <primitives/block.h>
 #include <memory>
 #include <univalue.h>
 
