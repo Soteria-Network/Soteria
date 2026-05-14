@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #include "soteriaunits.h"
 #include <string>
@@ -23,7 +21,7 @@ class MyRestrictedAssetsTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit MyRestrictedAssetsTableModel(const PlatformStyle *platformStyle, CWallet* wallet, WalletModel *parent = 0);
+    explicit MyRestrictedAssetsTableModel(const PlatformStyle* platformStyle, CWallet* wallet, WalletModel* parent = 0);
     ~MyRestrictedAssetsTableModel();
 
     enum ColumnIndex {
@@ -38,62 +36,62 @@ public:
     */
     enum RoleIndex {
         /** Type of transaction */
-                TypeRole = Qt::UserRole,
+        TypeRole = Qt::UserRole,
         /** Date and time this transaction was created */
-                DateRole,
+        DateRole,
         /** Watch-only boolean */
-                WatchonlyRole,
+        WatchonlyRole,
         /** Watch-only icon */
-                WatchonlyDecorationRole,
+        WatchonlyDecorationRole,
         /** Address of transaction */
-                AddressRole,
+        AddressRole,
         /** Label of address related to transaction */
-                LabelRole,
+        LabelRole,
         /** Unique identifier */
-                TxIDRole,
+        TxIDRole,
         /** Transaction hash */
-                TxHashRole,
+        TxHashRole,
         /** Transaction data, hex-encoded */
-                TxHexRole,
+        TxHexRole,
         /** Whole transaction as plain text */
-                TxPlainTextRole,
+        TxPlainTextRole,
         /** Unprocessed icon */
-                RawDecorationRole,
+        RawDecorationRole,
         /** SOTER or name of an asset */
-                AssetNameRole,
+        AssetNameRole,
     };
 
-    int rowCount(const QModelIndex &parent) const;
-    int columnCount(const QModelIndex &parent) const;
-    QVariant data(const QModelIndex &index, int role) const;
+    int rowCount(const QModelIndex& parent) const;
+    int columnCount(const QModelIndex& parent) const;
+    QVariant data(const QModelIndex& index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
-    QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
     bool processingQueuedTransactions() const { return fProcessingQueuedTransactions; }
 
 private:
     CWallet* wallet;
-    WalletModel *walletModel;
+    WalletModel* walletModel;
     QStringList columns;
-    MyRestrictedAssetsTablePriv *priv;
+    MyRestrictedAssetsTablePriv* priv;
     bool fProcessingQueuedTransactions;
-    const PlatformStyle *platformStyle;
+    const PlatformStyle* platformStyle;
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
 
-    QString lookupAddress(const std::string &address, bool tooltip) const;
-    QVariant addressColor(const MyRestrictedAssetRecord *wtx) const;
-    QString formatTxDate(const MyRestrictedAssetRecord *wtx) const;
-    QString formatTxType(const MyRestrictedAssetRecord *wtx) const;
-    QString formatTxToAddress(const MyRestrictedAssetRecord *wtx, bool tooltip) const;
-    QString formatTooltip(const MyRestrictedAssetRecord *rec) const;
-    QVariant txStatusDecoration(const MyRestrictedAssetRecord *wtx) const;
-    QVariant txWatchonlyDecoration(const MyRestrictedAssetRecord *wtx) const;
-    QVariant txAddressDecoration(const MyRestrictedAssetRecord *wtx) const;
+    QString lookupAddress(const std::string& address, bool tooltip) const;
+    QVariant addressColor(const MyRestrictedAssetRecord* wtx) const;
+    QString formatTxDate(const MyRestrictedAssetRecord* wtx) const;
+    QString formatTxType(const MyRestrictedAssetRecord* wtx) const;
+    QString formatTxToAddress(const MyRestrictedAssetRecord* wtx, bool tooltip) const;
+    QString formatTooltip(const MyRestrictedAssetRecord* rec) const;
+    QVariant txStatusDecoration(const MyRestrictedAssetRecord* wtx) const;
+    QVariant txWatchonlyDecoration(const MyRestrictedAssetRecord* wtx) const;
+    QVariant txAddressDecoration(const MyRestrictedAssetRecord* wtx) const;
 
 public Q_SLOTS:
-    void updateMyRestrictedAssets(const QString &address, const QString& asset_name, const int type, const qint64 date);
-            /* New transaction, or transaction changed status */
+    void updateMyRestrictedAssets(const QString& address, const QString& asset_name, const int type, const qint64 date);
+    /* New transaction, or transaction changed status */
 
     /** Updates the column title to "Amount (DisplayUnit)" and emits headerDataChanged() signal for table headers to react. */
     /* Needed to update fProcessingQueuedTransactions through a QueuedConnection */
@@ -102,5 +100,3 @@ public Q_SLOTS:
 
     friend class MyRestrictedAssetsTablePriv;
 };
-
-
