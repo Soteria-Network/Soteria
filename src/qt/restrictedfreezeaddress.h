@@ -50,13 +50,14 @@ public:
     AssetFilterProxy* assetFilterProxy;
     QCompleter* completer;
 
-    void clear();
-
 private:
-    Ui::FreezeAddress *ui;
-    ClientModel *clientModel;
-    WalletModel *walletModel;
-    const PlatformStyle *platformStyle;
+    Ui::FreezeAddress* ui;
+    ClientModel* clientModel;
+    WalletModel* walletModel;
+    const PlatformStyle* platformStyle;
+
+public Q_SLOTS:
+    void clear();
 
 private Q_SLOTS:
     void check();
