@@ -1,15 +1,13 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_QT_FREEZEADDRESS_H
 #define SOTERIA_QT_FREEZEADDRESS_H
 
 #include "amount.h"
 
-#include <QWidget>
 #include <QMenu>
+#include <QWidget>
 #include <memory>
 
 class ClientModel;
@@ -21,8 +19,9 @@ class QCompleter;
 class AssetFilterProxy;
 
 
-namespace Ui {
-    class FreezeAddress;
+namespace Ui
+{
+class FreezeAddress;
 }
 
 QT_BEGIN_NAMESPACE
@@ -35,11 +34,11 @@ class FreezeAddress : public QWidget
     Q_OBJECT
 
 public:
-    explicit FreezeAddress(const PlatformStyle *_platformStyle, QWidget *parent = 0);
+    explicit FreezeAddress(const PlatformStyle* _platformStyle, QWidget* parent = 0);
     ~FreezeAddress();
 
-    void setClientModel(ClientModel *clientModel);
-    void setWalletModel(WalletModel *walletModel);
+    void setClientModel(ClientModel* clientModel);
+    void setWalletModel(WalletModel* walletModel);
     void showOutOfSyncWarning(bool fShow);
     Ui::FreezeAddress* getUI();
     bool eventFilter(QObject* object, QEvent* event);
@@ -48,7 +47,7 @@ public:
     void showWarning(QString string, bool failure = true);
     void hideWarning();
 
-    AssetFilterProxy *assetFilterProxy;
+    AssetFilterProxy* assetFilterProxy;
     QCompleter* completer;
 
     void clear();
