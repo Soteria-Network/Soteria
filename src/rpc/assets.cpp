@@ -1,7 +1,5 @@
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #include "assets/assets.h"
 #include "assets/assetdb.h"
@@ -23,7 +21,7 @@
 #include "policy/rbf.h"
 #include "rpc/mining.h"
 #include "rpc/safemode.h"
-#include "rpc/server.h"
+// #include "rpc/server.h"
 #include "script/sign.h"
 #include "timedata.h"
 #include <util/system.h>
@@ -37,26 +35,27 @@
 #include <vector>
 #include <iterator>
 
-void CheckRestrictedAssetTransferInputs(const CWalletTx& transaction, const std::string& asset_name) {
+void CheckRestrictedAssetTransferInputs(const CWalletTx& transaction, const std::string& asset_name)
+{
     // Do a validity check before commiting the transaction
     if (IsAssetNameAnRestricted(asset_name)) {
         if (pcoinsTip && passets) {
             for (auto input : transaction.tx->vin) {
-                const COutPoint &prevout = input.prevout;
-                const Coin &coin = pcoinsTip->AccessCoin(prevout);
+                const COutPoint& prevout = input.prevout;
+                const Coin& coin = pcoinsTip->AccessCoin(prevout);
 
                 if (coin.IsAsset()) {
                     CAssetOutputEntry data;
                     if (!GetAssetData(coin.out.scriptPubKey, data))
                         throw JSONRPCError(RPC_DATABASE_ERROR, std::string(
-                                _("Unable to get coin to verify restricted asset transfer from address")));
+                                                                   _("Unable to get coin to verify restricted asset transfer from address")));
 
 
                     if (IsAssetNameAnRestricted(data.assetName)) {
                         if (passets->CheckForAddressRestriction(data.assetName, EncodeDestination(data.destination),
-                                                                true)) {
+                                true)) {
                             throw JSONRPCError(RPC_INVALID_PARAMETER, std::string(
-                                    _("Restricted asset transfer from address that has been frozen")));
+                                                                          _("Restricted asset transfer from address that has been frozen")));
                         }
                     }
                 }
@@ -67,7 +66,7 @@ void CheckRestrictedAssetTransferInputs(const CWalletTx& transaction, const std:
 
 std::string AssetActivationWarning()
 {
-    return AreAssetsDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\nhttps://github.com/SoteriaNetwork/rips/blob/master/rip-0002.mediawiki\n";
+    return AreAssetsDeployed() ? "" : "\nTHIS COMMAND IS NOT YET ACTIVE!\nhttps://github.com/Soteria-Network/rips/blob/master/rip-0002.mediawiki\n";
 }
 
 std::string RestrictedActivationWarning()
@@ -96,7 +95,6 @@ std::string AssetTypeToString(AssetType& assetType)
 
 UniValue UnitValueFromAmount(const CAmount& amount, const std::string asset_name)
 {
-
     auto currentActiveAssetCache = GetCurrentAssetCache();
     if (!currentActiveAssetCache)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Asset cache isn't available.");
@@ -106,7 +104,7 @@ UniValue UnitValueFromAmount(const CAmount& amount, const std::string asset_name
         CNewAsset assetData;
         if (!currentActiveAssetCache->GetAssetMetaDataIfExists(asset_name, assetData))
             units = MAX_UNIT;
-            //throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't load asset from cache: " + asset_name);
+        // throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't load asset from cache: " + asset_name);
         else
             units = assetData.units;
     }
@@ -115,9 +113,9 @@ UniValue UnitValueFromAmount(const CAmount& amount, const std::string asset_name
 }
 
 #ifdef ENABLE_WALLET
-UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
+UniValue UpdateAddressTag(const JSONRPCRequest& request, const int8_t& flag)
 {
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -135,7 +133,7 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
 
         auto index = temp.find("/");
         if (index != std::string::npos) {
-            temp.insert(index+1, "#");
+            temp.insert(index + 1, "#");
         }
         tag_name = temp;
     }
@@ -196,13 +194,13 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     }
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     // Always transfer 1 of the qualifier tokens to the change address
     vTransfers.emplace_back(std::make_pair(CAssetTransfer(tag_name, 1 * COIN, asset_data), change_address));
 
     // Add the asset data with the flag to remove or add the tag 1 = Add, 0 = Remove
-    std::vector< std::pair<CNullAssetTxData, std::string> > vecAssetData;
+    std::vector<std::pair<CNullAssetTxData, std::string>> vecAssetData;
     vecAssetData.push_back(std::make_pair(CNullAssetTxData(tag_name, flag), address));
 
     // Create the Transaction
@@ -220,9 +218,9 @@ UniValue UpdateAddressTag(const JSONRPCRequest &request, const int8_t &flag)
     return result;
 }
 
-UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &flag)
+UniValue UpdateAddressRestriction(const JSONRPCRequest& request, const int8_t& flag)
 {
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -294,14 +292,14 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
     }
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     // Always transfer 1 of the restricted tokens to the change address
     // Use the ROOT owner token to make this change occur. if $TOKEN -> Use TOKEN!
     vTransfers.emplace_back(std::make_pair(CAssetTransfer(restricted_name.substr(1, restricted_name.size()) + OWNER_TAG, 1 * COIN, asset_data), change_address));
 
     // Add the asset data with the flag to remove or add the tag 1 = Freeze, 0 = Unfreeze
-    std::vector< std::pair<CNullAssetTxData, std::string> > vecAssetData;
+    std::vector<std::pair<CNullAssetTxData, std::string>> vecAssetData;
     vecAssetData.push_back(std::make_pair(CNullAssetTxData(restricted_name.substr(0, restricted_name.size()), flag), address));
 
     // Create the Transaction
@@ -320,9 +318,9 @@ UniValue UpdateAddressRestriction(const JSONRPCRequest &request, const int8_t &f
 }
 
 
-UniValue UpdateGlobalRestrictedAsset(const JSONRPCRequest &request, const int8_t &flag)
+UniValue UpdateGlobalRestrictedAsset(const JSONRPCRequest& request, const int8_t& flag)
 {
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -345,11 +343,11 @@ UniValue UpdateGlobalRestrictedAsset(const JSONRPCRequest &request, const int8_t
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported asset type: ") + AssetTypeToString(assetType));
     }
 
-    if (flag == 1 && mempool.mapGlobalFreezingAssetTransactions.count(restricted_name)){
+    if (flag == 1 && mempool.mapGlobalFreezingAssetTransactions.count(restricted_name)) {
         throw JSONRPCError(RPC_TRANSACTION_REJECTED, std::string("Freezing transaction already in mempool"));
     }
 
-    if (flag == 0 && mempool.mapGlobalUnFreezingAssetTransactions.count(restricted_name)){
+    if (flag == 0 && mempool.mapGlobalUnFreezingAssetTransactions.count(restricted_name)) {
         throw JSONRPCError(RPC_TRANSACTION_REJECTED, std::string("Unfreezing transaction already in mempool"));
     }
 
@@ -391,7 +389,7 @@ UniValue UpdateGlobalRestrictedAsset(const JSONRPCRequest &request, const int8_t
     }
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     // Always transfer 1 of the restricted tokens to the change address
     // Use the ROOT owner token to make this change occur. if $TOKEN -> Use TOKEN!
@@ -453,7 +451,7 @@ UniValue issue(const JSONRPCRequest& request)
             + HelpExampleCli("issue", "\"ASSET_NAME#uniquetag\"")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -473,12 +471,12 @@ UniValue issue(const JSONRPCRequest& request)
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted asset
     if (assetType == AssetType::RESTRICTED) {
-        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestricted to issue a restricted asset")));
+        throw(JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuerestricted to issue a restricted asset")));
     }
 
     // Push the user to use the issue restrictd rpc call if they are trying to issue a restricted asset
-    if (assetType == AssetType::QUALIFIER || assetType == AssetType::SUB_QUALIFIER  ) {
-        throw (JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuequalifierasset to issue a qualifier asset")));
+    if (assetType == AssetType::QUALIFIER || assetType == AssetType::SUB_QUALIFIER) {
+        throw(JSONRPCError(RPC_INVALID_PARAMETER, std::string("Use the rpc call issuequalifierasset to issue a qualifier asset")));
     }
 
     // Check for unsupported asset types
@@ -526,7 +524,7 @@ UniValue issue(const JSONRPCRequest& request)
             CTxDestination destination = DecodeDestination(change_address);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
+                    std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
             }
         }
     }
@@ -577,7 +575,7 @@ UniValue issue(const JSONRPCRequest& request)
     }
 
     // check for required unique asset params
-    if ((assetType == AssetType::QUALIFIER || assetType == AssetType::SUB_QUALIFIER) && (nAmount < QUALIFIER_ASSET_MIN_AMOUNT || nAmount > QUALIFIER_ASSET_MAX_AMOUNT  || units != 0 || reissuable)) {
+    if ((assetType == AssetType::QUALIFIER || assetType == AssetType::SUB_QUALIFIER) && (nAmount < QUALIFIER_ASSET_MIN_AMOUNT || nAmount > QUALIFIER_ASSET_MAX_AMOUNT || units != 0 || reissuable)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameters for issuing a qualifier asset."));
     }
 
@@ -648,7 +646,7 @@ UniValue issueunique(const JSONRPCRequest& request)
     AssetType assetType;
     std::string assetError = "";
     if (!IsAssetNameValid(rootName, assetType, assetError)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset name: ") + rootName  + std::string("\nError: ") + assetError);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid asset name: ") + rootName + std::string("\nError: ") + assetError);
     }
     if (assetType != AssetType::ROOT && assetType != AssetType::SUB) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Root asset must be a regular top-level or sub-asset."));
@@ -709,7 +707,7 @@ UniValue issueunique(const JSONRPCRequest& request)
         CTxDestination destination = DecodeDestination(changeAddress);
         if (!IsValidDestination(destination)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Soteria address: ") + changeAddress);
+                std::string("Invalid Change Address: Invalid Soteria address: ") + changeAddress);
         }
     }
 
@@ -824,7 +822,7 @@ UniValue listassetbalancesbyaddress(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INTERNAL_ERROR, "asset db unavailable.");
 
     LOCK(cs_main);
-    std::vector<std::pair<std::string, CAmount> > vecAssetAmounts;
+    std::vector<std::pair<std::string, CAmount>> vecAssetAmounts;
     int nTotalEntries = 0;
     if (!passetsdb->AddressDir(vecAssetAmounts, nTotalEntries, fOnlyTotal, address, count, start))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "couldn't retrieve address asset directory.");
@@ -876,7 +874,7 @@ UniValue getassetdata(const JSONRPCRequest& request)
     std::string asset_name = request.params[0].get_str();
 
     LOCK(cs_main);
-    UniValue result (UniValue::VOBJ);
+    UniValue result(UniValue::VOBJ);
 
     auto currentActiveAssetCache = GetCurrentAssetCache();
     if (currentActiveAssetCache) {
@@ -900,7 +898,7 @@ UniValue getassetdata(const JSONRPCRequest& request)
         }
 
         if (asset.nHasANS) {
-            UniValue ansInfo (UniValue::VOBJ);
+            UniValue ansInfo(UniValue::VOBJ);
 
             CSoteriaNameSystem ansID(EncodeANS(asset.strANSID));
 
@@ -943,7 +941,7 @@ UniValue getansdata(const JSONRPCRequest& request)
     std::string asset_name = request.params[0].get_str();
 
     LOCK(cs_main);
-    UniValue result (UniValue::VOBJ);
+    UniValue result(UniValue::VOBJ);
 
     auto currentActiveAssetCache = GetCurrentAssetCache();
     if (currentActiveAssetCache) {
@@ -968,15 +966,14 @@ template <class Iter, class Incr>
 void safe_advance(Iter& curr, const Iter& end, Incr n)
 {
     size_t remaining(std::distance(curr, end));
-    if (remaining < n)
-    {
+    if (remaining < n) {
         n = remaining;
     }
     std::advance(curr, n);
 };
 
 #ifdef ENABLE_WALLET
-UniValue listmyassets(const JSONRPCRequest &request)
+UniValue listmyassets(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() > 5)
         throw std::runtime_error(
@@ -1022,7 +1019,7 @@ UniValue listmyassets(const JSONRPCRequest &request)
                   + HelpExampleCli("listmyassets", "\"ASSET*\" true 10 20 1")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1060,18 +1057,16 @@ UniValue listmyassets(const JSONRPCRequest &request)
 
     // retrieve balances
     std::map<std::string, CAmount> balances;
-    std::map<std::string, std::vector<COutput> > outputs;
+    std::map<std::string, std::vector<COutput>> outputs;
     if (filter == "*") {
         if (!GetAllMyAssetBalances(outputs, balances, confs))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset balances. For all assets");
-    }
-    else if (filter.back() == '*') {
+    } else if (filter.back() == '*') {
         std::vector<std::string> assetNames;
         filter.pop_back();
         if (!GetAllMyAssetBalances(outputs, balances, confs, filter))
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset balances. For all assets");
-    }
-    else {
+    } else {
         if (!IsAssetNameValid(filter))
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid asset name.");
         if (!GetAllMyAssetBalances(outputs, balances, confs, filter))
@@ -1115,20 +1110,17 @@ UniValue listmyassets(const JSONRPCRequest &request)
                     if (!AssetFromScript(txOut.scriptPubKey, asset, strAddress))
                         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset from script.");
                     txAmount = asset.nAmount;
-                }
-                else if (CheckReissueDataTx(txOut)) {
+                } else if (CheckReissueDataTx(txOut)) {
                     CReissueAsset asset;
                     if (!ReissueAssetFromScript(txOut.scriptPubKey, asset, strAddress))
                         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset from script.");
                     txAmount = asset.nAmount;
-                }
-                else if (CheckTransferOwnerTx(txOut)) {
+                } else if (CheckTransferOwnerTx(txOut)) {
                     CAssetTransfer asset;
                     if (!TransferAssetFromScript(txOut.scriptPubKey, asset, strAddress))
                         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset from script.");
                     txAmount = asset.nAmount;
-                }
-                else if (CheckOwnerDataTx(txOut)) {
+                } else if (CheckOwnerDataTx(txOut)) {
                     std::string assetName;
                     if (!OwnerAssetFromScript(txOut.scriptPubKey, assetName, strAddress))
                         throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't get asset from script.");
@@ -1143,8 +1135,7 @@ UniValue listmyassets(const JSONRPCRequest &request)
             asset.push_back(Pair("outpoints", outpoints));
             result.push_back(Pair(bal->first, asset));
         }
-    }
-    else {
+    } else {
         for (; bal != end && bal != balances.end(); bal++) {
             result.push_back(Pair(bal->first, UnitValueFromAmount(bal->second, bal->first)));
         }
@@ -1154,7 +1145,7 @@ UniValue listmyassets(const JSONRPCRequest &request)
 
 #endif
 
-UniValue listaddressesbyasset(const JSONRPCRequest &request)
+UniValue listaddressesbyasset(const JSONRPCRequest& request)
 {
     if (!fAssetIndex) {
         return "_This rpc call is not functional unless -assetindex is enabled. To enable, please run the wallet with -assetindex, this will require a reindex to occur";
@@ -1208,7 +1199,7 @@ UniValue listaddressesbyasset(const JSONRPCRequest &request)
         return "_Not a valid asset name";
 
     LOCK(cs_main);
-    std::vector<std::pair<std::string, CAmount> > vecAddressAmounts;
+    std::vector<std::pair<std::string, CAmount>> vecAddressAmounts;
     int nTotalEntries = 0;
     if (!passetsdb->AssetAddressDir(vecAddressAmounts, nTotalEntries, fOnlyTotal, asset_name, count, start))
         throw JSONRPCError(RPC_INTERNAL_ERROR, "couldn't retrieve address asset directory.");
@@ -1256,7 +1247,7 @@ UniValue transfer(const JSONRPCRequest& request)
                 + HelpExampleCli("transfer", "\"ASSET_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1322,7 +1313,7 @@ UniValue transfer(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Asset change address must be a valid address. Invalid address: ") + asset_change_address);
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     CAssetTransfer transfer(asset_name, nAmount, DecodeAssetData(message), expireTime);
 
@@ -1374,15 +1365,15 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "\nResult:\n"
             "txid"
             "[ \n"
-                "txid\n"
-                "]\n"
+            "txid\n"
+            "]\n"
 
             "\nExamples:\n"
             + HelpExampleCli("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
             + HelpExampleRpc("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
             );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1403,7 +1394,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     std::set<std::string> setFromDestinations;
 
     // Add the given array of addresses into the set of destinations
-    for (int i = 0; i < (int) from_addresses.size(); i++) {
+    for (int i = 0; i < (int)from_addresses.size(); i++) {
         std::string address = from_addresses[i].get_str();
         CTxDestination dest = DecodeDestination(address);
         if (!IsValidDestination(dest))
@@ -1453,7 +1444,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Asset change address must be a valid address. Invalid address: ") + asset_change_address);
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     vTransfers.emplace_back(std::make_pair(CAssetTransfer(asset_name, nAmount, DecodeAssetData(message), expireTime), address));
     CReserveKey reservekey(pwallet);
@@ -1461,7 +1452,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     CAmount nRequiredFee;
 
     CCoinControl ctrl;
-    std::map<std::string, std::vector<COutput> > mapAssetCoins;
+    std::map<std::string, std::vector<COutput>> mapAssetCoins;
     pwallet->AvailableAssets(mapAssetCoins);
 
     // Set the change addresses
@@ -1490,7 +1481,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 
     // Create the Transaction
     if (!CreateTransferAssetTransaction(pwallet, ctrl, vTransfers, "", error, transaction, reservekey, nRequiredFee))
-    throw JSONRPCError(error.first, error.second);
+        throw JSONRPCError(error.first, error.second);
 
     // Do a validity check before commiting the transaction
     CheckRestrictedAssetTransferInputs(transaction, asset_name);
@@ -1498,7 +1489,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
     // Send the Transaction to the network
     std::string txid;
     if (!SendAssetTransaction(pwallet, transaction, reservekey, error, txid))
-    throw JSONRPCError(error.first, error.second);
+        throw JSONRPCError(error.first, error.second);
 
     // Display the transaction id
     UniValue result(UniValue::VARR);
@@ -1535,7 +1526,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
                 + HelpExampleRpc("transferfromaddress", "\"ASSET_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1562,7 +1553,6 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
     bool fMessageCheck = false;
     std::string message = "";
     if (request.params.size() > 4) {
-
         message = request.params[4].get_str();
         if (!message.empty())
             fMessageCheck = true;
@@ -1598,7 +1588,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     vTransfers.emplace_back(std::make_pair(CAssetTransfer(asset_name, nAmount, DecodeAssetData(message), expireTime), address));
     CReserveKey reservekey(pwallet);
@@ -1606,7 +1596,7 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
     CAmount nRequiredFee;
 
     CCoinControl ctrl;
-    std::map<std::string, std::vector<COutput> > mapAssetCoins;
+    std::map<std::string, std::vector<COutput>> mapAssetCoins;
     pwallet->AvailableAssets(mapAssetCoins);
 
     // Set the change addresses
@@ -1681,7 +1671,7 @@ UniValue reissue(const JSONRPCRequest& request)
                 + HelpExampleRpc("reissue", "\"ASSET_NAME\" 20 \"address\" \"change_address\" \"true\" 8 \"Qmd286K6pohQcTKYqnS1YhWrCiS4gz7Xi34sdwMe9USZ7u\"")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -1697,7 +1687,7 @@ UniValue reissue(const JSONRPCRequest& request)
     CAmount nAmount = AmountFromValue(request.params[1]);
     std::string address = request.params[2].get_str();
 
-    std::string changeAddress =  "";
+    std::string changeAddress = "";
     if (request.params.size() > 3)
         changeAddress = request.params[3].get_str();
 
@@ -1874,28 +1864,25 @@ UniValue getcacheinfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size())
         throw std::runtime_error(
-                "getcacheinfo \n"
-                + AssetActivationWarning() +
+            "getcacheinfo \n" + AssetActivationWarning() +
 
-                "\nResult:\n"
-                "[\n"
-                "  uxto cache size:\n"
-                "  asset total (exclude dirty):\n"
-                "  asset address map:\n"
-                "  asset address balance:\n"
-                "  my unspent asset:\n"
-                "  reissue data:\n"
-                "  asset metadata map:\n"
-                "  asset metadata list (est):\n"
-                "  dirty cache (est):\n"
+            "\nResult:\n"
+            "[\n"
+            "  uxto cache size:\n"
+            "  asset total (exclude dirty):\n"
+            "  asset address map:\n"
+            "  asset address balance:\n"
+            "  my unspent asset:\n"
+            "  reissue data:\n"
+            "  asset metadata map:\n"
+            "  asset metadata list (est):\n"
+            "  dirty cache (est):\n"
 
 
-                "]\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleRpc("getcacheinfo", "")
-                + HelpExampleCli("getcacheinfo", "")
-        );
+            "\nExamples:\n" +
+            HelpExampleRpc("getcacheinfo", "") + HelpExampleCli("getcacheinfo", ""));
 
     auto currentActiveAssetCache = GetCurrentAssetCache();
     if (!currentActiveAssetCache)
@@ -1915,15 +1902,15 @@ UniValue getcacheinfo(const JSONRPCRequest& request)
 
     UniValue descendants(UniValue::VOBJ);
 
-    descendants.push_back(Pair("asset address balance",   (int)memusage::DynamicUsage(currentActiveAssetCache->mapAssetsAddressAmount)));
-    descendants.push_back(Pair("reissue data",   (int)memusage::DynamicUsage(currentActiveAssetCache->mapReissuedAssetData)));
+    descendants.push_back(Pair("asset address balance", (int)memusage::DynamicUsage(currentActiveAssetCache->mapAssetsAddressAmount)));
+    descendants.push_back(Pair("reissue data", (int)memusage::DynamicUsage(currentActiveAssetCache->mapReissuedAssetData)));
 
     info.push_back(Pair("reissue tracking (memory only)", (int)memusage::DynamicUsage(mapReissuedAssets) + (int)memusage::DynamicUsage(mapReissuedTx)));
     info.push_back(Pair("asset data", descendants));
-    info.push_back(Pair("asset metadata map",  (int)memusage::DynamicUsage(passetsCache->GetItemsMap())));
-    info.push_back(Pair("asset metadata list (est)",  (int)passetsCache->GetItemsList().size() * (32 + 80))); // Max 32 bytes for asset name, 80 bytes max for asset data
-    info.push_back(Pair("dirty cache (est)",  (int)currentActiveAssetCache->GetCacheSize()));
-    info.push_back(Pair("dirty cache V2 (est)",  (int)currentActiveAssetCache->GetCacheSizeV2()));
+    info.push_back(Pair("asset metadata map", (int)memusage::DynamicUsage(passetsCache->GetItemsMap())));
+    info.push_back(Pair("asset metadata list (est)", (int)passetsCache->GetItemsList().size() * (32 + 80))); // Max 32 bytes for asset name, 80 bytes max for asset data
+    info.push_back(Pair("dirty cache (est)", (int)currentActiveAssetCache->GetCacheSize()));
+    info.push_back(Pair("dirty cache V2 (est)", (int)currentActiveAssetCache->GetCacheSizeV2()));
 
     result.push_back(info);
     return result;
@@ -1934,20 +1921,19 @@ UniValue addtagtoaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
-                "addtagtoaddress tag_name to_address (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nAssign a tag to a address\n"
+            "addtagtoaddress tag_name to_address (change_address) (asset_data)\n" + RestrictedActivationWarning() +
+            "\nAssign a tag to a address\n"
 
-                "\nArguments:\n"
-                "1. \"tag_name\"            (string, required) the name of the tag you are assigning to the address, if it doens't have '#' at the front it will be added\n"
-                "2. \"to_address\"          (string, required) the address that will be assigned the tag\n"
-                "3. \"change_address\"      (string, optional) The change address for the qualifier token to be sent to\n"
-                "4. \"asset_data\"          (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the qualifier token\n"
+            "\nArguments:\n"
+            "1. \"tag_name\"            (string, required) the name of the tag you are assigning to the address, if it doens't have '#' at the front it will be added\n"
+            "2. \"to_address\"          (string, required) the address that will be assigned the tag\n"
+            "3. \"change_address\"      (string, optional) The change address for the qualifier token to be sent to\n"
+            "4. \"asset_data\"          (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the qualifier token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\"")
                 + HelpExampleRpc("addtagtoaddress", "\"#TAG\" \"to_address\"")
                 + HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\" \"change_address\"")
@@ -2458,7 +2444,7 @@ UniValue issuequalifierasset(const JSONRPCRequest& request)
                 + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\"")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -2483,7 +2469,7 @@ UniValue issuequalifierasset(const JSONRPCRequest& request)
     }
 
     if (assetType != AssetType::QUALIFIER && assetType != AssetType::SUB_QUALIFIER) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported asset type: ") + AssetTypeToString(assetType) +  " Please use a valid qualifier name" );
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported asset type: ") + AssetTypeToString(assetType) + " Please use a valid qualifier name");
     }
 
     CAmount nAmount = COIN;
@@ -2530,7 +2516,7 @@ UniValue issuequalifierasset(const JSONRPCRequest& request)
             CTxDestination destination = DecodeDestination(change_address);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
+                    std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
             }
         }
     }
@@ -2614,7 +2600,7 @@ UniValue issuerestrictedasset(const JSONRPCRequest& request)
                 + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 0 false true QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -2629,8 +2615,7 @@ UniValue issuerestrictedasset(const JSONRPCRequest& request)
     AssetType assetType;
     std::string assetError = "";
 
-    if (!IsAssetNameAnRestricted(assetName))
-    {
+    if (!IsAssetNameAnRestricted(assetName)) {
         std::string temp = RESTRICTED_CHAR + assetName;
         assetName = temp;
     }
@@ -2641,7 +2626,7 @@ UniValue issuerestrictedasset(const JSONRPCRequest& request)
 
     // Check for unsupported asset types, only restricted assets are allowed for this rpc call
     if (assetType != AssetType::RESTRICTED) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported asset type: ") + AssetTypeToString(assetType));
+        throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Unsupported asset type: ") + AssetTypeToString(assetType));
     }
 
     // Get the remaining three required parameters
@@ -2671,7 +2656,7 @@ UniValue issuerestrictedasset(const JSONRPCRequest& request)
         CTxDestination destination = DecodeDestination(change_address);
         if (!IsValidDestination(destination)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
+                std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
         }
     }
 
@@ -2761,7 +2746,7 @@ UniValue reissuerestrictedasset(const JSONRPCRequest& request)
                 + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" false \"\" \"changeaddress\" -1 false QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -2776,8 +2761,7 @@ UniValue reissuerestrictedasset(const JSONRPCRequest& request)
     AssetType assetType;
     std::string assetError = "";
 
-    if (!IsAssetNameAnRestricted(assetName))
-    {
+    if (!IsAssetNameAnRestricted(assetName)) {
         std::string temp = RESTRICTED_CHAR + assetName;
         assetName = temp;
     }
@@ -2813,7 +2797,7 @@ UniValue reissuerestrictedasset(const JSONRPCRequest& request)
         CTxDestination change_dest = DecodeDestination(change_address);
         if (!IsValidDestination(change_dest)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
+                std::string("Invalid Change Address: Invalid Soteria address: ") + change_address);
         }
     }
 
@@ -2900,7 +2884,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
                 + HelpExampleCli("transferqualifier", "\"#QUALIFIER\" 20 \"to_address\" \"change_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
         );
 
-    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
@@ -2924,7 +2908,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
     }
 
     std::string change_address = "";
-    if(request.params.size() > 3) {
+    if (request.params.size() > 3) {
         change_address = request.params[3].get_str();
 
         CTxDestination change_dest = DecodeDestination(change_address);
@@ -2957,7 +2941,7 @@ UniValue transferqualifier(const JSONRPCRequest& request)
         CheckIPFSTxidMessage(message, expireTime);
 
     std::pair<int, std::string> error;
-    std::vector< std::pair<CAssetTransfer, std::string> >vTransfers;
+    std::vector<std::pair<CAssetTransfer, std::string>> vTransfers;
 
     CAssetTransfer transfer(asset_name, nAmount, DecodeAssetData(message), expireTime);
 
@@ -3057,7 +3041,7 @@ UniValue getsnapshot(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Asset Snapshot database is not setup. Please restart wallet to try again"));
 
     LOCK(cs_main);
-    UniValue result (UniValue::VOBJ);
+    UniValue result(UniValue::VOBJ);
 
     CAssetSnapshotDBEntry snapshotDbEntry;
 
@@ -3066,7 +3050,7 @@ UniValue getsnapshot(const JSONRPCRequest& request)
         result.push_back(Pair("height", snapshotDbEntry.height));
 
         UniValue entries(UniValue::VARR);
-        for (auto const & ownerAndAmt : snapshotDbEntry.ownersAndAmounts) {
+        for (auto const& ownerAndAmt : snapshotDbEntry.ownersAndAmounts) {
             UniValue entry(UniValue::VOBJ);
 
             entry.push_back(Pair("address", ownerAndAmt.first));
@@ -3180,15 +3164,15 @@ UniValue ansdecode(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1)
         throw std::runtime_error(
-                "ansdecode \"ans_id\"\n"
-                "\nDecode SNS ID\n"
+            "ansdecode \"ans_id\"\n"
+            "\nDecode SNS ID\n"
 
-                "\nArguments:\n"
-                "1. \"ans_id\"               (string, required) SNS ID\n"
-                "\nResult:\n"
-                "\nANS1ffffffff\n"
+            "\nArguments:\n"
+            "1. \"ans_id\"               (string, required) SNS ID\n"
+            "\nResult:\n"
+            "\nANS1ffffffff\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("ansdecode", "ANS1ffffffff")
                 + HelpExampleRpc("ansdecode", "ANS1ffffffff")
         );
@@ -3215,56 +3199,57 @@ UniValue ansdecode(const JSONRPCRequest& request)
 }
 
 static const CRPCCommand commands[] =
-{ //  category    name                          actor (function)             argNames
-  //  ----------- ------------------------      -----------------------      ----------
+    {
+//  category    name                          actor (function)             argNames
+//  ----------- ------------------------      -----------------------      ----------
 #ifdef ENABLE_WALLET
-    { "assets",   "issue",                      &issue,                      {"asset_name","qty","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash"} },
-    { "assets",   "issueunique",                &issueunique,                {"root_name", "asset_tags", "ipfs_hashes", "to_address", "change_address"}},
-    { "assets",   "listmyassets",               &listmyassets,               {"asset", "verbose", "count", "start", "confs"}},
+        {"assets", "issue", &issue, {"asset_name", "qty", "to_address", "change_address", "units", "reissuable", "has_ipfs", "ipfs_hash"}},
+        {"assets", "issueunique", &issueunique, {"root_name", "asset_tags", "ipfs_hashes", "to_address", "change_address"}},
+        {"assets", "listmyassets", &listmyassets, {"asset", "verbose", "count", "start", "confs"}},
 #endif
-    { "assets",   "listassetbalancesbyaddress", &listassetbalancesbyaddress, {"address", "onlytotal", "count", "start"} },
-    { "assets",   "getassetdata",               &getassetdata,               {"asset_name"}},
-    { "assets",   "getansdata",                 &getansdata,                 {"asset_name"}},
-    { "assets",   "listaddressesbyasset",       &listaddressesbyasset,       {"asset_name", "onlytotal", "count", "start"}},
+        {"assets", "listassetbalancesbyaddress", &listassetbalancesbyaddress, {"address", "onlytotal", "count", "start"}},
+        {"assets", "getassetdata", &getassetdata, {"asset_name"}},
+        {"assets", "getansdata", &getansdata, {"asset_name"}},
+        {"assets", "listaddressesbyasset", &listaddressesbyasset, {"asset_name", "onlytotal", "count", "start"}},
 #ifdef ENABLE_WALLET
-    { "assets",   "transferfromaddress",        &transferfromaddress,        {"asset_name", "from_address", "qty", "to_address", "message", "expire_time", "soter_change_address", "asset_change_address"}},
-    { "assets",   "transferfromaddresses",      &transferfromaddresses,      {"asset_name", "from_addresses", "qty", "to_address", "message", "expire_time", "soter_change_address", "asset_change_address"}},
-    { "assets",   "transfer",                   &transfer,                   {"asset_name", "qty", "to_address", "message", "expire_time", "change_address", "asset_change_address"}},
-    { "assets",   "reissue",                    &reissue,                    {"asset_name", "qty", "to_address", "change_address", "reissuable", "new_units", "new_ipfs"}},
+        {"assets", "transferfromaddress", &transferfromaddress, {"asset_name", "from_address", "qty", "to_address", "message", "expire_time", "soter_change_address", "asset_change_address"}},
+        {"assets", "transferfromaddresses", &transferfromaddresses, {"asset_name", "from_addresses", "qty", "to_address", "message", "expire_time", "soter_change_address", "asset_change_address"}},
+        {"assets", "transfer", &transfer, {"asset_name", "qty", "to_address", "message", "expire_time", "change_address", "asset_change_address"}},
+        {"assets", "reissue", &reissue, {"asset_name", "qty", "to_address", "change_address", "reissuable", "new_units", "new_ipfs"}},
 #endif
-    { "assets",   "listassets",                 &listassets,                 {"asset", "verbose", "count", "start"}},
-    { "assets",   "getcacheinfo",               &getcacheinfo,               {}},
+        {"assets", "listassets", &listassets, {"asset", "verbose", "count", "start"}},
+        {"assets", "getcacheinfo", &getcacheinfo, {}},
 
 #ifdef ENABLE_WALLET
-    { "restricted assets",   "transferqualifier",          &transferqualifier,          {"qualifier_name", "qty", "to_address", "change_address", "message", "expire_time"}},
-    { "restricted assets",   "issuerestrictedasset",       &issuerestrictedasset,       {"asset_name","qty","verifier","to_address","change_address","units","reissuable","has_ipfs","ipfs_hash"} },
-    { "restricted assets",   "issuequalifierasset",        &issuequalifierasset,        {"asset_name","qty","to_address","change_address","has_ipfs","ipfs_hash"} },
-    { "restricted assets",   "reissuerestrictedasset",     &reissuerestrictedasset,     {"asset_name", "qty", "change_verifier", "new_verifier", "to_address", "change_address", "new_units", "reissuable", "new_ipfs"}},
-    { "restricted assets",   "addtagtoaddress",            &addtagtoaddress,            {"tag_name", "to_address", "change_address", "asset_data"}},
-    { "restricted assets",   "removetagfromaddress",       &removetagfromaddress,       {"tag_name", "to_address", "change_address", "asset_data"}},
-    { "restricted assets",   "freezeaddress",              &freezeaddress,              {"asset_name", "address", "change_address", "asset_data"}},
-    { "restricted assets",   "unfreezeaddress",            &unfreezeaddress,            {"asset_name", "address", "change_address", "asset_data"}},
-    { "restricted assets",   "freezerestrictedasset",      &freezerestrictedasset,      {"asset_name", "change_address", "asset_data"}},
-    { "restricted assets",   "unfreezerestrictedasset",    &unfreezerestrictedasset,    {"asset_name", "change_address", "asset_data"}},
+        {"restricted assets", "transferqualifier", &transferqualifier, {"qualifier_name", "qty", "to_address", "change_address", "message", "expire_time"}},
+        {"restricted assets", "issuerestrictedasset", &issuerestrictedasset, {"asset_name", "qty", "verifier", "to_address", "change_address", "units", "reissuable", "has_ipfs", "ipfs_hash"}},
+        {"restricted assets", "issuequalifierasset", &issuequalifierasset, {"asset_name", "qty", "to_address", "change_address", "has_ipfs", "ipfs_hash"}},
+        {"restricted assets", "reissuerestrictedasset", &reissuerestrictedasset, {"asset_name", "qty", "change_verifier", "new_verifier", "to_address", "change_address", "new_units", "reissuable", "new_ipfs"}},
+        {"restricted assets", "addtagtoaddress", &addtagtoaddress, {"tag_name", "to_address", "change_address", "asset_data"}},
+        {"restricted assets", "removetagfromaddress", &removetagfromaddress, {"tag_name", "to_address", "change_address", "asset_data"}},
+        {"restricted assets", "freezeaddress", &freezeaddress, {"asset_name", "address", "change_address", "asset_data"}},
+        {"restricted assets", "unfreezeaddress", &unfreezeaddress, {"asset_name", "address", "change_address", "asset_data"}},
+        {"restricted assets", "freezerestrictedasset", &freezerestrictedasset, {"asset_name", "change_address", "asset_data"}},
+        {"restricted assets", "unfreezerestrictedasset", &unfreezerestrictedasset, {"asset_name", "change_address", "asset_data"}},
 #endif
-    { "restricted assets",   "listaddressesfortag",        &listaddressesfortag,        {"tag_name"}},
-    { "restricted assets",   "listtagsforaddress",         &listtagsforaddress,         {"address"}},
-    { "restricted assets",   "listaddressrestrictions",    &listaddressrestrictions,    {"address"}},
-    { "restricted assets",   "listglobalrestrictions",     &listglobalrestrictions,     {}},
-    { "restricted assets",   "getverifierstring",          &getverifierstring,          {"restricted_name"}},
-    { "restricted assets",   "checkaddresstag",            &checkaddresstag,            {"address", "tag_name"}},
-    { "restricted assets",   "checkaddressrestriction",    &checkaddressrestriction,    {"address", "restricted_name"}},
-    { "restricted assets",   "checkglobalrestriction",     &checkglobalrestriction,     {"restricted_name"}},
-    { "restricted assets",   "isvalidverifierstring",      &isvalidverifierstring,      {"verifier_string"}},
+        {"restricted assets", "listaddressesfortag", &listaddressesfortag, {"tag_name"}},
+        {"restricted assets", "listtagsforaddress", &listtagsforaddress, {"address"}},
+        {"restricted assets", "listaddressrestrictions", &listaddressrestrictions, {"address"}},
+        {"restricted assets", "listglobalrestrictions", &listglobalrestrictions, {}},
+        {"restricted assets", "getverifierstring", &getverifierstring, {"restricted_name"}},
+        {"restricted assets", "checkaddresstag", &checkaddresstag, {"address", "tag_name"}},
+        {"restricted assets", "checkaddressrestriction", &checkaddressrestriction, {"address", "restricted_name"}},
+        {"restricted assets", "checkglobalrestriction", &checkglobalrestriction, {"restricted_name"}},
+        {"restricted assets", "isvalidverifierstring", &isvalidverifierstring, {"verifier_string"}},
 
-    { "assets",   "getsnapshot",                &getsnapshot,                {"asset_name", "block_height"}},
-    { "assets",   "purgesnapshot",              &purgesnapshot,              {"asset_name", "block_height"}},
-    { "assets",   "ansencode",                  &ansencode,                  {"type", "data"}},
-    { "assets",   "ansdecode",                  &ansdecode,                  {"ans_id"}},
+        {"assets", "getsnapshot", &getsnapshot, {"asset_name", "block_height"}},
+        {"assets", "purgesnapshot", &purgesnapshot, {"asset_name", "block_height"}},
+        {"assets", "ansencode", &ansencode, {"type", "data"}},
+        {"assets", "ansdecode", &ansdecode, {"ans_id"}},
 
 };
 
-void RegisterAssetRPCCommands(CRPCTable &t)
+void RegisterAssetRPCCommands(CRPCTable& t)
 {
     for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++)
         t.appendCommand(commands[vcidx].name, &commands[vcidx]);
