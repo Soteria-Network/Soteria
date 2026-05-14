@@ -844,31 +844,28 @@ UniValue getassetdata(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "getassetdata \"asset_name\"\n"
-                + AssetActivationWarning() +
-                "\nReturns assets metadata if that asset exists\n"
+            "getassetdata \"asset_name\"\n" + AssetActivationWarning() +
+            "\nReturns assets metadata if that asset exists\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) the name of the asset\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) the name of the asset\n"
 
-                "\nResult:\n"
-                "{\n"
-                "  name: (string),\n"
-                "  amount: (number),\n"
-                "  units: (number),\n"
-                "  reissuable: (number),\n"
-                "  has_ipfs: (number),\n"
-                "  has_ans: (number),\n"
-                "  ipfs_hash: (hash), (only if has_ipfs = 1 and that data is a ipfs hash)\n"
-                "  txid_hash: (hash), (only if has_ipfs = 1 and that data is a txid hash)\n"
-                "  ans_info: (obj), (only if has_ans = 1)\n"
-                "  verifier_string: (string)\n"
-                "}\n"
+            "\nResult:\n"
+            "{\n"
+            "  name: (string),\n"
+            "  amount: (number),\n"
+            "  units: (number),\n"
+            "  reissuable: (number),\n"
+            "  has_ipfs: (number),\n"
+            "  has_ans: (number),\n"
+            "  ipfs_hash: (hash), (only if has_ipfs = 1 and that data is a ipfs hash)\n"
+            "  txid_hash: (hash), (only if has_ipfs = 1 and that data is a txid hash)\n"
+            "  ans_info: (obj), (only if has_ans = 1)\n"
+            "  verifier_string: (string)\n"
+            "}\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("getassetdata", "\"ASSET_NAME\"")
-                + HelpExampleRpc("getassetdata", "\"ASSET_NAME\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("getassetdata", "\"ASSET_NAME\"") + HelpExampleRpc("getassetdata", "\"ASSET_NAME\""));
 
 
     std::string asset_name = request.params[0].get_str();
@@ -920,22 +917,20 @@ UniValue getansdata(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "getansdata \"asset_name\"\n"
-                + AssetActivationWarning() +
-                "\nReturns asset SNS data if that asset exists\n"
+            "getansdata \"asset_name\"\n" + AssetActivationWarning() +
+            "\nReturns asset SNS data if that asset exists\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) the name of the asset\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) the name of the asset\n"
 
-                "\nResult:\n"
-                "{\n"
-                "  ans_info: (obj)\n"
-                "}\n"
+            "\nResult:\n"
+            "{\n"
+            "  ans_info: (obj)\n"
+            "}\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("getansdata", "\"ASSET_NAME\"")
-                + HelpExampleRpc("getansdata", "\"ASSET_NAME\"")
-        );
+                + HelpExampleRpc("getansdata", "\"ASSET_NAME\""));
 
 
     std::string asset_name = request.params[0].get_str();
@@ -977,47 +972,46 @@ UniValue listmyassets(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() > 5)
         throw std::runtime_error(
-                "listmyassets \"( asset )\" ( verbose ) ( count ) ( start ) (confs) \n"
-                + AssetActivationWarning() +
-                "\nReturns a list of all asset that are owned by this wallet\n"
+            "listmyassets \"( asset )\" ( verbose ) ( count ) ( start ) (confs) \n"
+ + AssetActivationWarning() +
+            "\nReturns a list of all asset that are owned by this wallet\n"
 
-                "\nArguments:\n"
-                "1. \"asset\"                    (string, optional, default=\"*\") filters results -- must be an asset name or a partial asset name followed by '*' ('*' matches all trailing characters)\n"
-                "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
-                "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ assets found\n"
-                "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
-                "5. \"confs\"                    (integet, optional, default=0) results are skipped if they don't have this number of confirmations\n"
+            "\nArguments:\n"
+            "1. \"asset\"                    (string, optional, default=\"*\") filters results -- must be an asset name or a partial asset name followed by '*' ('*' matches all trailing characters)\n"
+            "2. \"verbose\"                  (boolean, optional, default=false) when false results only contain balances -- when true results include outpoints\n"
+            "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ assets found\n"
+            "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
+            "5. \"confs\"                    (integet, optional, default=0) results are skipped if they don't have this number of confirmations\n"
 
-                "\nResult (verbose=false):\n"
-                "{\n"
-                "  (asset_name): balance,\n"
-                "  ...\n"
-                "}\n"
+            "\nResult (verbose=false):\n"
+            "{\n"
+            "  (asset_name): balance,\n"
+            "  ...\n"
+            "}\n"
 
-                "\nResult (verbose=true):\n"
-                "{\n"
-                "  (asset_name):\n"
-                "    {\n"
-                "      \"balance\": balance,\n"
-                "      \"outpoints\":\n"
-                "        [\n"
-                "          {\n"
-                "            \"txid\": txid,\n"
-                "            \"vout\": vout,\n"
-                "            \"amount\": amount\n"
-                "          }\n"
-                "          {...}, {...}\n"
-                "        ]\n"
-                "    }\n"
-                "}\n"
-                "{...}, {...}\n"
+            "\nResult (verbose=true):\n"
+            "{\n"
+            "  (asset_name):\n"
+            "    {\n"
+            "      \"balance\": balance,\n"
+            "      \"outpoints\":\n"
+            "        [\n"
+            "          {\n"
+            "            \"txid\": txid,\n"
+            "            \"vout\": vout,\n"
+            "            \"amount\": amount\n"
+            "          }\n"
+            "          {...}, {...}\n"
+            "        ]\n"
+            "    }\n"
+            "}\n"
+            "{...}, {...}\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleRpc("listmyassets", "")
                 + HelpExampleCli("listmyassets", "ASSET")
                 + HelpExampleCli("listmyassets", "\"ASSET*\" true 10 20")
-                  + HelpExampleCli("listmyassets", "\"ASSET*\" true 10 20 1")
-        );
+                  + HelpExampleCli("listmyassets", "\"ASSET*\" true 10 20 1"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1153,28 +1147,25 @@ UniValue listaddressesbyasset(const JSONRPCRequest& request)
 
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() > 4 || request.params.size() < 1)
         throw std::runtime_error(
-                "listaddressesbyasset \"asset_name\" (onlytotal) (count) (start)\n"
-                + AssetActivationWarning() +
-                "\nReturns a list of all address that own the given asset (with balances)"
-                "\nOr returns the total size of how many address own the given asset"
+            "listaddressesbyasset \"asset_name\" (onlytotal) (count) (start)\n" + AssetActivationWarning() +
+            "\nReturns a list of all address that own the given asset (with balances)"
+            "\nOr returns the total size of how many address own the given asset"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) name of asset\n"
-                "2. \"onlytotal\"                (boolean, optional, default=false) when false result is just a list of addresses with balances -- when true the result is just a single number representing the number of addresses\n"
-                "3. \"count\"                    (integer, optional, default=50000, MAX=50000) truncates results to include only the first _count_ assets found\n"
-                "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) name of asset\n"
+            "2. \"onlytotal\"                (boolean, optional, default=false) when false result is just a list of addresses with balances -- when true the result is just a single number representing the number of addresses\n"
+            "3. \"count\"                    (integer, optional, default=50000, MAX=50000) truncates results to include only the first _count_ assets found\n"
+            "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
 
-                "\nResult:\n"
-                "[ "
-                "  (address): balance,\n"
-                "  ...\n"
-                "]\n"
+            "\nResult:\n"
+            "[ "
+            "  (address): balance,\n"
+            "  ...\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\" false 2 0")
-                + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\" true")
-                + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\"")
-        );
+            "\nExamples:\n" + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\" false 2 0")
+ + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\" true")
+ + HelpExampleCli("listaddressesbyasset", "\"ASSET_NAME\""));
 
     LOCK(cs_main);
 
@@ -1223,29 +1214,27 @@ UniValue transfer(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 3 || request.params.size() > 7)
         throw std::runtime_error(
-                "transfer \"asset_name\" qty \"to_address\" \"message\" expire_time \"change_address\" \"asset_change_address\"\n"
-                + AssetActivationWarning() +
-                "\nTransfers a quantity of an owned asset to a given address"
+            "transfer \"asset_name\" qty \"to_address\" \"message\" expire_time \"change_address\" \"asset_change_address\"\n"
+ + AssetActivationWarning() +
+            "\nTransfers a quantity of an owned asset to a given address"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) name of asset\n"
-                "2. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
-                "3. \"to_address\"               (string, required) address to send the asset to\n"
-                "4. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
-                "5. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "6. \"change_address\"       (string, optional, default = \"\") the transactions SOTER change will be sent to this address\n"
-                "7. \"asset_change_address\"     (string, optional, default = \"\") the transactions Asset change will be sent to this address\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) name of asset\n"
+            "2. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
+            "3. \"to_address\"               (string, required) address to send the asset to\n"
+            "4. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
+            "5. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+            "6. \"change_address\"       (string, optional, default = \"\") the transactions SOTER change will be sent to this address\n"
+            "7. \"asset_change_address\"     (string, optional, default = \"\") the transactions Asset change will be sent to this address\n"
 
-                "\nResult:\n"
-                "txid"
-                "[ \n"
-                "txid\n"
-                "]\n"
+            "\nResult:\n"
+            "txid"
+            "[ \n"
+            "txid\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("transfer", "\"ASSET_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-                + HelpExampleCli("transfer", "\"ASSET_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-        );
+            "\nExamples:\n" + HelpExampleCli("transfer", "\"ASSET_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+ + HelpExampleCli("transfer", "\"ASSET_NAME\" 20 \"address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1348,8 +1337,7 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 4 || request.params.size() > 8)
         throw std::runtime_error(
-            "transferfromaddresses \"asset_name\" [\"from_addresses\"] qty \"to_address\" \"message\" expire_time \"soter_change_address\" \"asset_change_address\"\n"
-            + AssetActivationWarning() +
+            "transferfromaddresses \"asset_name\" [\"from_addresses\"] qty \"to_address\" \"message\" expire_time \"soter_change_address\" \"asset_change_address\"\n" + AssetActivationWarning() +
             "\nTransfer a quantity of an owned asset in specific address(es) to a given address"
 
             "\nArguments:\n"
@@ -1368,10 +1356,9 @@ UniValue transferfromaddresses(const JSONRPCRequest& request)
             "txid\n"
             "]\n"
 
-            "\nExamples:\n"
-            + HelpExampleCli("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
-            + HelpExampleRpc("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
-            );
+            "\nExamples:\n" + 
+            HelpExampleCli("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365")
+            + HelpExampleRpc("transferfromaddresses", "\"ASSET_NAME\" \'[\"fromaddress1\", \"fromaddress2\"]\' 20 \"to_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 154652365"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1501,30 +1488,29 @@ UniValue transferfromaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 4 || request.params.size() > 8)
         throw std::runtime_error(
-                "transferfromaddress \"asset_name\" \"from_address\" qty \"to_address\" \"message\" expire_time \"soter_change_address\" \"asset_change_address\"\n"
-                + AssetActivationWarning() +
-                "\nTransfer a quantity of an owned asset in a specific address to a given address"
+            "transferfromaddress \"asset_name\" \"from_address\" qty \"to_address\" \"message\" expire_time \"soter_change_address\" \"asset_change_address\"\n"
+ + AssetActivationWarning() +
+            "\nTransfer a quantity of an owned asset in a specific address to a given address"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) name of asset\n"
-                "2. \"from_address\"             (string, required) address that the asset will be transferred from\n"
-                "3. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
-                "4. \"to_address\"               (string, required) address to send the asset to\n"
-                "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
-                "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
-                "7. \"soter_change_address\"       (string, optional, default = \"\") the transaction SOTER change will be sent to this address\n"
-                "8. \"asset_change_address\"     (string, optional, default = \"\") the transaction Asset change will be sent to this address\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) name of asset\n"
+            "2. \"from_address\"             (string, required) address that the asset will be transferred from\n"
+            "3. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
+            "4. \"to_address\"               (string, required) address to send the asset to\n"
+            "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
+            "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+            "7. \"soter_change_address\"       (string, optional, default = \"\") the transaction SOTER change will be sent to this address\n"
+            "8. \"asset_change_address\"     (string, optional, default = \"\") the transaction Asset change will be sent to this address\n"
 
-                "\nResult:\n"
-                "txid"
-                "[ \n"
-                "txid\n"
-                "]\n"
+            "\nResult:\n"
+            "txid"
+            "[ \n"
+            "txid\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("transferfromaddress", "\"ASSET_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
-                + HelpExampleRpc("transferfromaddress", "\"ASSET_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("transferfromaddress", "\"ASSET_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652")
+ + HelpExampleRpc("transferfromaddress", "\"ASSET_NAME\" \"fromaddress\" 20 \"address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\", 156545652"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1646,30 +1632,29 @@ UniValue reissue(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() > 7 || request.params.size() < 3)
         throw std::runtime_error(
-                "reissue \"asset_name\" qty \"to_address\" \"change_address\" ( reissuable ) ( new_units ) \"( new_ipfs )\" \"( new_ans_id )\" \n"
-                + AssetActivationWarning() +
-                "\nReissues a quantity of an asset to an owned address if you own the Owner Token"
-                "\nCan change the reissuable flag during reissuance"
-                "\nCan change the ipfs hash during reissuance"
-                "\nCan change the SNS ID during reissuance"
+            "reissue \"asset_name\" qty \"to_address\" \"change_address\" ( reissuable ) ( new_units ) \"( new_ipfs )\" \"( new_ans_id )\" \n"
+ + AssetActivationWarning() +
+            "\nReissues a quantity of an asset to an owned address if you own the Owner Token"
+            "\nCan change the reissuable flag during reissuance"
+            "\nCan change the ipfs hash during reissuance"
+            "\nCan change the SNS ID during reissuance"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) name of asset that is being reissued\n"
-                "2. \"qty\"                      (numeric, required) number of assets to reissue\n"
-                "3. \"to_address\"               (string, required) address to send the asset to\n"
-                "4. \"change_address\"           (string, optional) address that the change of the transaction will be sent to\n"
-                "5. \"reissuable\"               (boolean, optional, default=true), whether future reissuance is allowed\n"
-                "6. \"new_units\"                (numeric, optional, default=-1), the new units that will be associated with the asset\n"
-                "7. \"new_ipfs\"                 (string, optional, default=\"\"), whether to update the current ipfs hash or txid once messaging is active\n"
-                "8. \"new_ans_id\"                (string, optional, default=\"\"), whether to update the current SNS ID once messaging is active\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) name of asset that is being reissued\n"
+            "2. \"qty\"                      (numeric, required) number of assets to reissue\n"
+            "3. \"to_address\"               (string, required) address to send the asset to\n"
+            "4. \"change_address\"           (string, optional) address that the change of the transaction will be sent to\n"
+            "5. \"reissuable\"               (boolean, optional, default=true), whether future reissuance is allowed\n"
+            "6. \"new_units\"                (numeric, optional, default=-1), the new units that will be associated with the asset\n"
+            "7. \"new_ipfs\"                 (string, optional, default=\"\"), whether to update the current ipfs hash or txid once messaging is active\n"
+            "8. \"new_ans_id\"                (string, optional, default=\"\"), whether to update the current SNS ID once messaging is active\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("reissue", "\"ASSET_NAME\" 20 \"address\"")
-                + HelpExampleRpc("reissue", "\"ASSET_NAME\" 20 \"address\" \"change_address\" \"true\" 8 \"Qmd286K6pohQcTKYqnS1YhWrCiS4gz7Xi34sdwMe9USZ7u\"")
-        );
+            "\nExamples:\n" + HelpExampleCli("reissue", "\"ASSET_NAME\" 20 \"address\"")
+ + HelpExampleRpc("reissue", "\"ASSET_NAME\" 20 \"address\" \"change_address\" \"true\" 8 \"Qmd286K6pohQcTKYqnS1YhWrCiS4gz7Xi34sdwMe9USZ7u\"")
+);
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1757,42 +1742,39 @@ UniValue listassets(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() > 4)
         throw std::runtime_error(
-                "listassets \"( asset )\" ( verbose ) ( count ) ( start )\n"
-                + AssetActivationWarning() +
-                "\nReturns a list of all assets\n"
-                "\nThis could be a slow/expensive operation as it reads from the database\n"
+            "listassets \"( asset )\" ( verbose ) ( count ) ( start )\n"
+ + AssetActivationWarning() +
+            "\nReturns a list of all assets\n"
+            "\nThis could be a slow/expensive operation as it reads from the database\n"
 
-                "\nArguments:\n"
-                "1. \"asset\"                    (string, optional, default=\"*\") filters results -- must be an asset name or a partial asset name followed by '*' ('*' matches all trailing characters)\n"
-                "2. \"verbose\"                  (boolean, optional, default=false) when false result is just a list of asset names -- when true results are asset name mapped to metadata\n"
-                "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ assets found\n"
-                "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
+            "\nArguments:\n"
+            "1. \"asset\"                    (string, optional, default=\"*\") filters results -- must be an asset name or a partial asset name followed by '*' ('*' matches all trailing characters)\n"
+            "2. \"verbose\"                  (boolean, optional, default=false) when false result is just a list of asset names -- when true results are asset name mapped to metadata\n"
+            "3. \"count\"                    (integer, optional, default=ALL) truncates results to include only the first _count_ assets found\n"
+            "4. \"start\"                    (integer, optional, default=0) results skip over the first _start_ assets found (if negative it skips back from the end)\n"
 
-                "\nResult (verbose=false):\n"
-                "[\n"
-                "  asset_name,\n"
-                "  ...\n"
-                "]\n"
+            "\nResult (verbose=false):\n"
+            "[\n"
+            "  asset_name,\n"
+            "  ...\n"
+            "]\n"
 
-                "\nResult (verbose=true):\n"
-                "{\n"
-                "  (asset_name):\n"
-                "    {\n"
-                "      amount: (number),\n"
-                "      units: (number),\n"
-                "      reissuable: (number),\n"
-                "      has_ipfs: (number),\n"
-                "      ipfs_hash: (hash) (only if has_ipfs = 1 and data is a ipfs hash)\n"
-                "      ipfs_hash: (hash) (only if has_ipfs = 1 and data is a txid hash)\n"
-                "    },\n"
-                "  {...}, {...}\n"
-                "}\n"
+            "\nResult (verbose=true):\n"
+            "{\n"
+            "  (asset_name):\n"
+            "    {\n"
+            "      amount: (number),\n"
+            "      units: (number),\n"
+            "      reissuable: (number),\n"
+            "      has_ipfs: (number),\n"
+            "      ipfs_hash: (hash) (only if has_ipfs = 1 and data is a ipfs hash)\n"
+            "      ipfs_hash: (hash) (only if has_ipfs = 1 and data is a txid hash)\n"
+            "    },\n"
+            "  {...}, {...}\n"
+            "}\n"
 
-                "\nExamples:\n"
-                + HelpExampleRpc("listassets", "")
-                + HelpExampleCli("listassets", "ASSET")
-                + HelpExampleCli("listassets", "\"ASSET*\" true 10 20")
-        );
+            "\nExamples:\n" +
+            HelpExampleRpc("listassets", "") + HelpExampleCli("listassets", "ASSET") + HelpExampleCli("listassets", "\"ASSET*\" true 10 20"));
 
     ObserveSafeMode();
 
@@ -1933,12 +1915,11 @@ UniValue addtagtoaddress(const JSONRPCRequest& request)
             "\nResult:\n"
             "\"txid\"                     (string) The transaction id\n"
 
-            "\nExamples:\n"
-                + HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\"")
-                + HelpExampleRpc("addtagtoaddress", "\"#TAG\" \"to_address\"")
-                + HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\" \"change_address\"")
-                + HelpExampleRpc("addtagtoaddress", "\"#TAG\" \"to_address\" \"change_address\"")
-        );
+            "\nExamples:\n" + 
+            HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\"")
+            + HelpExampleRpc("addtagtoaddress", "\"#TAG\" \"to_address\"")
+            + HelpExampleCli("addtagtoaddress", "\"#TAG\" \"to_address\" \"change_address\"")
+            + HelpExampleRpc("addtagtoaddress", "\"#TAG\" \"to_address\" \"change_address\""));
 
     // 1 - on
     return UpdateAddressTag(request, 1);
@@ -1948,25 +1929,24 @@ UniValue removetagfromaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
-                "removetagfromaddress tag_name to_address (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nRemove a tag from a address\n"
+            "removetagfromaddress tag_name to_address (change_address) (asset_data)\n"
+             + RestrictedActivationWarning() + "\nRemove a tag from a address\n"
 
-                "\nArguments:\n"
-                "1. \"tag_name\"            (string, required) the name of the tag you are removing from the address\n"
-                "2. \"to_address\"          (string, required) the address that the tag will be removed from\n"
-                "3. \"change_address\"      (string, optional) The change address for the qualifier token to be sent to\n"
-                "4. \"asset_data\"          (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the qualifier token\n"
+            "\nArguments:\n"
+            "1. \"tag_name\"            (string, required) the name of the tag you are removing from the address\n"
+            "2. \"to_address\"          (string, required) the address that the tag will be removed from\n"
+            "3. \"change_address\"      (string, optional) The change address for the qualifier token to be sent to\n"
+            "4. \"asset_data\"          (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the qualifier token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("removetagfromaddress", "\"#TAG\" \"to_address\"")
                 + HelpExampleRpc("removetagfromaddress", "\"#TAG\" \"to_address\"")
                 + HelpExampleCli("removetagfromaddress", "\"#TAG\" \"to_address\" \"change_address\"")
                 + HelpExampleRpc("removetagfromaddress", "\"#TAG\" \"to_address\" \"change_address\"")
-        );
+);
 
     // 0 = off
     return UpdateAddressTag(request, 0);
@@ -1976,25 +1956,23 @@ UniValue freezeaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
-                "freezeaddress asset_name address (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nFreeze an address from transferring a restricted asset\n"
+            "freezeaddress asset_name address (change_address) (asset_data)\n" + RestrictedActivationWarning() +
+            "\nFreeze an address from transferring a restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"       (string, required) the name of the restricted asset you want to freeze\n"
-                "2. \"address\"          (string, required) the address that will be frozen\n"
-                "3. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
-                "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"       (string, required) the name of the restricted asset you want to freeze\n"
+            "2. \"address\"          (string, required) the address that will be frozen\n"
+            "3. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
+            "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("freezeaddress", "\"$RESTRICTED_ASSET\" \"address\"")
                 + HelpExampleRpc("freezeaddress", "\"$RESTRICTED_ASSET\" \"address\"")
                 + HelpExampleCli("freezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\"")
-                + HelpExampleRpc("freezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\"")
-        );
+                + HelpExampleRpc("freezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\""));
 
     // 1 = Freeze
     return UpdateAddressRestriction(request, 1);
@@ -2004,25 +1982,23 @@ UniValue unfreezeaddress(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 2 || request.params.size() > 4)
         throw std::runtime_error(
-                "unfreezeaddress asset_name address (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nUnfreeze an address from transferring a restricted asset\n"
+            "unfreezeaddress asset_name address (change_address) (asset_data)\n" + RestrictedActivationWarning() +
+            "\nUnfreeze an address from transferring a restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
-                "2. \"address\"          (string, required) the address that will be unfrozen\n"
-                "3. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
-                "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
+            "2. \"address\"          (string, required) the address that will be unfrozen\n"
+            "3. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
+            "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("unfreezeaddress", "\"$RESTRICTED_ASSET\" \"address\"")
                 + HelpExampleRpc("unfreezeaddress", "\"$RESTRICTED_ASSET\" \"address\"")
                 + HelpExampleCli("unfreezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\"")
-                + HelpExampleRpc("unfreezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\"")
-        );
+                + HelpExampleRpc("unfreezeaddress", "\"$RESTRICTED_ASSET\" \"address\" \"change_address\""));
 
     // 0 = Unfreeze
     return UpdateAddressRestriction(request, 0);
@@ -2032,24 +2008,23 @@ UniValue freezerestrictedasset(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-                "freezerestrictedasset asset_name (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nFreeze all trading for a specific restricted asset\n"
+            "freezerestrictedasset asset_name (change_address) (asset_data)\n"
+ + RestrictedActivationWarning() +
+            "\nFreeze all trading for a specific restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
-                "2. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
-                "3. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
+            "2. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
+            "3. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("freezerestrictedasset", "\"$RESTRICTED_ASSET\"")
                 + HelpExampleRpc("freezerestrictedasset", "\"$RESTRICTED_ASSET\"")
                 + HelpExampleCli("freezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\"")
-                + HelpExampleRpc("freezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\"")
-        );
+                + HelpExampleRpc("freezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\""));
 
     // 1 = Freeze all trading
     return UpdateGlobalRestrictedAsset(request, 1);
@@ -2059,51 +2034,48 @@ UniValue unfreezerestrictedasset(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 1 || request.params.size() > 3)
         throw std::runtime_error(
-                "unfreezerestrictedasset asset_name (change_address) (asset_data)\n"
-                + RestrictedActivationWarning() +
-                "\nUnfreeze all trading for a specific restricted asset\n"
+            "unfreezerestrictedasset asset_name (change_address) (asset_data)\n"
+ + RestrictedActivationWarning() +
+            "\nUnfreeze all trading for a specific restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
-                "2. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
-                "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"       (string, required) the name of the restricted asset you want to unfreeze\n"
+            "2. \"change_address\"   (string, optional) The change address for the owner token of the restricted asset\n"
+            "4. \"asset_data\"       (string, optional) The asset data (ipfs or a hash) to be applied to the transfer of the owner token\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("unfreezerestrictedasset", "\"$RESTRICTED_ASSET\"")
                 + HelpExampleRpc("unfreezerestrictedasset", "\"$RESTRICTED_ASSET\"")
                 + HelpExampleCli("unfreezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\"")
-                + HelpExampleRpc("unfreezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\"")
-        );
+                + HelpExampleRpc("unfreezerestrictedasset", "\"$RESTRICTED_ASSET\" \"change_address\""));
 
     // 0 = Unfreeze all trading
     return UpdateGlobalRestrictedAsset(request, 0);
 }
 #endif
 
-UniValue listtagsforaddress(const JSONRPCRequest &request)
+UniValue listtagsforaddress(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() !=1)
+    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "listtagsforaddress address\n"
-                + RestrictedActivationWarning() +
-                "\nList all tags assigned to an address\n"
+            "listtagsforaddress address\n" + RestrictedActivationWarning() +
+            "\nList all tags assigned to an address\n"
 
-                "\nArguments:\n"
-                "1. \"address\"          (string, required) the address to list tags for\n"
+            "\nArguments:\n"
+            "1. \"address\"          (string, required) the address to list tags for\n"
 
-                "\nResult:\n"
-                "["
-                "\"tag_name\",        (string) The tag name\n"
-                "...,\n"
-                "]\n"
+            "\nResult:\n"
+            "["
+            "\"tag_name\",        (string) The tag name\n"
+            "...,\n"
+            "]\n"
 
-                "\nExamples:\n"
+            "\nExamples:\n"
                 + HelpExampleCli("listtagsforaddress", "\"address\"")
-                + HelpExampleRpc("listtagsforaddress", "\"address\"")
-        );
+                + HelpExampleRpc("listtagsforaddress", "\"address\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2132,25 +2104,22 @@ UniValue listtagsforaddress(const JSONRPCRequest &request)
 
 UniValue listaddressesfortag(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() !=1)
+    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "listaddressesfortag tag_name\n"
-                + RestrictedActivationWarning() +
-                "\nList all addresses that have been assigned a given tag\n"
+            "listaddressesfortag tag_name\n" + RestrictedActivationWarning() +
+            "\nList all addresses that have been assigned a given tag\n"
 
-                "\nArguments:\n"
-                "1. \"tag_name\"          (string, required) the tag asset name to search for\n"
+            "\nArguments:\n"
+            "1. \"tag_name\"          (string, required) the tag asset name to search for\n"
 
-                "\nResult:\n"
-                "["
-                "\"address\",        (string) The address\n"
-                "...,\n"
-                "]\n"
+            "\nResult:\n"
+            "["
+            "\"address\",        (string) The address\n"
+            "...,\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("listaddressesfortag", "\"#TAG\"")
-                + HelpExampleRpc("listaddressesfortag", "\"#TAG\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("listaddressesfortag", "\"#TAG\"") + HelpExampleRpc("listaddressesfortag", "\"#TAG\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2178,25 +2147,22 @@ UniValue listaddressesfortag(const JSONRPCRequest& request)
 
 UniValue listaddressrestrictions(const JSONRPCRequest& request)
 {
-    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() !=1)
+    if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "listaddressrestrictions address\n"
-                + RestrictedActivationWarning() +
-                "\nList all assets that have frozen this address\n"
+            "listaddressrestrictions address\n" + RestrictedActivationWarning() +
+            "\nList all assets that have frozen this address\n"
 
-                "\nArguments:\n"
-                "1. \"address\"          (string), required) the address to list restrictions for\n"
+            "\nArguments:\n"
+            "1. \"address\"          (string), required) the address to list restrictions for\n"
 
-                "\nResult:\n"
-                "["
-                "\"asset_name\",        (string) The restriction name\n"
-                "...,\n"
-                "]\n"
+            "\nResult:\n"
+            "["
+            "\"asset_name\",        (string) The restriction name\n"
+            "...,\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("listaddressrestrictions", "\"address\"")
-                + HelpExampleRpc("listaddressrestrictions", "\"address\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("listaddressrestrictions", "\"address\"") + HelpExampleRpc("listaddressrestrictions", "\"address\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2226,21 +2192,18 @@ UniValue listglobalrestrictions(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 0)
         throw std::runtime_error(
-                "listglobalrestrictions\n"
-                + RestrictedActivationWarning() +
-                "\nList all global restricted assets\n"
+            "listglobalrestrictions\n" + RestrictedActivationWarning() +
+            "\nList all global restricted assets\n"
 
 
-                "\nResult:\n"
-                "["
-                "\"asset_name\", (string) The asset name\n"
-                "...,\n"
-                "]\n"
+            "\nResult:\n"
+            "["
+            "\"asset_name\", (string) The asset name\n"
+            "...,\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("listglobalrestrictions", "")
-                + HelpExampleRpc("listglobalrestrictions", "")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("listglobalrestrictions", "") + HelpExampleRpc("listglobalrestrictions", ""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2263,20 +2226,18 @@ UniValue getverifierstring(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "getverifierstring restricted_name\n"
-                + RestrictedActivationWarning() +
-                "\nRetrieve the verifier string that belongs to the given restricted asset\n"
+            "getverifierstring restricted_name\n" + RestrictedActivationWarning() +
+            "\nRetrieve the verifier string that belongs to the given restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"restricted_name\"          (string, required) the asset_name\n"
+            "\nArguments:\n"
+            "1. \"restricted_name\"          (string, required) the asset_name\n"
 
-                "\nResult:\n"
-                "\"verifier_string\", (string) The verifier for the asset\n"
+            "\nResult:\n"
+            "\"verifier_string\", (string) The verifier for the asset\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("getverifierstring", "\"restricted_name\"")
-                + HelpExampleRpc("getverifierstring", "\"restricted_name\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("getverifierstring", "\"restricted_name\"")
+            + HelpExampleRpc("getverifierstring", "\"restricted_name\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2298,21 +2259,18 @@ UniValue checkaddresstag(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 2)
         throw std::runtime_error(
-                "checkaddresstag address tag_name\n"
-                + RestrictedActivationWarning() +
-                "\nChecks to see if an address has the given tag\n"
+            "checkaddresstag address tag_name\n" + RestrictedActivationWarning() +
+            "\nChecks to see if an address has the given tag\n"
 
-                "\nArguments:\n"
-                "1. \"address\"          (string, required) the SOTER address to search\n"
-                "1. \"tag_name\"         (string, required) the tag to search\n"
+            "\nArguments:\n"
+            "1. \"address\"          (string, required) the SOTER address to search\n"
+            "1. \"tag_name\"         (string, required) the tag to search\n"
 
-                "\nResult:\n"
-                "\"true/false\", (boolean) If the address has the tag\n"
+            "\nResult:\n"
+            "\"true/false\", (boolean) If the address has the tag\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("checkaddresstag", "\"address\" \"tag_name\"")
-                + HelpExampleRpc("checkaddresstag", "\"address\" \"tag_name\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("checkaddresstag", "\"address\" \"tag_name\"") + HelpExampleRpc("checkaddresstag", "\"address\" \"tag_name\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2339,21 +2297,19 @@ UniValue checkaddressrestriction(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 2)
         throw std::runtime_error(
-                "checkaddressrestriction address restricted_name\n"
-                + RestrictedActivationWarning() +
-                "\nChecks to see if an address has been frozen by the given restricted asset\n"
+            "checkaddressrestriction address restricted_name\n" + RestrictedActivationWarning() +
+            "\nChecks to see if an address has been frozen by the given restricted asset\n"
 
-                "\nArguments:\n"
-                "1. \"address\"          (string, required) the SOTER address to search\n"
-                "1. \"restricted_name\"   (string, required) the restricted asset to search\n"
+            "\nArguments:\n"
+            "1. \"address\"          (string, required) the SOTER address to search\n"
+            "1. \"restricted_name\"   (string, required) the restricted asset to search\n"
 
-                "\nResult:\n"
-                "\"true/false\", (boolean) If the address is frozen\n"
+            "\nResult:\n"
+            "\"true/false\", (boolean) If the address is frozen\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("checkaddressrestriction", "\"address\" \"restricted_name\"")
-                + HelpExampleRpc("checkaddressrestriction", "\"address\" \"restricted_name\"")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("checkaddressrestriction", "\"address\" \"restricted_name\"")
+            + HelpExampleRpc("checkaddressrestriction", "\"address\" \"restricted_name\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2379,20 +2335,18 @@ UniValue checkglobalrestriction(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "checkglobalrestriction restricted_name\n"
-                + RestrictedActivationWarning() +
-                "\nChecks to see if a restricted asset is globally frozen\n"
+            "checkglobalrestriction restricted_name\n" + RestrictedActivationWarning() +
+            "\nChecks to see if a restricted asset is globally frozen\n"
 
-                "\nArguments:\n"
-                "1. \"restricted_name\"   (string, required) the restricted asset to search\n"
+            "\nArguments:\n"
+            "1. \"restricted_name\"   (string, required) the restricted asset to search\n"
 
-                "\nResult:\n"
-                "\"true/false\", (boolean) If the restricted asset is frozen globally\n"
+            "\nResult:\n"
+            "\"true/false\", (boolean) If the restricted asset is frozen globally\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("checkglobalrestriction", "\"restricted_name\"")
-                + HelpExampleRpc("checkglobalrestriction", "\"restricted_name\"")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("checkglobalrestriction", "\"restricted_name\"")
+             + HelpExampleRpc("checkglobalrestriction", "\"restricted_name\""));
 
     if (!prestricteddb)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Restricted asset database not available");
@@ -2414,35 +2368,33 @@ UniValue issuequalifierasset(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 1 || request.params.size() > 6)
         throw std::runtime_error(
-                "issuequalifierasset \"asset_name\" qty \"( to_address )\" \"( change_address )\" ( has_ipfs ) \"( ipfs_hash )\"\n"
-                + RestrictedActivationWarning() +
-                "\nIssue an qualifier or sub qualifier asset\n"
-                "If the '#' character isn't added, it will be added automatically\n"
-                "Amount is a number between 1 and 10\n"
-                "Asset name must not conflict with any existing asset.\n"
-                "Unit is always set to Zero (0) for qualifier assets\n"
-                "Reissuable is always set to false for qualifier assets\n"
+            "issuequalifierasset \"asset_name\" qty \"( to_address )\" \"( change_address )\" ( has_ipfs ) \"( ipfs_hash )\"\n" + RestrictedActivationWarning() +
+            "\nIssue an qualifier or sub qualifier asset\n"
+            "If the '#' character isn't added, it will be added automatically\n"
+            "Amount is a number between 1 and 10\n"
+            "Asset name must not conflict with any existing asset.\n"
+            "Unit is always set to Zero (0) for qualifier assets\n"
+            "Reissuable is always set to false for qualifier assets\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"            (string, required) a unique name\n"
-                "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
-                "3. \"to_address\"            (string), optional, default=\"\"), address asset will be sent to, if it is empty, address will be generated for you\n"
-                "4. \"change_address\"        (string), optional, default=\"\"), address the the soter change will be sent to, if it is empty, change address will be generated for you\n"
-                "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the asset\n"
-                "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"            (string, required) a unique name\n"
+            "2. \"qty\"                   (numeric, optional, default=1) the number of units to be issued\n"
+            "3. \"to_address\"            (string), optional, default=\"\"), address asset will be sent to, if it is empty, address will be generated for you\n"
+            "4. \"change_address\"        (string), optional, default=\"\"), address the the soter change will be sent to, if it is empty, change address will be generated for you\n"
+            "5. \"has_ipfs\"              (boolean, optional, default=false), whether ipfs hash is going to be added to the asset\n"
+            "6. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1), an ipfs hash or a txid hash once messaging is activated\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000")
-                + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME\" 1000 \"myaddress\"")
-                + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\"")
-                + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\"")
-                + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\" true QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
-                + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME/SUB_QUALIFIER\" 1000 \"myaddress\" \"changeaddress\"")
-                + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\"")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000")
+             + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME\" 1000 \"myaddress\"")
+             + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\"")
+             + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\"")
+             + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\" 1000 \"myaddress\" \"changeaddress\" true QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
+             + HelpExampleCli("issuequalifierasset", "\"ASSET_NAME/SUB_QUALIFIER\" 1000 \"myaddress\" \"changeaddress\"")
+             + HelpExampleCli("issuequalifierasset", "\"#ASSET_NAME\""));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -2571,34 +2523,32 @@ UniValue issuerestrictedasset(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 4 || request.params.size() > 9)
         throw std::runtime_error(
-                "issuerestrictedasset \"asset_name\" qty \"verifier\" \"to_address\" \"( change_address )\" (units) ( reissuable ) ( has_ipfs ) \"( ipfs_hash )\"\n"
-                + RestrictedActivationWarning() +
-                "\nIssue a restricted asset.\n"
-                "Restricted asset names must not conflict with any existing restricted asset.\n"
-                "Restricted assets have units set to 0.\n"
-                "Reissuable is true/false for whether additional asset quantity can be created and if the verifier string can be changed\n"
+            "issuerestrictedasset \"asset_name\" qty \"verifier\" \"to_address\" \"( change_address )\" (units) ( reissuable ) ( has_ipfs ) \"( ipfs_hash )\"\n" + RestrictedActivationWarning() +
+            "\nIssue a restricted asset.\n"
+            "Restricted asset names must not conflict with any existing restricted asset.\n"
+            "Restricted assets have units set to 0.\n"
+            "Reissuable is true/false for whether additional asset quantity can be created and if the verifier string can be changed\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"            (string, required) a unique name, starts with '$', if '$' is not there it will be added automatically\n"
-                "2. \"qty\"                   (numeric, required) the quantity of the asset to be issued\n"
-                "3. \"verifier\"              (string, required) the verifier string that will be evaluated when restricted asset transfers are made\n"
-                "4. \"to_address\"            (string, required) address asset will be sent to, this address must meet the verifier string requirements\n"
-                "5. \"change_address\"        (string, optional, default=\"\") address that the soter change will be sent to, if it is empty, change address will be generated for you\n"
-                "6. \"units\"                 (integer, optional, default=0, min=0, max=8) the number of decimals precision for the asset (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
-                "7. \"reissuable\"            (boolean, optional, default=true (false for unique assets)) whether future reissuance is allowed\n"
-                "8. \"has_ipfs\"              (boolean, optional, default=false) whether an ipfs hash or txid hash is going to be added to the asset\n"
-                "9. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1) an ipfs hash or a txid hash once messaging is activated\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"            (string, required) a unique name, starts with '$', if '$' is not there it will be added automatically\n"
+            "2. \"qty\"                   (numeric, required) the quantity of the asset to be issued\n"
+            "3. \"verifier\"              (string, required) the verifier string that will be evaluated when restricted asset transfers are made\n"
+            "4. \"to_address\"            (string, required) address asset will be sent to, this address must meet the verifier string requirements\n"
+            "5. \"change_address\"        (string, optional, default=\"\") address that the soter change will be sent to, if it is empty, change address will be generated for you\n"
+            "6. \"units\"                 (integer, optional, default=0, min=0, max=8) the number of decimals precision for the asset (0 for whole units (\"1\"), 8 for max precision (\"1.00000000\")\n"
+            "7. \"reissuable\"            (boolean, optional, default=true (false for unique assets)) whether future reissuance is allowed\n"
+            "8. \"has_ipfs\"              (boolean, optional, default=false) whether an ipfs hash or txid hash is going to be added to the asset\n"
+            "9. \"ipfs_hash\"             (string, optional but required if has_ipfs = 1) an ipfs hash or a txid hash once messaging is activated\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\"")
-                + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\"")
-                + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 5")
-                + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 8 true")
-                + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 0 false true QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\"")
+             + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\"")
+             + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 5")
+             + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 8 true")
+             + HelpExampleCli("issuerestrictedasset", "\"$ASSET_NAME\" 1000 \"#KYC & !#AML\" \"myaddress\" \"changeaddress\" 0 false true QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -2719,32 +2669,30 @@ UniValue reissuerestrictedasset(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() < 3 || request.params.size() > 9)
         throw std::runtime_error(
-                "reissuerestrictedasset \"asset_name\" qty to_address ( change_verifier ) ( \"new_verifier\" ) \"( change_address )\" ( new_units ) ( reissuable ) \"( new_ipfs )\"\n"
-                + RestrictedActivationWarning() +
-                "\nReissue an already created restricted asset\n"
-                "Reissuable is true/false for whether additional asset quantity can be created and if the verifier string can be changed\n"
+            "reissuerestrictedasset \"asset_name\" qty to_address ( change_verifier ) ( \"new_verifier\" ) \"( change_address )\" ( new_units ) ( reissuable ) \"( new_ipfs )\"\n" + RestrictedActivationWarning() +
+            "\nReissue an already created restricted asset\n"
+            "Reissuable is true/false for whether additional asset quantity can be created and if the verifier string can be changed\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"            (string, required) a unique name, starts with '$'\n"
-                "2. \"qty\"                   (numeric, required) the additional quantity of the asset to be issued\n"
-                "3. \"to_address\"            (string, required) address asset will be sent to, this address must meet the verifier string requirements\n"
-                "4. \"change_verifier\"       (boolean, optional, default=false) if the verifier string will get changed\n"
-                "5. \"new_verifier\"          (string, optional, default=\"\") the new verifier string that will be evaluated when restricted asset transfers are made\n"
-                "6. \"change_address\"        (string, optional, default=\"\") address that the soter change will be sent to, if it is empty, change address will be generated for you\n"
-                "7. \"new_units\"             (numeric, optional, default=-1) the new units that will be associated with the asset\n"
-                "8. \"reissuable\"            (boolean, optional, default=true (false for unique assets)) whether future reissuance is allowed\n"
-                "9. \"new_ipfs\"              (string, optional, default=\"\") whether to update the current ipfs hash or txid once messaging is active\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"            (string, required) a unique name, starts with '$'\n"
+            "2. \"qty\"                   (numeric, required) the additional quantity of the asset to be issued\n"
+            "3. \"to_address\"            (string, required) address asset will be sent to, this address must meet the verifier string requirements\n"
+            "4. \"change_verifier\"       (boolean, optional, default=false) if the verifier string will get changed\n"
+            "5. \"new_verifier\"          (string, optional, default=\"\") the new verifier string that will be evaluated when restricted asset transfers are made\n"
+            "6. \"change_address\"        (string, optional, default=\"\") address that the soter change will be sent to, if it is empty, change address will be generated for you\n"
+            "7. \"new_units\"             (numeric, optional, default=-1) the new units that will be associated with the asset\n"
+            "8. \"reissuable\"            (boolean, optional, default=true (false for unique assets)) whether future reissuance is allowed\n"
+            "9. \"new_ipfs\"              (string, optional, default=\"\") whether to update the current ipfs hash or txid once messaging is active\n"
 
-                "\nResult:\n"
-                "\"txid\"                     (string) The transaction id\n"
+            "\nResult:\n"
+            "\"txid\"                     (string) The transaction id\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\"")
-                + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" ")
-                + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" \"changeaddress\"")
-                + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" \"changeaddress\" -1 true")
-                + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" false \"\" \"changeaddress\" -1 false QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E")
-        );
+            "\nExamples:\n"
+            + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\"")
+            + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" ")
+            + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" \"changeaddress\"")
+            + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" true \"KYC & !AML\" \"changeaddress\" -1 true")
+            + HelpExampleCli("reissuerestrictedasset", "\"$ASSET_NAME\" 1000  \"myaddress\" false \"\" \"changeaddress\" -1 false QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -2861,28 +2809,27 @@ UniValue transferqualifier(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 3 || request.params.size() > 6)
         throw std::runtime_error(
-                "transferqualifier \"qualifier_name\" qty \"to_address\" (\"change_address\") (\"message\") (expire_time) \n"
-                + RestrictedActivationWarning() +
-                "\nTransfer a qualifier asset owned by this wallet to the given address"
+            "transferqualifier \"qualifier_name\" qty \"to_address\" (\"change_address\") (\"message\") (expire_time) \n"
+             + RestrictedActivationWarning() +
+            "\nTransfer a qualifier asset owned by this wallet to the given address"
 
-                "\nArguments:\n"
-                "1. \"qualifier_name\"           (string, required) name of qualifier asset\n"
-                "2. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
-                "3. \"to_address\"               (string, required) address to send the asset to\n"
-                "4. \"change_address\"           (string, optional, default = \"\") the transaction change will be sent to this address\n"
-                "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
-                "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
+            "\nArguments:\n"
+            "1. \"qualifier_name\"           (string, required) name of qualifier asset\n"
+            "2. \"qty\"                      (numeric, required) number of assets you want to send to the address\n"
+            "3. \"to_address\"               (string, required) address to send the asset to\n"
+            "4. \"change_address\"           (string, optional, default = \"\") the transaction change will be sent to this address\n"
+            "5. \"message\"                  (string, optional) Once messaging is voted in ipfs hash or txid hash to send along with the transfer\n"
+            "6. \"expire_time\"              (numeric, optional) UTC timestamp of when the message expires\n"
 
-                "\nResult:\n"
-                "txid"
-                "[ \n"
-                "txid\n"
-                "]\n"
+            "\nResult:\n"
+            "txid"
+            "[ \n"
+            "txid\n"
+            "]\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("transferqualifier", "\"#QUALIFIER\" 20 \"to_address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-                + HelpExampleCli("transferqualifier", "\"#QUALIFIER\" 20 \"to_address\" \"change_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("transferqualifier", "\"#QUALIFIER\" 20 \"to_address\" \"\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654")
+             + HelpExampleCli("transferqualifier", "\"#QUALIFIER\" 20 \"to_address\" \"change_address\" \"QmTqu3Lk3gmTsQVtjU7rYYM37EAW4xNmbuEAp2Mjr4AV7E\" 15863654"));
 
     CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -2973,20 +2920,18 @@ UniValue isvalidverifierstring(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreRestrictedAssetsDeployed() || request.params.size() != 1)
         throw std::runtime_error(
-                "isvalidverifierstring verifier_string\n"
-                + RestrictedActivationWarning() +
-                "\nChecks to see if the given verifier string is valid\n"
+            "isvalidverifierstring verifier_string\n" + RestrictedActivationWarning() +
+            "\nChecks to see if the given verifier string is valid\n"
 
-                "\nArguments:\n"
-                "1. \"verifier_string\"   (string, required) the verifier string to check\n"
+            "\nArguments:\n"
+            "1. \"verifier_string\"   (string, required) the verifier string to check\n"
 
-                "\nResult:\n"
-                "\"xxxxxxx\", (string) If the verifier string is valid, and the reason\n"
+            "\nResult:\n"
+            "\"xxxxxxx\", (string) If the verifier string is valid, and the reason\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("isvalidverifierstring", "\"verifier_string\"")
-                + HelpExampleRpc("isvalidverifierstring", "\"verifier_string\"")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("isvalidverifierstring", "\"verifier_string\"")
+             + HelpExampleRpc("isvalidverifierstring", "\"verifier_string\""));
 
     ObserveSafeMode();
     LOCK(cs_main);
@@ -3010,28 +2955,26 @@ UniValue getsnapshot(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 2)
         throw std::runtime_error(
-                "getsnapshot \"asset_name\" block_height\n"
-                + AssetActivationWarning() +
-                "\nReturns details for the asset snapshot, at the specified height\n"
+            "getsnapshot \"asset_name\" block_height\n" + AssetActivationWarning() +
+            "\nReturns details for the asset snapshot, at the specified height\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) the name of the asset\n"
-                "2. block_height                 (int, required) the block height of the snapshot\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) the name of the asset\n"
+            "2. block_height                 (int, required) the block height of the snapshot\n"
 
-                "\nResult:\n"
-                "{\n"
-                "  name: (string),\n"
-                "  height: (number),\n"
-                "  owners: [\n"
-                "    {\n"
-                "      address: (string),\n"
-                "      amount_owned: (number),\n"
-                "    }\n"
-                "}\n"
+            "\nResult:\n"
+            "{\n"
+            "  name: (string),\n"
+            "  height: (number),\n"
+            "  owners: [\n"
+            "    {\n"
+            "      address: (string),\n"
+            "      amount_owned: (number),\n"
+            "    }\n"
+            "}\n"
 
-                "\nExamples:\n"
-                + HelpExampleRpc("getsnapshot", "\"ASSET_NAME\" 28546")
-        );
+            "\nExamples:\n"
+             + HelpExampleRpc("getsnapshot", "\"ASSET_NAME\" 28546"));
 
 
     std::string asset_name = request.params[0].get_str();
@@ -3071,24 +3014,22 @@ UniValue purgesnapshot(const JSONRPCRequest& request)
 {
     if (request.fHelp || !AreAssetsDeployed() || request.params.size() < 2)
         throw std::runtime_error(
-                "purgesnapshot \"asset_name\" block_height\n"
-                + AssetActivationWarning() +
-                "\nRemoves details for the asset snapshot, at the specified height\n"
+            "purgesnapshot \"asset_name\" block_height\n" + AssetActivationWarning() +
+            "\nRemoves details for the asset snapshot, at the specified height\n"
 
-                "\nArguments:\n"
-                "1. \"asset_name\"               (string, required) the name of the asset\n"
-                "2. block_height                 (int, required) the block height of the snapshot\n"
+            "\nArguments:\n"
+            "1. \"asset_name\"               (string, required) the name of the asset\n"
+            "2. block_height                 (int, required) the block height of the snapshot\n"
 
-                "\nResult:\n"
-                "{\n"
-                "  name: (string),\n"
-                "  height: (number),\n"
-                "}\n"
+            "\nResult:\n"
+            "{\n"
+            "  name: (string),\n"
+            "  height: (number),\n"
+            "}\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("purgesnapshot", "\"ASSET_NAME\" 28546")
-                + HelpExampleRpc("purgesnapshot", "\"ASSET_NAME\" 28546")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("purgesnapshot", "\"ASSET_NAME\" 28546")
+             + HelpExampleRpc("purgesnapshot", "\"ASSET_NAME\" 28546"));
 
 
     std::string asset_name = request.params[0].get_str();
@@ -3101,7 +3042,7 @@ UniValue purgesnapshot(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_DATABASE_ERROR, std::string("Asset Snapshot database is not setup. Please restart wallet to try again"));
 
     LOCK(cs_main);
-    UniValue result (UniValue::VOBJ);
+    UniValue result(UniValue::VOBJ);
 
     if (pAssetSnapshotDb->RemoveOwnershipSnapshot(asset_name, block_height)) {
         result.push_back(Pair("name", asset_name));
@@ -3119,20 +3060,19 @@ UniValue ansencode(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 2)
         throw std::runtime_error(
-                "ansencode \"type\" \"data\"\n"
-                "\nEncode SNS ID\n"
+            "ansencode \"type\" \"data\"\n"
+            "\nEncode SNS ID\n"
 
-                "\nArguments:\n"
-                "1. \"type\"               (string, required) type (addr, ip)\n"
-                "2. \"data\"            (string, required) data (addr, ip)\n"
+            "\nArguments:\n"
+            "1. \"type\"               (string, required) type (addr, ip)\n"
+            "2. \"data\"            (string, required) data (addr, ip)\n"
 
-                "\nResult:\n"
-                "\nANS1ffffffff\n"
+            "\nResult:\n"
+            "\nANS1ffffffff\n"
 
-                "\nExamples:\n"
-                + HelpExampleCli("ansencode", "\"ip\" 127.0.0.1")
-                + HelpExampleRpc("ansencode", "\"ip\" 127.0.0.1")
-        );
+            "\nExamples:\n"
+             + HelpExampleCli("ansencode", "\"ip\" 127.0.0.1")
+             + HelpExampleRpc("ansencode", "\"ip\" 127.0.0.1"));
 
     std::string strType = request.params[0].get_str();
     std::string strData = request.params[1].get_str();
@@ -3173,9 +3113,8 @@ UniValue ansdecode(const JSONRPCRequest& request)
             "\nANS1ffffffff\n"
 
             "\nExamples:\n"
-                + HelpExampleCli("ansdecode", "ANS1ffffffff")
-                + HelpExampleRpc("ansdecode", "ANS1ffffffff")
-        );
+             + HelpExampleCli("ansdecode", "ANS1ffffffff")
+             + HelpExampleRpc("ansdecode", "ANS1ffffffff"));
 
     std::string strID = request.params[0].get_str();
 
@@ -3184,7 +3123,7 @@ UniValue ansdecode(const JSONRPCRequest& request)
 
     CSoteriaNameSystem ansID(strID);
 
-    UniValue result (UniValue::VOBJ);
+    UniValue result(UniValue::VOBJ);
 
     result.pushKV("ans_id", ansID.to_string());
     result.pushKV("type_hex", ansID.type());
