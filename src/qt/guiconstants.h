@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #include "validation.h"
 
@@ -46,7 +44,7 @@ static const bool DEFAULT_SPLASHSCREEN = true;
 #define COLOR_SOTERIA_34E2D6 QColor("#34E2D6")
 
 
-#define COLOR_WALLETFRAME_SHADOW QColor(0,0,0,71)
+#define COLOR_WALLETFRAME_SHADOW QColor(0, 0, 0, 71)
 
 /* Color of labels */
 #define COLOR_LABELS QColor("#FFFFFF")
@@ -132,16 +130,16 @@ static const int MAX_URI_LENGTH = 255;
 #define SPINNER_FRAMES 36
 
 #define QAPP_ORG_NAME "Soteria"
-#define QAPP_ORG_DOMAIN "soteria-network.site"
+#define QAPP_ORG_DOMAIN "soteria-network.online"
 #define QAPP_APP_NAME_DEFAULT "Soteria-Qt"
 #define QAPP_APP_NAME_TESTNET "Soteria-Qt-testnet"
 #define QAPP_APP_NAME_REGTEST "Soteria-Qt-regtest"
 
 /* Default third party browser urls */
-#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.online/tx/?txid=%s|https://explorer.soteria-network.online/tx/%s"
-//#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.site/tx/%s|https://explorer.soteria-network.site/tx/%s"
+#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer.soteria-network.online/tx/%s|https://explorer.soteria-network.online/tx/?txid=%s"
+//#define DEFAULT_THIRD_PARTY_BROWSERS "https://explorer-eu.soteria-network.online/tx/%s|https://explorer-us.soteria-network.online/tx/%s"
 /* Default IPFS viewer */
-#define DEFAULT_IPFS_VIEWER "https://ipfs.soteria-network/ipfs/%s"
+#define DEFAULT_IPFS_VIEWER "https://ipfs.soteria-network.online/ipfs/%s"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1000000000};
