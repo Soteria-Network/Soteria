@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #include <chainparams.h>
 #include <string>
@@ -42,7 +40,7 @@ uint256 CBlockHeader::ComputePoWHash() const
     uint32_t nSoterCTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp;
 
     if (nTime > nSoterGTimestamp) {
-        if(nTime > nSoterCTimestamp) {
+        if (nTime > nSoterCTimestamp) {
             // Dual algo
             switch (GetPoWType()) {
             case POW_TYPE_SOTERG: {
@@ -64,8 +62,7 @@ uint256 CBlockHeader::ComputePoWHash() const
             uint256 hashTime = Hash(BEGIN(nTimeSoterG), END(nTimeSoterG));
             thash = HashX12R(BEGIN(nVersion), END(nNonce), hashTime);
         }
-    }
-    else {
+    } else {
         // we keep it for testing only.
         thash = HashX12R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
     }
@@ -89,7 +86,7 @@ uint256 CBlockHeader::GetHash(bool readCache) const
     if (!found || cache.IsValidate()) {
         uint256 powHash2 = ComputePoWHash();
         if (found && powHash2 != powHash) {
-           LogPrintf("PowCache failure: headerHash: %s, from cache: %s, computed: %s, correcting\n", headerHash.ToString(), powHash.ToString(), powHash2.ToString());
+            LogPrintf("PowCache failure: headerHash: %s, from cache: %s, computed: %s, correcting\n", headerHash.ToString(), powHash.ToString(), powHash2.ToString());
         }
         powHash = powHash2;
         cache.erase(headerHash); // If it exists, replace it.
@@ -99,7 +96,8 @@ uint256 CBlockHeader::GetHash(bool readCache) const
 }
 
 // Soterc algo
-uint256 CBlockHeader::SoterCHashArbitrary(const char* data) {
+uint256 CBlockHeader::SoterCHashArbitrary(const char* data)
+{
     return Soterc(data, data + strlen(data), true);
 }
 
@@ -124,36 +122,3 @@ std::string CBlock::ToString() const
     }
     return s.str();
 }
-
-/// Used to test algo switching between X16R and X16RV2
-
-//uint256 CBlockHeader::TestTiger() const
-//{
-//    return HashTestTiger(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-//
-//uint256 CBlockHeader::TestSha512() const
-//{
-//    return HashTestSha512(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-//
-//uint256 CBlockHeader::TestGost512() const
-//{
-//    return HashTestGost512(BEGIN(nVersion), END(nNonce), hashPrevBlock);
-//}
-
-//CBlock block = GetParams().GenesisBlock();
-//int64_t nStart = GetTimeMillis();
-//LogPrintf("Starting Tiger %dms\n", nStart);
-//block.TestTiger();
-//LogPrintf("Tiger Finished %dms\n", GetTimeMillis() - nStart);
-//
-//nStart = GetTimeMillis();
-//LogPrintf("Starting Sha512 %dms\n", nStart);
-//block.TestSha512();
-//LogPrintf("Sha512 Finished %dms\n", GetTimeMillis() - nStart);
-//
-//nStart = GetTimeMillis();
-//LogPrintf("Starting Gost512 %dms\n", nStart);
-//block.TestGost512();
-//LogPrintf("Gost512 Finished %dms\n", GetTimeMillis() - nStart);
