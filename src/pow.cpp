@@ -43,7 +43,7 @@ bool SafeMultiply(int64_t a, int64_t b, int64_t& result) {
     }
 }
 
-unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params) {
+unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::ConsensusParams& params) {
     assert(pindexLast != nullptr);
 
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
@@ -63,7 +63,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockH
             return nProofOfWorkLimit;
         else {
             // Return the last non-special-min-difficulty-rules-block
-            const CBlockIndex *pindex = pindexLast;
+            const CBlockIndex* pindex = pindexLast;
             while (pindex->pprev && pindex->nHeight % params.DifficultyAdjustmentInterval() != 0 &&
                    pindex->nBits == nProofOfWorkLimit)
                 pindex = pindex->pprev;
@@ -71,7 +71,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockH
         }
     }
 
-    const CBlockIndex *pindex = pindexLast;
+    const CBlockIndex* pindex = pindexLast;
     arith_uint256 bnPastTargetAvg;
 
     for (unsigned int nCountBlocks = 1; nCountBlocks <= nPastBlocks; nCountBlocks++) {
@@ -83,7 +83,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockH
             bnPastTargetAvg = (bnPastTargetAvg * nCountBlocks + bnTarget) / (nCountBlocks + 1);
         }
 
-        if(nCountBlocks != nPastBlocks) {
+        if (nCountBlocks != nPastBlocks) {
             assert(pindex->pprev); // should never fail
             pindex = pindex->pprev;
         }
@@ -95,10 +95,10 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockH
     // NOTE: is this accurate? nActualTimespan counts it for (nPastBlocks - 1) blocks only...
     int64_t nTargetTimespan = nPastBlocks * params.nPowTargetSpacing;
 
-    if (nActualTimespan < nTargetTimespan/3)
-        nActualTimespan = nTargetTimespan/3;
-    if (nActualTimespan > nTargetTimespan*3)
-        nActualTimespan = nTargetTimespan*3;
+    if (nActualTimespan < nTargetTimespan / 3)
+        nActualTimespan = nTargetTimespan / 3;
+    if (nActualTimespan > nTargetTimespan * 3)
+        nActualTimespan = nTargetTimespan * 3;
 
     // Retarget
     bnNew *= nActualTimespan;
@@ -110,7 +110,7 @@ unsigned int static DarkGravityWave(const CBlockIndex* pindexLast, const CBlockH
     return bnNew.GetCompact();
 }
 
-unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params)
+unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::ConsensusParams& params)
 {
     assert(pindexLast != nullptr);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
@@ -146,7 +146,7 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
     return CalculateNextWorkRequired(pindexLast, pindexFirst->GetBlockTime(), params);
 }
 
-bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params)
+bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::ConsensusParams& params)
 {
     if (pblock->nTime <= params.nSoterGTimestamp)
         return false;
@@ -162,7 +162,7 @@ bool IsTransitioningToSoterG(const CBlockIndex* pindexLast, const CBlockHeader *
     return pindex->nTime <= params.nSoterGTimestamp;
 }
 
-unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params, const POW_TYPE powType)
+unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::ConsensusParams& params, const POW_TYPE powType)
 {    
     // handle null prior index up-front and choose LWMA5 as the default, since it is first phase after bootstrap    
     if (!pindexLast)        
@@ -663,7 +663,7 @@ unsigned int GetNextWorkRequiredLWMA7(
 }
 
 // Call correct diff adjust for blocks prior to SoterC Algo
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::ConsensusParams& params)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock, const Consensus::ConsensusParams& params)
 {
     int dgw = DarkGravityWave(pindexLast, pblock, params);
     int btc = GetNextWorkRequiredBTC(pindexLast, pblock, params);
@@ -688,10 +688,10 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
 
     // Limit adjustment step
     int64_t nActualTimespan = pindexLast->GetBlockTime() - nFirstBlockTime;
-    if (nActualTimespan < params.nPowTargetTimespan/4)
-        nActualTimespan = params.nPowTargetTimespan/4;
-    if (nActualTimespan > params.nPowTargetTimespan*4)
-        nActualTimespan = params.nPowTargetTimespan*4;
+    if (nActualTimespan < params.nPowTargetTimespan / 4)
+        nActualTimespan = params.nPowTargetTimespan / 4;
+    if (nActualTimespan > params.nPowTargetTimespan * 4)
+        nActualTimespan = params.nPowTargetTimespan * 4;
 
     // Retarget
     const arith_uint256 bnPowLimit = UintToArith256(params.powLimit);
