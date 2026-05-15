@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_QT_SOTERIAGUI_H
 #define SOTERIA_QT_SOTERIAGUI_H
@@ -12,15 +10,16 @@
 #endif
 
 #include "amount.h"
-#include <string>
+
+#include <QComboBox>
+#include <QDateTime>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMap>
 #include <QMenu>
 #include <QPoint>
 #include <QSystemTrayIcon>
-#include <QComboBox>
-#include <QDateTime>
+#include <string>
 
 class ClientModel;
 class NetworkStyle;
@@ -56,20 +55,20 @@ public:
     static const QString DEFAULT_WALLET;
     static const std::string DEFAULT_UIPLATFORM;
 
-    explicit SoteriaGUI(const PlatformStyle *platformStyle, const NetworkStyle *networkStyle, QWidget *parent = 0);
+    explicit SoteriaGUI(const PlatformStyle* platformStyle, const NetworkStyle* networkStyle, QWidget* parent = 0);
     ~SoteriaGUI();
 
     /** Set the client model.
         The client model represents the part of the core that communicates with the P2P network, and is wallet-agnostic.
     */
-    void setClientModel(ClientModel *clientModel);
+    void setClientModel(ClientModel* clientModel);
 
 #ifdef ENABLE_WALLET
     /** Set the wallet model.
         The wallet model represents a soteria wallet, and offers access to the list of transactions, address book and sending
         functionality.
     */
-    bool addWallet(const QString& name, WalletModel *walletModel);
+    bool addWallet(const QString& name, WalletModel* walletModel);
     bool setCurrentWallet(const QString& name);
     void removeAllWallets();
 #endif // ENABLE_WALLET
@@ -82,119 +81,119 @@ public:
     };
 
 protected:
-    void changeEvent(QEvent *e);
-    void closeEvent(QCloseEvent *event);
-    void showEvent(QShowEvent *event);
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dropEvent(QDropEvent *event);
-    bool eventFilter(QObject *object, QEvent *event);
-
+    void changeEvent(QEvent* e);
+    void closeEvent(QCloseEvent* event);
+    void showEvent(QShowEvent* event);
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent* event);
+    bool eventFilter(QObject* object, QEvent* event);
 
 private:
-    ClientModel *clientModel = nullptr;
-    WalletFrame *walletFrame = nullptr;
+    ClientModel* clientModel = nullptr;
+    WalletFrame* walletFrame = nullptr;
 
-    UnitDisplayStatusBarControl *unitDisplayControl = nullptr;
-    QLabel *labelWalletEncryptionIcon = nullptr;
-    QLabel *labelWalletHDStatusIcon = nullptr;
-    QLabel *connectionsControl = nullptr;
-    QLabel *labelBlocksIcon = nullptr;
-    QLabel *progressBarLabel = nullptr;
-    QProgressBar *progressBar = nullptr;
-    QProgressDialog *progressDialog = nullptr;
-    QMenuBar *appMenuBar = nullptr;
-    QFrame *frameBlocks = nullptr;
-    QAction *overviewAction = nullptr;
-    QAction *historyAction = nullptr;
-    QAction *quitAction = nullptr;
-    QAction *sendCoinsAction = nullptr;
-    QAction *sendCoinsMenuAction = nullptr;
-    QAction *usedSendingAddressesAction = nullptr;
-    QAction *usedReceivingAddressesAction = nullptr;
-    QAction *importPrivateKeyAction = nullptr;
-    QAction *signMessageAction = nullptr;
-    QAction *verifyMessageAction = nullptr;
-    QAction *paperWalletAction = nullptr;
-    QAction *aboutAction = nullptr;
-    QAction *receiveCoinsAction = nullptr;
-    QAction *receiveCoinsMenuAction = nullptr;
-    QAction *optionsAction = nullptr;
-    QAction *toggleHideAction = nullptr;
-    QAction *encryptWalletAction = nullptr;
-    QAction *backupWalletAction = nullptr;
-    QAction *dustWalletAction = nullptr;
-    QAction *changePassphraseAction = nullptr;
-    QAction *aboutQtAction = nullptr;
-    QAction *openRPCConsoleAction = nullptr;
-    QAction *openAction = nullptr;
-    QAction *showHelpMessageAction = nullptr;
+    UnitDisplayStatusBarControl* unitDisplayControl = nullptr;
+    QLabel* labelWalletEncryptionIcon = nullptr;
+    QLabel* labelWalletHDStatusIcon = nullptr;
+    QLabel* connectionsControl = nullptr;
+    QLabel* labelBlocksIcon = nullptr;
+    QLabel* progressBarLabel = nullptr;
+    QProgressBar* progressBar = nullptr;
+    QProgressDialog* progressDialog = nullptr;
+
+    QMenuBar* appMenuBar = nullptr;
+    QFrame* frameBlocks = nullptr;
+    QAction* overviewAction = nullptr;
+    QAction* historyAction = nullptr;
+    QAction* quitAction = nullptr;
+    QAction* sendCoinsAction = nullptr;
+    QAction* sendCoinsMenuAction = nullptr;
+    QAction* usedSendingAddressesAction = nullptr;
+    QAction* usedReceivingAddressesAction = nullptr;
+    QAction* importPrivateKeyAction = nullptr;
+    QAction* signMessageAction = nullptr;
+    QAction* verifyMessageAction = nullptr;
+    QAction* paperWalletAction = nullptr;
+    QAction* aboutAction = nullptr;
+    QAction* receiveCoinsAction = nullptr;
+    QAction* receiveCoinsMenuAction = nullptr;
+    QAction* optionsAction = nullptr;
+    QAction* toggleHideAction = nullptr;
+    QAction* encryptWalletAction = nullptr;
+    QAction* backupWalletAction = nullptr;
+    QAction* dustWalletAction = nullptr;
+    QAction* changePassphraseAction = nullptr;
+    QAction* aboutQtAction = nullptr;
+    QAction* openRPCConsoleAction = nullptr;
+    QAction* openAction = nullptr;
+    QAction* showHelpMessageAction = nullptr;
 
 
     /** Soteria menu actions */
-    QAction *websiteAction = nullptr;
-    QAction *explorerAction = nullptr;
-    QAction *ecosystemAction = nullptr;
-    QAction *roadmapAction = nullptr;   
-    QAction *rdAction = nullptr;
-    QAction *servicesAction = nullptr;
-    QAction *whitepaperAction = nullptr;   
-    QAction *githubAction = nullptr;
+    QAction* websiteAction = nullptr;
+    QAction* explorerAction = nullptr;
+    QAction* ecosystemAction = nullptr;
+    QAction* roadmapAction = nullptr;   
+    QAction* rdAction = nullptr;
+    QAction* servicesAction = nullptr;
+    QAction* whitepaperAction = nullptr;   
+    QAction* githubAction = nullptr;
 
     /** Socials menu actions */
-    QAction *telegramAction = nullptr;
-    QAction *twitterAction = nullptr;
-    QAction *discordAction = nullptr;    
-    QAction *blueskyAction = nullptr;    
-    QAction *mediumAction = nullptr;
-    QAction *youtubeAction = nullptr;
-    QAction *tiktokAction = nullptr;
-    QAction *facebookAction = nullptr;    
+    QAction* telegramAction = nullptr;
+    QAction* twitterAction = nullptr;
+    QAction* discordAction = nullptr;    
+    QAction* blueskyAction = nullptr;    
+    QAction* mediumAction = nullptr;
+    QAction* youtubeAction = nullptr;
+    QAction* tiktokAction = nullptr;
+    QAction* facebookAction = nullptr;    
 
     /** Investment menu actions */
-    QAction *donationAction = nullptr;
-    QAction *premiumAction = nullptr;
-    QAction *membershipAction = nullptr;    
-    QAction *whitelistAction = nullptr;    
-    QAction *multichainAction = nullptr;
-    QAction *stakingAction = nullptr;
-    QAction *waitlistAction = nullptr;
+    QAction* donationAction = nullptr;
+    QAction* premiumAction = nullptr;
+    QAction* membershipAction = nullptr;    
+    QAction* whitelistAction = nullptr;    
+    QAction* multichainAction = nullptr;
+    QAction* stakingAction = nullptr;
+    QAction* waitlistAction = nullptr;
 
     /** SOTER START */
-    QAction *transferAssetAction = nullptr;
-    QAction *createAssetAction = nullptr;
-    QAction *manageAssetAction = nullptr;
-    QAction *messagingAction = nullptr;
-    QAction *getMyWordsAction = nullptr;
-    QAction *votingAction = nullptr;
-    QAction *restrictedAssetAction = nullptr;
-    QAction *openSmartcontractsAction = nullptr;
-    QAction *wrapAction = nullptr;
-    QWidget *headerWidget = nullptr;
-    QLabel *labelCurrentMarket = nullptr;
-    QLabel *labelCurrentPrice = nullptr;
-    QTimer *pricingTimer = nullptr;
+    QAction* transferAssetAction = nullptr;
+    QAction* createAssetAction = nullptr;
+    QAction* manageAssetAction = nullptr;
+    QAction* messagingAction = nullptr;
+    QAction* getMyWordsAction = nullptr;
+    QAction* votingAction = nullptr;
+    QAction* restrictedAssetAction = nullptr;
+    QAction* openSmartcontractsAction = nullptr;
+    QAction* wrapAction = nullptr;
+    QWidget* headerWidget = nullptr;
+    QLabel* labelCurrentMarket = nullptr;
+    QLabel* labelCurrentPrice = nullptr;
+    QTimer* pricingTimer = nullptr;
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkRequest* request = nullptr;
-    Smartcontracts*smartcontracts = nullptr;
-    QLabel *labelVersionUpdate = nullptr;
+    Smartcontracts* smartcontracts = nullptr;
+    QLabel* labelVersionUpdate = nullptr;
     QNetworkAccessManager* networkVersionManager = nullptr;
     QNetworkRequest* versionRequest = nullptr;
-    QLabel *labelToolbar = nullptr;
-    QToolBar *m_toolbar = nullptr;
+    QLabel* labelToolbar = nullptr;
+    QToolBar* m_toolbar = nullptr;
 
     /** SOTER END */
-    QSystemTrayIcon *trayIcon = nullptr;
-    QMenu *trayIconMenu = nullptr;
-    Notificator *notificator = nullptr;
-    RPCConsole *rpcConsole = nullptr;
-    HelpMessageDialog *helpMessageDialog = nullptr;
-    ModalOverlay *modalOverlay = nullptr;
+    QSystemTrayIcon* trayIcon = nullptr;
+    QMenu* trayIconMenu = nullptr;
+    Notificator* notificator = nullptr;
+    RPCConsole* rpcConsole = nullptr;
+    HelpMessageDialog* helpMessageDialog = nullptr;
+    ModalOverlay* modalOverlay = nullptr;
 
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks = 0;
     int spinnerFrame = 0;
 
-    const PlatformStyle *platformStyle;
+    const PlatformStyle* platformStyle;
 
     /** Load the custome open sans fonts into the font database */
     void loadFonts();
@@ -205,7 +204,7 @@ private:
     /** Create the toolbars */
     void createToolBars();
     /** Create system tray icon and notification */
-    void createTrayIcon(const NetworkStyle *networkStyle);
+    void createTrayIcon(const NetworkStyle* networkStyle);
     /** Create system tray menu (or setup the dock menu) */
     void createTrayIconMenu();
 
@@ -224,7 +223,7 @@ private:
 
 Q_SIGNALS:
     /** Signal raised when a URI was entered or dragged to the GUI */
-    void receivedURI(const QString &uri);
+    void receivedURI(const QString& uri);
     /** Restart handling */
     void requestedRestart(QStringList args);
 
@@ -245,10 +244,9 @@ public Q_SLOTS:
                             @see CClientUIInterface::MessageBoxFlags
        @param[in] ret       pointer to a bool that will be modified to whether Ok was clicked (modal only)
     */
-    void message(const QString &title, const QString &message, unsigned int style, bool *ret = nullptr);
+    void message(const QString& title, const QString& message, unsigned int style, bool* ret = nullptr);
 
     void getPriceInfo();
-
     void getLatestVersion();
 
     /** IconsOnly true/false and updates toolbar accordingly. */
@@ -365,8 +363,8 @@ private Q_SLOTS:
     void detectShutdown();
 
     /** Show progress dialog e.g. for verifychain */
-    void showProgress(const QString &title, int nProgress);
-    
+    void showProgress(const QString& title, int nProgress);
+
     /** When hideTrayIcon setting is changed in OptionsModel hide or show the icon accordingly. */
     void setTrayIconVisible(bool);
 
@@ -381,22 +379,22 @@ class UnitDisplayStatusBarControl : public QLabel
     Q_OBJECT
 
 public:
-    explicit UnitDisplayStatusBarControl(const PlatformStyle *platformStyle);
+    explicit UnitDisplayStatusBarControl(const PlatformStyle* platformStyle);
     /** Lets the control know about the Options Model (and its signals) */
-    void setOptionsModel(OptionsModel *optionsModel);
+    void setOptionsModel(OptionsModel* optionsModel);
 
 protected:
     /** So that it responds to left-button clicks */
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event);
 
 private:
-    OptionsModel *optionsModel;
+    OptionsModel* optionsModel;
     QMenu* menu;
 
     /** Shows context menu with Display Unit options by the mouse coordinates */
     void onDisplayUnitsClicked(const QPoint& point);
     /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
-    void createContextMenu(const PlatformStyle *platformStyle);
+    void createContextMenu(const PlatformStyle* platformStyle);
 
 private Q_SLOTS:
     /** When Display Units are changed on OptionsModel it will refresh the display text of the control on the status bar */
