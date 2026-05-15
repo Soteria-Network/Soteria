@@ -159,8 +159,8 @@ public:
 		consensus.diffRetargetStartHeight6  = 2800000;
 		consensus.diffRetargetEndHeight6    = 4200000;
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
-        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // v1.1.2
+        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
@@ -331,8 +331,8 @@ public:
 		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 60;
-        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
