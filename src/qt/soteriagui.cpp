@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
@@ -26,9 +24,9 @@
 #include "validation.h"
 
 #ifdef ENABLE_WALLET
+#include "mnemonicdialog.h"
 #include "walletframe.h"
 #include "walletmodel.h"
-#include "mnemonicdialog.h"
 #endif // ENABLE_WALLET
 
 #ifdef Q_OS_MAC
@@ -36,31 +34,29 @@
 #endif
 
 #include "chainparams.h"
+#include "core_io.h"
 #include "init.h"
 #include "ui_interface.h"
 #include <util/system.h>
-#include "core_io.h"
 #include <string>
 #include <iostream>
-#include <QDebug>
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkReply>
-#include <QGraphicsDropShadowEffect>
-#include <QToolButton>
-#include <QPushButton>
-#include <QPainter>
-#include <QPainterPath>
-#include <QWidgetAction>
+
 #include <QAction>
 #include <QApplication>
+#include <QComboBox>
 #include <QDateTime>
+#include <QDebug>
 #include <QDesktopWidget>
 #include <QDragEnterEvent>
+#include <QGraphicsDropShadowEffect>
 #include <QListWidget>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QPainter>
+#include <QPainterPath>
 #include <QProgressDialog>
+#include <QPushButton>
 #include <QScreen>
 #include <QSettings>
 #include <QShortcut>
@@ -69,23 +65,27 @@
 #include <QStyle>
 #include <QTimer>
 #include <QToolBar>
+#include <QToolButton>
 #include <QVBoxLayout>
-#include <QComboBox>
-#include <QJsonDocument>
-#include <QJsonParseError>
-#include <QJsonObject>
-#include <QJsonValue>
+#include <QWidgetAction>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+
 #include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QJsonValue>
 
 #if QT_VERSION < 0x050000
 #include <QTextDocument>
 #include <QUrl>
 #else
+#include <QDesktopServices>
+#include <QFontDatabase>
 #include <QUrlQuery>
 #include <tinyformat.h>
-#include <QFontDatabase>
 #include <univalue/include/univalue.h>
-#include <QDesktopServices>
 
 #endif
 // comp missing
@@ -95,13 +95,13 @@ using namespace boost::placeholders;
 
 const std::string SoteriaGUI::DEFAULT_UIPLATFORM =
 #if defined(Q_OS_MAC)
-        "macosx"
+    "macosx"
 #elif defined(Q_OS_WIN)
-        "windows"
+    "windows"
 #else
-        "other"
+    "other"
 #endif
-        ;
+    ;
 
 /** Display name for default wallet name. Uses tilde to avoid name
  * collisions in the future with additional wallets */
@@ -109,7 +109,7 @@ const QString SoteriaGUI::DEFAULT_WALLET = "~Default";
 
 static bool ThreadSafeMessageBox(SoteriaGUI *gui, const std::string& message, const std::string& caption, unsigned int style);
 
-SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *networkStyle, QWidget *parent) :
+SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* networkStyle, QWidget* parent) :
     QMainWindow(parent),
     enableWallet(false),
     platformStyle(_platformStyle)
@@ -124,8 +124,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
 #ifdef ENABLE_WALLET
     enableWallet = WalletModel::isWalletEnabled();
 #endif // ENABLE_WALLET
-    if(enableWallet)
-    {
+    if (enableWallet) {
         windowTitle += tr("Wallet");
     } else {
         windowTitle += tr("Node");
@@ -149,8 +148,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     smartcontracts = new Smartcontracts(_platformStyle, 0);
     helpMessageDialog = new HelpMessageDialog(this, false);
 #ifdef ENABLE_WALLET
-    if(enableWallet)
-    {
+    if (enableWallet) {
         /** Create wallet frame and make it the central widget */
         walletFrame = new WalletFrame(_platformStyle, this);
         setCentralWidget(walletFrame);
@@ -199,9 +197,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     // Accept D&D of URIs
     setAcceptDrops(true);
 
-
     loadFonts();
-
 
 #if !defined(Q_OS_MAC)
     this->setFont(QFont("Manrope"));
@@ -225,29 +221,28 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
 
     // Status bar notification icons
     frameBlocks = new QFrame();
-    frameBlocks->setContentsMargins(0,0,0,0);
+    frameBlocks->setContentsMargins(0, 0, 0, 0);
     frameBlocks->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     frameBlocks->setStyleSheet("background-color: transparent; color: #ffffff;");
-    QHBoxLayout *frameBlocksLayout = new QHBoxLayout(frameBlocks);
-    frameBlocksLayout->setContentsMargins(3,0,3,0);
+    QHBoxLayout* frameBlocksLayout = new QHBoxLayout(frameBlocks);
+    frameBlocksLayout->setContentsMargins(3, 0, 3, 0);
     frameBlocksLayout->setSpacing(3);
     unitDisplayControl = new UnitDisplayStatusBarControl(platformStyle);
     labelWalletEncryptionIcon = new QLabel();
-    labelWalletEncryptionIcon->setObjectName("labelWalletEncryptionIcon");    
+    labelWalletEncryptionIcon->setObjectName("labelWalletEncryptionIcon");
     labelWalletEncryptionIcon->setStyleSheet(".Qlabel { background-color: transparent; color: #ffffff;}");
     labelWalletHDStatusIcon = new QLabel();
-    labelWalletHDStatusIcon->setObjectName("labelWalletHDStatusIcon");    
+    labelWalletHDStatusIcon->setObjectName("labelWalletHDStatusIcon");
     labelWalletHDStatusIcon->setStyleSheet(".Qlabel { background-color: transparent; color: #ffffff;}");
     connectionsControl = new GUIUtil::ClickableLabel();
-    connectionsControl->setObjectName("connectionsControl");    
+    connectionsControl->setObjectName("connectionsControl");
     connectionsControl->setStyleSheet(".Qlabel { background-color: transparent; color: #ffffff;}");
 
     labelBlocksIcon = new GUIUtil::ClickableLabel();
-    labelBlocksIcon->setContentsMargins(15,0,55,0);
+    labelBlocksIcon->setContentsMargins(15, 0, 55, 0);
     labelBlocksIcon->setFixedHeight(75);
 
-    if(enableWallet)
-    {
+    if (enableWallet) {
         frameBlocksLayout->addStretch();
         frameBlocksLayout->addWidget(unitDisplayControl);
         frameBlocksLayout->addStretch();
@@ -271,15 +266,14 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     // as they make the text unreadable (workaround for issue #1071)
     // See https://qt-project.org/doc/qt-4.8/gallery.html
     QString curStyle = QApplication::style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
+    if (curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle") {
         progressBar->setStyleSheet("QProgressBar { background-color: #e8e8e8; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #FF8000, stop: 1 orange); border-radius: 7px; margin: 0px; }");
     }
 
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addWidget(unitDisplayControl);
-   
+
 
     // Install event filter to be able to catch status tip events (QEvent::StatusTip)
     this->installEventFilter(this);
@@ -297,7 +291,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
 
     modalOverlay = new ModalOverlay(this->centralWidget());
 #ifdef ENABLE_WALLET
-    if(enableWallet) {
+    if (enableWallet) {
         connect(walletFrame, SIGNAL(requestedSyncWarningInfo()), this, SLOT(showModalOverlay()));
         connect(labelBlocksIcon, SIGNAL(clicked(QPoint)), this, SLOT(showModalOverlay()));
         connect(progressBar, SIGNAL(clicked(QPoint)), this, SLOT(showModalOverlay()));
@@ -324,7 +318,7 @@ SoteriaGUI::~SoteriaGUI()
 
 void SoteriaGUI::loadFonts()
 {
-     // Konnect font
+    // Konnect font
     QFontDatabase::addApplicationFont(":/fonts/konnect-bold");
     QFontDatabase::addApplicationFont(":/fonts/konnect-regular");
 
@@ -335,7 +329,7 @@ void SoteriaGUI::loadFonts()
     QFontDatabase::addApplicationFont(":/fonts/manrope-light");
     QFontDatabase::addApplicationFont(":/fonts/manrope-medium");
     QFontDatabase::addApplicationFont(":/fonts/manrope-regular");
-    QFontDatabase::addApplicationFont(":/fonts/manrope-semibold");    
+    QFontDatabase::addApplicationFont(":/fonts/manrope-semibold");
 }
 
 void SoteriaGUI::createActions()
@@ -347,7 +341,7 @@ void SoteriaGUI::createActions()
 #endif
     font.setWeight(QFont::Weight::ExtraLight);
 
-    QActionGroup *tabGroup = new QActionGroup(this);
+    QActionGroup* tabGroup = new QActionGroup(this);
 
     overviewAction = new QAction(platformStyle->SingleColorIconOnOff(":/icons/overview_selected", ":/icons/overview"), tr("&Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
@@ -643,8 +637,7 @@ void SoteriaGUI::createActions()
     connect(rpcConsole, SIGNAL(handleRestart(QStringList)), this, SLOT(handleRestart(QStringList)));
 
 #ifdef ENABLE_WALLET
-    if(walletFrame)
-    {
+    if (walletFrame) {
         connect(encryptWalletAction, SIGNAL(triggered(bool)), walletFrame, SLOT(encryptWallet(bool)));
         connect(backupWalletAction, SIGNAL(triggered()), walletFrame, SLOT(backupWallet()));
         connect(dustWalletAction, SIGNAL(triggered()), walletFrame, SLOT(dustWallet()));
@@ -675,9 +668,8 @@ void SoteriaGUI::createMenuBar()
 #endif
 
     // Configure the menus
-    QMenu *file = appMenuBar->addMenu(tr("&File"));
-    if(walletFrame)
-    {
+    QMenu* file = appMenuBar->addMenu(tr("&File"));
+    if (walletFrame) {
         file->addAction(openAction);
         file->addAction(signMessageAction);
         file->addAction(verifyMessageAction);
@@ -690,9 +682,8 @@ void SoteriaGUI::createMenuBar()
     }
     file->addAction(quitAction);
 
-    QMenu *settings = appMenuBar->addMenu(tr("&Wallet"));
-    if(walletFrame)
-    {
+    QMenu* settings = appMenuBar->addMenu(tr("&Wallet"));
+    if (walletFrame) {
         settings->addAction(encryptWalletAction);
         settings->addAction(backupWalletAction);
         settings->addAction(dustWalletAction);
@@ -753,8 +744,7 @@ void SoteriaGUI::createMenuBar()
 
 void SoteriaGUI::createToolBars()
 {
-    if(walletFrame)
-    {
+    if (walletFrame) {
        QSettings settings;
         bool IconsOnly = settings.value("fToolbarIconsOnly", false).toBool();
         
@@ -1096,7 +1086,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
                                         "New Wallet Version Found",
                                         CClientUIInterface::MSG_VERSION | CClientUIInterface::BTN_NO);
                                    if (fRet) {
-                                       QString link = "https://github.com/SoteriaNetwork/Soteria/releases";
+                                       QString link = "https://github.com/Soteria-Network/Soteria/releases";
                                        QDesktopServices::openUrl(QUrl(link));
                                    }
                                }
@@ -1728,8 +1718,8 @@ void SoteriaGUI::incomingTransaction(const QString& date, int unit, const CAmoun
         msg += tr("Label: %1\n").arg(label);
     else if (!address.isEmpty())
         msg += tr("Address: %1\n").arg(address);
-    message((amount)<0 ? tr("Sent transaction") : tr("Incoming transaction"),
-             msg, CClientUIInterface::MSG_INFORMATION);
+    message((amount) < 0 ? tr("Sent transaction") : tr("Incoming transaction"),
+        msg, CClientUIInterface::MSG_INFORMATION);
 }
 
 void SoteriaGUI::checkAssets()
@@ -1742,8 +1732,7 @@ void SoteriaGUI::checkAssets()
         createAssetAction->setToolTip(tr("Create new main/sub/unique assets"));
         manageAssetAction->setDisabled(false);
         manageAssetAction->setStatusTip(tr("Manage assets you are the administrator of"));
-    }
-    else {
+    } else {
         transferAssetAction->setDisabled(true);
         transferAssetAction->setToolTip(tr("Assets not yet active"));
         createAssetAction->setDisabled(true);
@@ -1763,30 +1752,27 @@ void SoteriaGUI::checkAssets()
 }
 #endif // ENABLE_WALLET
 
-void SoteriaGUI::dragEnterEvent(QDragEnterEvent *event)
+void SoteriaGUI::dragEnterEvent(QDragEnterEvent* event)
 {
     // Accept only URIs
-    if(event->mimeData()->hasUrls())
+    if (event->mimeData()->hasUrls())
         event->acceptProposedAction();
 }
 
-void SoteriaGUI::dropEvent(QDropEvent *event)
+void SoteriaGUI::dropEvent(QDropEvent* event)
 {
-    if(event->mimeData()->hasUrls())
-    {
-        for (const QUrl &uri : event->mimeData()->urls())
-        {
+    if (event->mimeData()->hasUrls()) {
+        for (const QUrl& uri : event->mimeData()->urls()) {
             Q_EMIT receivedURI(uri.toString());
         }
     }
     event->acceptProposedAction();
 }
 
-bool SoteriaGUI::eventFilter(QObject *object, QEvent *event)
+bool SoteriaGUI::eventFilter(QObject* object, QEvent* event)
 {
     // Catch status tip events
-    if (event->type() == QEvent::StatusTip)
-    {
+    if (event->type() == QEvent::StatusTip) {
         // Prevent adding text from setStatusTip(), if we currently use the status bar for displaying other stuff
         if (progressBarLabel->isVisible() || progressBar->isVisible())
             return true;
@@ -1798,8 +1784,7 @@ bool SoteriaGUI::eventFilter(QObject *object, QEvent *event)
 bool SoteriaGUI::handlePaymentRequest(const SendCoinsRecipient& recipient)
 {
     // URI has to be valid
-    if (walletFrame && walletFrame->handlePaymentRequest(recipient))
-    {
+    if (walletFrame && walletFrame->handlePaymentRequest(recipient)) {
         showNormalIfMinimized();
         gotoSendCoinsPage();
         return true;
@@ -1827,8 +1812,7 @@ void SoteriaGUI::setHDStatus(int hdEnabled)
 
 void SoteriaGUI::setEncryptionStatus(int status)
 {
-    switch(status)
-    {
+    switch (status) {
     case WalletModel::Unencrypted:
         labelWalletEncryptionIcon->hide();
         encryptWalletAction->setChecked(false);
@@ -1861,22 +1845,16 @@ void SoteriaGUI::showNormalIfMinimized(bool fToggleHidden)
         return;
 
     // activateWindow() (sometimes) helps with keyboard focus on Windows
-    if (isHidden())
-    {
+    if (isHidden()) {
         show();
         activateWindow();
-    }
-    else if (isMinimized())
-    {
+    } else if (isMinimized()) {
         showNormal();
         activateWindow();
-    }
-    else if (GUIUtil::isObscured(this))
-    {
+    } else if (GUIUtil::isObscured(this)) {
         raise();
         activateWindow();
-    }
-    else if(fToggleHidden)
+    } else if (fToggleHidden)
         hide();
 }
 
@@ -1887,15 +1865,14 @@ void SoteriaGUI::toggleHidden()
 
 void SoteriaGUI::detectShutdown()
 {
-    if (ShutdownRequested())
-    {
-        if(rpcConsole)
+    if (ShutdownRequested()) {
+        if (rpcConsole)
             rpcConsole->hide();
         qApp->quit();
     }
 }
 
-void SoteriaGUI::showProgress(const QString &title, int nProgress)
+void SoteriaGUI::showProgress(const QString& title, int nProgress)
 {
     if (nProgress == 0)
     {
@@ -1905,23 +1882,18 @@ void SoteriaGUI::showProgress(const QString &title, int nProgress)
         progressDialog->setCancelButton(0);
         progressDialog->setAutoClose(false);
         progressDialog->setValue(0);
-    }
-    else if (nProgress == 100)
-    {
-        if (progressDialog)
-        {
+    } else if (nProgress == 100) {
+        if (progressDialog) {
             progressDialog->close();
             progressDialog->deleteLater();
         }
-    }
-    else if (progressDialog)
+    } else if (progressDialog)
         progressDialog->setValue(nProgress);
 }
 
 void SoteriaGUI::setTrayIconVisible(bool fHideTrayIcon)
 {
-    if (trayIcon)
-    {
+    if (trayIcon) {
         trayIcon->setVisible(!fHideTrayIcon);
     }
 }
@@ -1932,7 +1904,7 @@ void SoteriaGUI::showModalOverlay()
         modalOverlay->toggleVisibility();
 }
 
-static bool ThreadSafeMessageBox(SoteriaGUI *gui, const std::string& message, const std::string& caption, unsigned int style)
+static bool ThreadSafeMessageBox(SoteriaGUI* gui, const std::string& message, const std::string& caption, unsigned int style)
 {
     bool modal = (style & CClientUIInterface::MODAL);
     // The SECURE flag has no effect in the Qt GUI.
@@ -1941,15 +1913,15 @@ static bool ThreadSafeMessageBox(SoteriaGUI *gui, const std::string& message, co
     bool ret = false;
     // In case of modal message, use blocking connection to wait for user to click a button
     QMetaObject::invokeMethod(gui, "message",
-                               modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
-                               Q_ARG(QString, QString::fromStdString(caption)),
-                               Q_ARG(QString, QString::fromStdString(message)),
-                               Q_ARG(unsigned int, style),
-                               Q_ARG(bool*, &ret));
+        modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
+        Q_ARG(QString, QString::fromStdString(caption)),
+        Q_ARG(QString, QString::fromStdString(message)),
+        Q_ARG(unsigned int, style),
+        Q_ARG(bool*, &ret));
     return ret;
 }
 
-static bool ThreadSafeMnemonic(SoteriaGUI *gui, unsigned int style)
+static bool ThreadSafeMnemonic(SoteriaGUI* gui, unsigned int style)
 {
     bool modal = (style & CClientUIInterface::MODAL);
     // The SECURE flag has no effect in the Qt GUI.
@@ -1958,7 +1930,7 @@ static bool ThreadSafeMnemonic(SoteriaGUI *gui, unsigned int style)
     bool ret = false;
     // In case of modal message, use blocking connection to wait for user to click a button
     QMetaObject::invokeMethod(gui, "mnemonic",
-                              modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection);
+        modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection);
     return ret;
 }
 
@@ -1992,8 +1964,8 @@ void SoteriaGUI::handleRestart(QStringList args)
         Q_EMIT requestedRestart(args);
 }
 
-UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle *platformStyle) :
-    optionsModel(0),
+UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle* platformStyle) :
+ optionsModel(0),
     menu(0)
 {
     createContextMenu(platformStyle);
@@ -2001,8 +1973,7 @@ UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle *pl
     QList<SoteriaUnits::Unit> units = SoteriaUnits::availableUnits();
     int max_width = 0;
     const QFontMetrics fm(font());
-    for (const SoteriaUnits::Unit unit : units)
-    {
+    for (const SoteriaUnits::Unit unit : units) {
         max_width = qMax(max_width, fm.width(SoteriaUnits::name(unit)));
     }
     setMinimumSize(max_width, 0);
