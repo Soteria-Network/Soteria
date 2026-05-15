@@ -107,10 +107,9 @@ const std::string SoteriaGUI::DEFAULT_UIPLATFORM =
  * collisions in the future with additional wallets */
 const QString SoteriaGUI::DEFAULT_WALLET = "~Default";
 
-static bool ThreadSafeMessageBox(SoteriaGUI *gui, const std::string& message, const std::string& caption, unsigned int style);
+static bool ThreadSafeMessageBox(SoteriaGUI* gui, const std::string& message, const std::string& caption, unsigned int style);
 
-SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* networkStyle, QWidget* parent) :
-    QMainWindow(parent),
+SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* networkStyle, QWidget* parent) : QMainWindow(parent),
     enableWallet(false),
     platformStyle(_platformStyle)
 
@@ -306,7 +305,7 @@ SoteriaGUI::~SoteriaGUI()
 
     GUIUtil::saveWindowGeometry("MainWindowGeometry", this);
 
-    if(trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
+    if (trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
 #ifdef Q_OS_MAC
     delete appMenuBar;
@@ -695,11 +694,11 @@ void SoteriaGUI::createMenuBar()
     
     /** SOTER START */
 
-    QMenu *extra = appMenuBar->addMenu(tr("&Extra"));
+    QMenu* extra = appMenuBar->addMenu(tr("&Extra"));
     extra->addAction(openSmartcontractsAction);
     extra->addSeparator();
 
-    QMenu *soteria = appMenuBar->addMenu(tr("&Soteria"));
+    QMenu* soteria = appMenuBar->addMenu(tr("&Soteria"));
     soteria->addAction(websiteAction);
     soteria->addAction(explorerAction);
     soteria->addAction(ecosystemAction);
@@ -709,7 +708,7 @@ void SoteriaGUI::createMenuBar()
     soteria->addAction(whitepaperAction);
     soteria->addAction(githubAction);  
         
-    QMenu *socials = appMenuBar->addMenu(tr("&Socials"));
+    QMenu* socials = appMenuBar->addMenu(tr("&Socials"));
     socials->addAction(telegramAction);
     socials->addAction(twitterAction);
     socials->addAction(discordAction);    
@@ -719,7 +718,7 @@ void SoteriaGUI::createMenuBar()
     socials->addAction(tiktokAction); 
     socials->addAction(facebookAction);     
 
-    QMenu *investment = appMenuBar->addMenu(tr("&Investment"));
+    QMenu* investment = appMenuBar->addMenu(tr("&Investment"));
     investment->addAction(donationAction);
     investment->addAction(premiumAction);
     investment->addAction(membershipAction);    
@@ -728,9 +727,8 @@ void SoteriaGUI::createMenuBar()
     investment->addAction(stakingAction);
     investment->addAction(waitlistAction); 
 
-    QMenu *help = appMenuBar->addMenu(tr("&Help"));
-    if(walletFrame)
-    {
+    QMenu* help = appMenuBar->addMenu(tr("&Help"));
+    if (walletFrame) {
         help->addAction(openRPCConsoleAction);
     }
 
@@ -738,8 +736,8 @@ void SoteriaGUI::createMenuBar()
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
-
 }
+
     /** SOTER END */
 
 void SoteriaGUI::createToolBars()
@@ -760,11 +758,11 @@ void SoteriaGUI::createToolBars()
         QImage soteria(":/icons/soteria");
         QImage soteriaScaled = soteria.scaled(70, 70, Qt::KeepAspectRatio);
         label->setPixmap(QPixmap::fromImage(soteriaScaled));
-        label->setContentsMargins(0,0,0,0);
+        label->setContentsMargins(0, 0, 0, 0);
         label->setStyleSheet(".QLabel{background-color: transparent;}"); */
 
         labelToolbar = new QLabel();
-        labelToolbar->setContentsMargins(0,0,0,50);
+        labelToolbar->setContentsMargins(0, 0, 0, 50);
         labelToolbar->setAlignment(Qt::AlignLeft);
         if(IconsOnly) {
             labelToolbar->setPixmap(QPixmap::fromImage(QImage(":/icons/soteriatext")));
@@ -774,7 +772,7 @@ void SoteriaGUI::createToolBars()
         }
         labelToolbar->setStyleSheet(".QLabel{background-color: transparent;}");
 
-/*      QToolBar *toolbar = new QToolBar();
+/*      QToolBar* toolbar = new QToolBar();
         toolbar->setStyle(style());
         toolbar->setMinimumWidth(label->width());
         toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -811,8 +809,8 @@ void SoteriaGUI::createToolBars()
         m_toolbar->addAction(createAssetAction);
         m_toolbar->addAction(transferAssetAction);
         m_toolbar->addAction(manageAssetAction);
-//        m_toolbar->addAction(messagingAction);
-//        m_toolbar->addAction(votingAction);
+//      m_toolbar->addAction(messagingAction);
+//      m_toolbar->addAction(votingAction);
         m_toolbar->addAction(restrictedAssetAction);
 
 // spec sect
@@ -866,8 +864,8 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         versionLabel->setStyleSheet("color: cyan; background: none; font-weight: bold; font-size: 16px;"); // Adjust the font size
 //
 
-        QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        QSpacerItem* topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+        QSpacerItem* bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
         QVBoxLayout* soteriaLabelLayout = new QVBoxLayout(toolbarWidget);
 //      soteriaLabelLayout->addWidget(label);
@@ -879,7 +877,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         soteriaLabelLayout->addWidget(frameBlocks);
 
 //        
-//        soteriaLabelLayout->addWidget(soterLabel);
+//      soteriaLabelLayout->addWidget(soterLabel);
         soteriaLabelLayout->addWidget(soteriaLabel);
         soteriaLabelLayout->addWidget(versionLabel);  // Add the QLabel for version
 //        
@@ -891,7 +889,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         mainWalletWidget->setStyleSheet(mainWalletWidgetStyle);
 
         /** Create the shadow effects for the main wallet frame. Make it so it puts a shadow on the tool bar */
-        QGraphicsDropShadowEffect *walletFrameShadow = new QGraphicsDropShadowEffect;
+        QGraphicsDropShadowEffect* walletFrameShadow = new QGraphicsDropShadowEffect;
         walletFrameShadow->setBlurRadius(5);
         walletFrameShadow->setColor(COLOR_WALLETFRAME_SHADOW);
         walletFrameShadow->setXOffset(-1.0);
@@ -899,10 +897,10 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         mainWalletWidget->setGraphicsEffect(walletFrameShadow);
 
         QString widgetBackgroundSytleSheet = QString(".QWidget{background-color: %1}").arg(platformStyle->TopWidgetBackGroundColor().name());
-        QSpacerItem *middleSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        QSpacerItem* middleSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         // Set the headers widget options
-        headerWidget->setContentsMargins(0,0,0,50);
+        headerWidget->setContentsMargins(0, 0, 0, 50);
         headerWidget->setStyleSheet(widgetBackgroundSytleSheet);
         headerWidget->setGraphicsEffect(GUIUtil::getShadowEffect());
         headerWidget->setFixedHeight(75);
@@ -912,48 +910,48 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         priceLayout->setContentsMargins(QMargins());
         priceLayout->setDirection(QBoxLayout::LeftToRight);
         priceLayout->setAlignment(Qt::AlignVCenter);
-        labelCurrentMarket->setContentsMargins(50,0,0,0);
+        labelCurrentMarket->setContentsMargins(50, 0, 0, 0);
         labelCurrentMarket->setFixedHeight(75);
         labelCurrentMarket->setAlignment(Qt::AlignVCenter);
         labelCurrentMarket->setObjectName("labelCurrentMarket");
         labelCurrentMarket->setText(tr("Soteria (SOTER) Market Price"));
 
         QString currentPriceStyleSheet = ".QLabel{color: %1;}";
-        labelCurrentPrice->setContentsMargins(25,0,0,0);
+        labelCurrentPrice->setContentsMargins(25, 0, 0, 0);
         labelCurrentPrice->setFixedHeight(75);
         labelCurrentPrice->setAlignment(Qt::AlignVCenter);
         labelCurrentPrice->setObjectName("labelCurrentPrice");
 
         QLabel* labelBtcSOTER = new QLabel();
         labelBtcSOTER->setText("USDT / SOTER");
-        labelBtcSOTER->setContentsMargins(15,0,0,0);
+        labelBtcSOTER->setContentsMargins(15, 0, 0, 0);
         labelBtcSOTER->setFixedHeight(75);
         labelBtcSOTER->setAlignment(Qt::AlignVCenter);
         labelBtcSOTER->setObjectName("labelBtcSOTER");
 
-        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Available</a>");
+        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Available, Hurry up!</a>");
         labelVersionUpdate->setTextFormat(Qt::RichText);
         labelVersionUpdate->setTextInteractionFlags(Qt::TextBrowserInteraction);
         labelVersionUpdate->setOpenExternalLinks(true);
-        labelVersionUpdate->setContentsMargins(15,0,0,0);
+        labelVersionUpdate->setContentsMargins(15, 0, 0, 0);
         labelVersionUpdate->setFixedHeight(75);
         labelVersionUpdate->setObjectName("labelVersionUpdate");
         labelVersionUpdate->setAlignment(Qt::AlignVCenter);
         labelVersionUpdate->hide();
 
         // Style progress text
-        progressBarLabel->setContentsMargins(15,0,0,0);
+        progressBarLabel->setContentsMargins(15, 0, 0, 0);
         progressBarLabel->setFixedHeight(75);
         progressBarLabel->setAlignment(Qt::AlignVCenter);
 
         priceLayout->setGeometry(headerWidget->rect());
         priceLayout->addWidget(labelCurrentMarket, 0, Qt::AlignVCenter | Qt::AlignLeft);
-        priceLayout->addWidget(labelCurrentPrice, 0,  Qt::AlignVCenter | Qt::AlignLeft);
-        priceLayout->addWidget(labelBtcSOTER, 0 , Qt::AlignVCenter | Qt::AlignLeft);
-        priceLayout->addWidget(labelVersionUpdate, 0 , Qt::AlignVCenter | Qt::AlignRight);
+        priceLayout->addWidget(labelCurrentPrice, 0, Qt::AlignVCenter | Qt::AlignLeft);
+        priceLayout->addWidget(labelBtcSOTER, 0, Qt::AlignVCenter | Qt::AlignLeft);
+        priceLayout->addWidget(labelVersionUpdate, 0, Qt::AlignVCenter | Qt::AlignRight);
         priceLayout->addItem(middleSpacer);
-        priceLayout->addWidget(progressBarLabel, 0,  Qt::AlignVCenter | Qt::AlignRight);        
-        priceLayout->addWidget(labelBlocksIcon, 0,  Qt::AlignVCenter | Qt::AlignRight);
+        priceLayout->addWidget(progressBarLabel, 0, Qt::AlignVCenter | Qt::AlignRight);
+        priceLayout->addWidget(labelBlocksIcon, 0, Qt::AlignVCenter | Qt::AlignRight);
 
         // Create the layout for widget to the right of the tool bar
         QVBoxLayout* mainFrameLayout = new QVBoxLayout(mainWalletWidget);
@@ -976,7 +974,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
 
         // Network request code for the header widget
         QObject::connect(networkManager, &QNetworkAccessManager::finished,
-                         this, [=](QNetworkReply *reply) {
+            this, [=](QNetworkReply* reply) {
                 if (reply->error()) {
                     labelCurrentPrice->setText("");
                     qDebug() << reply->errorString();
@@ -996,108 +994,107 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
                 double num = soteriaNetwork.value("usd").toDouble();
                 labelCurrentPrice->setText(QString("%1").arg(QString().setNum(num, 'f', 8)));
                 labelCurrentPrice->setToolTip(tr("Brought to you by coingecko.com"));
-            }
-        );
+            });
 
         // Create the timer
         connect(pricingTimer, SIGNAL(timeout()), this, SLOT(getPriceInfo()));
         pricingTimer->start(600000);
         getPriceInfo();
         /** SOTER END */
-        
+
         // Get the latest Soteria release and let the user know if they are using the latest version
         // Network request code for the header widget
         QObject::connect(networkVersionManager, &QNetworkAccessManager::finished,
-                         this, [=](QNetworkReply *reply) {
-                    if (reply->error()) {
-                        qDebug() << reply->errorString();
-                        return;
-                    }
+            this, [=](QNetworkReply* reply) {
+                if (reply->error()) {
+                    qDebug() << reply->errorString();
+                    return;
+                }
 
-                    // Get the data from the network request
-                    QString answer = reply->readAll();
+                // Get the data from the network request
+                QString answer = reply->readAll();
 
-                    UniValue releases(UniValue::VARR);
-                    releases.read(answer.toStdString());
+                UniValue releases(UniValue::VARR);
+                releases.read(answer.toStdString());
 
-                    if (!releases.isArray()) {
-                        return;
-                    }
+                if (!releases.isArray()) {
+                    return;
+                }
 
-                    if (!releases.size()) {
-                        return;
-                    }
+                if (!releases.size()) {
+                    return;
+                }
 
-                    // Latest release lives in the first index of the array return from github v3 api
-                    auto latestRelease = releases[0];
+                // Latest release lives in the first index of the array return from github v3 api
+                auto latestRelease = releases[0];
 
-                    auto keys = latestRelease.getKeys();
-                    for (auto key : keys) {
-                       if (key == "tag_name") {
-                           auto latestVersion = latestRelease["tag_name"].get_str();
+                auto keys = latestRelease.getKeys();
+                for (auto key : keys) {
+                    if (key == "tag_name") {
+                        auto latestVersion = latestRelease["tag_name"].get_str();
 
-                           QRegExp rx("v(\\d+).(\\d+).(\\d+)");
-                           rx.indexIn(QString::fromStdString(latestVersion));
+                        QRegExp rx("v(\\d+).(\\d+).(\\d+)");
+                        rx.indexIn(QString::fromStdString(latestVersion));
 
-                           // List the found values
-                           QStringList list = rx.capturedTexts();
-                           static const int CLIENT_VERSION_MAJOR_INDEX = 1;
-                           static const int CLIENT_VERSION_MINOR_INDEX = 2;
-                           static const int CLIENT_VERSION_REVISION_INDEX = 3;
-                           bool fNewSoftwareFound = false;
-                           bool fStopSearch = false;
-                           if (list.size() >= 4) {
-                               if (CLIENT_VERSION_MAJOR < list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
-                                   fNewSoftwareFound = true;
-                               } else {
-                                   if (CLIENT_VERSION_MAJOR > list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
-                                       fStopSearch = true;
-                                   }
-                               }
+                        // List the found values
+                        QStringList list = rx.capturedTexts();
+                        static const int CLIENT_VERSION_MAJOR_INDEX = 1;
+                        static const int CLIENT_VERSION_MINOR_INDEX = 2;
+                        static const int CLIENT_VERSION_REVISION_INDEX = 3;
+                        bool fNewSoftwareFound = false;
+                        bool fStopSearch = false;
+                        if (list.size() >= 4) {
+                            if (CLIENT_VERSION_MAJOR < list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
+                                fNewSoftwareFound = true;
+                            } else {
+                                if (CLIENT_VERSION_MAJOR > list[CLIENT_VERSION_MAJOR_INDEX].toInt()) {
+                                    fStopSearch = true;
+                                }
+                            }
 
-                               if (!fStopSearch) {
-                                   if (CLIENT_VERSION_MINOR < list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
-                                       fNewSoftwareFound = true;
-                                   } else {
-                                       if (CLIENT_VERSION_MINOR > list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
-                                           fStopSearch = true;
-                                       }
-                                   }
-                               }
+                            if (!fStopSearch) {
+                                if (CLIENT_VERSION_MINOR < list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
+                                    fNewSoftwareFound = true;
+                                } else {
+                                    if (CLIENT_VERSION_MINOR > list[CLIENT_VERSION_MINOR_INDEX].toInt()) {
+                                        fStopSearch = true;
+                                    }
+                                }
+                            }
 
-                               if (!fStopSearch) {
-                                   if (CLIENT_VERSION_REVISION < list[CLIENT_VERSION_REVISION_INDEX].toInt()) {
-                                       fNewSoftwareFound = true;
-                                   }
-                               }
-                           }
+                            if (!fStopSearch) {
+                                if (CLIENT_VERSION_REVISION < list[CLIENT_VERSION_REVISION_INDEX].toInt()) {
+                                    fNewSoftwareFound = true;
+                                }
+                            }
+                        }
 
-                           if (fNewSoftwareFound) {
-                               labelVersionUpdate->setToolTip(QString::fromStdString(strprintf("Currently running: %s\nLatest version: %s", FormatFullVersion(),
-                                                                                               latestVersion)));
-                               labelVersionUpdate->show();
+                        if (fNewSoftwareFound) {
+                            labelVersionUpdate->setToolTip(QString::fromStdString(strprintf("Currently running: %s\nLatest version: %s", FormatFullVersion(),
+                                latestVersion)));
+                            labelVersionUpdate->show();
 
-                               // Only display the message on startup to the user around 1/2 of the time
-                               if (GetRandInt(2) == 1) {
-                                    bool fRet = uiInterface.ThreadSafeQuestion(
-                                        strprintf("\nCurrently running: %s\nLatest version: %s", FormatFullVersion(),
-                                                    latestVersion) + "\n\nWould you like to visit the releases page?",
-                                        "",
-                                        "New Wallet Version Found",
-                                        CClientUIInterface::MSG_VERSION | CClientUIInterface::BTN_NO);
-                                   if (fRet) {
-                                       QString link = "https://github.com/Soteria-Network/Soteria/releases";
-                                       QDesktopServices::openUrl(QUrl(link));
-                                   }
-                               }
-                           } else {
-                               labelVersionUpdate->hide();
-                           }
-                       }
+                            // Only display the message on startup to the user around 1/2 of the time
+                            if (GetRandInt(2) == 1) {
+                                bool fRet = uiInterface.ThreadSafeQuestion(
+                                    strprintf("\nCurrently running: %s\nLatest version: %s", FormatFullVersion(),
+                                        latestVersion) +
+                                        "\n\nWould you like to visit the releases page?",
+                                    "",
+                                    "New Wallet Version Found",
+                                    CClientUIInterface::MSG_VERSION | CClientUIInterface::BTN_NO);
+                                if (fRet) {
+                                    QString link = "https://github.com/Soteria-Network/Soteria/releases";
+                                    QDesktopServices::openUrl(QUrl(link));
+                                }
+                            }
+                        } else {
+                            labelVersionUpdate->hide();
+                        }
                     }
                 }
-        );
-        getLatestVersion();        
+            });
+        getLatestVersion();
     }
 }
 
@@ -1116,11 +1113,10 @@ void SoteriaGUI::updateIconsOnlyToolbar(bool IconsOnly)
     }
 }
 
-void SoteriaGUI::setClientModel(ClientModel *_clientModel)
+void SoteriaGUI::setClientModel(ClientModel* _clientModel)
 {
     this->clientModel = _clientModel;
-    if(_clientModel)
-    {
+    if (_clientModel) {
         // Create system tray menu (or setup the dock menu) that late to prevent users from calling actions,
         // while the client has not yet fully loaded
         createTrayIconMenu();
@@ -1132,34 +1128,32 @@ void SoteriaGUI::setClientModel(ClientModel *_clientModel)
 
         modalOverlay->setKnownBestHeight(_clientModel->getHeaderTipHeight(), QDateTime::fromTime_t(_clientModel->getHeaderTipTime()));
         setNumBlocks(_clientModel->getNumBlocks(), _clientModel->getLastBlockDate(), _clientModel->getVerificationProgress(nullptr), false);
-        connect(_clientModel, SIGNAL(numBlocksChanged(int,QDateTime,double,bool)), this, SLOT(setNumBlocks(int,QDateTime,double,bool)));
+        connect(_clientModel, SIGNAL(numBlocksChanged(int, QDateTime, double, bool)), this, SLOT(setNumBlocks(int, QDateTime, double, bool)));
 
         // Receive and report messages from client model
-        connect(_clientModel, SIGNAL(message(QString,QString,unsigned int)), this, SLOT(message(QString,QString,unsigned int)));
+        connect(_clientModel, SIGNAL(message(QString, QString, unsigned int)), this, SLOT(message(QString, QString, unsigned int)));
 
         // Show progress dialog
-        connect(_clientModel, SIGNAL(showProgress(QString,int)), this, SLOT(showProgress(QString,int)));
+        connect(_clientModel, SIGNAL(showProgress(QString, int)), this, SLOT(showProgress(QString, int)));
 
         rpcConsole->setClientModel(_clientModel);
 #ifdef ENABLE_WALLET
-        if(walletFrame)
-        {
+        if (walletFrame) {
             walletFrame->setClientModel(_clientModel);
         }
 #endif // ENABLE_WALLET
         unitDisplayControl->setOptionsModel(_clientModel->getOptionsModel());
 
         OptionsModel* optionsModel = _clientModel->getOptionsModel();
-        if(optionsModel)
-        {
+        if (optionsModel) {
             // be aware of the tray icon disable state change reported by the OptionsModel object.
-            connect(optionsModel,SIGNAL(hideTrayIconChanged(bool)),this,SLOT(setTrayIconVisible(bool)));
+            connect(optionsModel, SIGNAL(hideTrayIconChanged(bool)), this, SLOT(setTrayIconVisible(bool)));
 
             // initialize the disable state of the tray icon with the current value in the model.
             setTrayIconVisible(optionsModel->getHideTrayIcon());
             
             // Signal to notify the settings have updated the display currency
-            connect(optionsModel,SIGNAL(displayCurrencyIndexChanged(int)), this, SLOT(onCurrencyChange(int)));
+            connect(optionsModel, SIGNAL(displayCurrencyIndexChanged(int)), this, SLOT(onCurrencyChange(int)));
 
             // Init the currency display from settings
           //  this->onCurrencyChange(optionsModel->getDisplayCurrencyIndex());
@@ -1170,16 +1164,14 @@ void SoteriaGUI::setClientModel(ClientModel *_clientModel)
     } else {
         // Disable possibility to show main window via action
         toggleHideAction->setEnabled(false);
-        if(trayIconMenu)
-        {
+        if (trayIconMenu) {
             // Disable context menu on tray icon
             trayIconMenu->clear();
         }
         // Propagate cleared model to child objects
         rpcConsole->setClientModel(nullptr);
 #ifdef ENABLE_WALLET
-        if (walletFrame)
-        {
+        if (walletFrame) {
             walletFrame->setClientModel(nullptr);
         }
 #endif // ENABLE_WALLET
@@ -1188,9 +1180,9 @@ void SoteriaGUI::setClientModel(ClientModel *_clientModel)
 }
 
 #ifdef ENABLE_WALLET
-bool SoteriaGUI::addWallet(const QString& name, WalletModel *walletModel)
+bool SoteriaGUI::addWallet(const QString& name, WalletModel* walletModel)
 {
-    if(!walletFrame)
+    if (!walletFrame)
         return false;
     setWalletActionsEnabled(true);
     return walletFrame->addWallet(name, walletModel);
@@ -1198,14 +1190,14 @@ bool SoteriaGUI::addWallet(const QString& name, WalletModel *walletModel)
 
 bool SoteriaGUI::setCurrentWallet(const QString& name)
 {
-    if(!walletFrame)
+    if (!walletFrame)
         return false;
     return walletFrame->setCurrentWallet(name);
 }
 
 void SoteriaGUI::removeAllWallets()
 {
-    if(!walletFrame)
+    if (!walletFrame)
         return;
     setWalletActionsEnabled(false);
     walletFrame->removeAllWallets();
@@ -1243,7 +1235,7 @@ void SoteriaGUI::setWalletActionsEnabled(bool enabled)
     /** SOTER END */
 }
 
-void SoteriaGUI::createTrayIcon(const NetworkStyle *networkStyle)
+void SoteriaGUI::createTrayIcon(const NetworkStyle* networkStyle)
 {
 #ifndef Q_OS_MAC
     trayIcon = new QSystemTrayIcon(this);
@@ -1267,11 +1259,11 @@ void SoteriaGUI::createTrayIconMenu()
     trayIcon->setContextMenu(trayIconMenu);
 
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-            this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+        this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
 #else
     // Note: On Mac, the dock icon is used to provide the tray's functionality.
-    MacDockIconHandler *dockIconHandler = MacDockIconHandler::instance();
-    dockIconHandler->setMainWindow((QMainWindow *)this);
+    MacDockIconHandler* dockIconHandler = MacDockIconHandler::instance();
+    dockIconHandler->setMainWindow((QMainWindow*)this);
     trayIconMenu = dockIconHandler->dockMenu();
 #endif
 
@@ -1295,8 +1287,7 @@ void SoteriaGUI::createTrayIconMenu()
 #ifndef Q_OS_MAC
 void SoteriaGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    if(reason == QSystemTrayIcon::Trigger)
-    {
+    if (reason == QSystemTrayIcon::Trigger) {
         // Click on system tray icon triggers show/hide of the main window
         toggleHidden();
     }
@@ -1305,7 +1296,7 @@ void SoteriaGUI::trayIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void SoteriaGUI::optionsClicked()
 {
-    if(!clientModel || !clientModel->getOptionsModel())
+    if (!clientModel || !clientModel->getOptionsModel())
         return;
 
     OptionsDialog dlg(this, enableWallet);
@@ -1315,7 +1306,7 @@ void SoteriaGUI::optionsClicked()
 
 void SoteriaGUI::aboutClicked()
 {
-    if(!clientModel)
+    if (!clientModel)
         return;
 
     HelpMessageDialog dlg(this, true);
@@ -1361,8 +1352,7 @@ void SoteriaGUI::showSmartcontracts()
 void SoteriaGUI::openClicked()
 {
     OpenURIDialog dlg(platformStyle, this);
-    if(dlg.exec())
-    {
+    if (dlg.exec()) {
         Q_EMIT receivedURI(dlg.getURI());
     }
 }
@@ -1438,8 +1428,8 @@ void SoteriaGUI::updateNetworkState()
 {
     int count = clientModel->getNumConnections();
     QString icon;
-    switch(count)
-    {
+    switch (count)
+ {
     case 0: icon = ":/icons/connect_0"; break;
     case 1: case 2: case 3: icon = ":/icons/connect_1"; break;
     case 4: case 5: case 6: icon = ":/icons/connect_2"; break;
@@ -1479,13 +1469,12 @@ void SoteriaGUI::updateHeadersSyncProgressLabel()
     int headersTipHeight = clientModel->getHeaderTipHeight();
     int estHeadersLeft = (GetTime() - headersTipTime) / Params().GetConsensus().nPowTargetSpacing;
     if (estHeadersLeft > HEADER_HEIGHT_DELTA_SYNC)
-        progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(100.0 / (headersTipHeight+estHeadersLeft)*headersTipHeight, 'f', 1)));
+        progressBarLabel->setText(tr("Syncing Headers (%1%)...").arg(QString::number(100.0 / (headersTipHeight + estHeadersLeft) * headersTipHeight, 'f', 1)));
 }
 
 void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVerificationProgress, bool header)
 {
-    if (modalOverlay)
-    {
+    if (modalOverlay) {
         if (header)
             modalOverlay->setKnownBestHeight(count, blockDate);
         else
@@ -1501,30 +1490,30 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
     // Acquire current block source
     enum BlockSource blockSource = clientModel->getBlockSource();
     switch (blockSource) {
-        case BLOCK_SOURCE_NETWORK:
-            if (header) {
-                updateHeadersSyncProgressLabel();
-                return;
-            }
-            progressBarLabel->setText(tr("Synchronizing with network..."));
+    case BLOCK_SOURCE_NETWORK:
+        if (header) {
             updateHeadersSyncProgressLabel();
-            break;
-        case BLOCK_SOURCE_DISK:
-            if (header) {
-                progressBarLabel->setText(tr("Indexing blocks on disk..."));
-            } else {
-                progressBarLabel->setText(tr("Processing blocks on disk..."));
-            }
-            break;
-        case BLOCK_SOURCE_REINDEX:
-            progressBarLabel->setText(tr("Reindexing blocks on disk..."));
-            break;
-        case BLOCK_SOURCE_NONE:
-            if (header) {
-                return;
-            }
-            progressBarLabel->setText(tr("Connecting to peers..."));
-            break;
+            return;
+        }
+        progressBarLabel->setText(tr("Synchronizing with network..."));
+        updateHeadersSyncProgressLabel();
+        break;
+    case BLOCK_SOURCE_DISK:
+        if (header) {
+            progressBarLabel->setText(tr("Indexing blocks on disk..."));
+        } else {
+            progressBarLabel->setText(tr("Processing blocks on disk..."));
+        }
+        break;
+    case BLOCK_SOURCE_REINDEX:
+        progressBarLabel->setText(tr("Reindexing blocks on disk..."));
+        break;
+    case BLOCK_SOURCE_NONE:
+        if (header) {
+            return;
+        }
+        progressBarLabel->setText(tr("Connecting to peers..."));
+        break;
     }
 
     QString tooltip;
@@ -1535,14 +1524,12 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
     tooltip = tr("Processed %n block(s) of transaction history.", "", count);
 
     // Set icon state: spinning if catching up, tick otherwise
-    if(secs < 90*60)
-    {
+    if (secs < 90 * 60) {
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
         labelBlocksIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
 #ifdef ENABLE_WALLET
-        if(walletFrame)
-        {
+        if (walletFrame) {
             walletFrame->showOutOfSyncWarning(false);
             modalOverlay->showHide(true, true);
         }
@@ -1550,9 +1537,7 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
 
         progressBarLabel->setVisible(false);
         progressBar->setVisible(false);
-    }
-    else
-    {
+    } else {
         QString timeBehindText = GUIUtil::formatNiceTimeOffset(secs);
 
         progressBarLabel->setVisible(true);
@@ -1562,8 +1547,7 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
-        if(count != prevBlocks)
-        {
+        if (count != prevBlocks) {
             labelBlocksIcon->setPixmap(platformStyle->SingleColorIcon(QString(
                 ":/movies/spinner-%1").arg(spinnerFrame, 3, 10, QChar('0')))
                 .pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
@@ -1572,8 +1556,7 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
         prevBlocks = count;
 
 #ifdef ENABLE_WALLET
-        if(walletFrame)
-        {
+        if (walletFrame) {
             walletFrame->showOutOfSyncWarning(true);
             modalOverlay->showHide();
         }
@@ -1593,7 +1576,7 @@ void SoteriaGUI::setNumBlocks(int count, const QDateTime& blockDate, double nVer
     progressBar->setToolTip(tooltip);
 }
 
-void SoteriaGUI::message(const QString &title, const QString &message, unsigned int style, bool *ret)
+void SoteriaGUI::message(const QString& title, const QString& message, unsigned int style, bool* ret)
 {
     QString strTitle = tr("Soteria"); // default title
     // Default to information icon
@@ -1605,8 +1588,7 @@ void SoteriaGUI::message(const QString &title, const QString &message, unsigned 
     // Prefer supplied title over style based title
     if (!title.isEmpty()) {
         msgType = title;
-    }
-    else {
+    } else {
         switch (style) {
         case CClientUIInterface::MSG_ERROR:
             msgType = tr("Error");
@@ -1629,8 +1611,7 @@ void SoteriaGUI::message(const QString &title, const QString &message, unsigned 
     if (style & CClientUIInterface::ICON_ERROR) {
         nMBoxIcon = QMessageBox::Critical;
         nNotifyIcon = Notificator::Critical;
-    }
-    else if (style & CClientUIInterface::ICON_WARNING) {
+    } else if (style & CClientUIInterface::ICON_WARNING) {
         nMBoxIcon = QMessageBox::Warning;
         nNotifyIcon = Notificator::Warning;
     }
@@ -1647,22 +1628,18 @@ void SoteriaGUI::message(const QString &title, const QString &message, unsigned 
         int r = mBox.exec();
         if (ret != nullptr)
             *ret = r == QMessageBox::Ok;
-    }
-    else
+    } else
         notificator->notify((Notificator::Class)nNotifyIcon, strTitle, message);
 }
 
-void SoteriaGUI::changeEvent(QEvent *e)
+void SoteriaGUI::changeEvent(QEvent* e)
 {
     QMainWindow::changeEvent(e);
 #ifndef Q_OS_MAC // Ignored on Mac
-    if(e->type() == QEvent::WindowStateChange)
-    {
-        if(clientModel && clientModel->getOptionsModel() && clientModel->getOptionsModel()->getMinimizeToTray())
-        {
-            QWindowStateChangeEvent *wsevt = static_cast<QWindowStateChangeEvent*>(e);
-            if(!(wsevt->oldState() & Qt::WindowMinimized) && isMinimized())
-            {
+    if (e->type() == QEvent::WindowStateChange) {
+        if (clientModel && clientModel->getOptionsModel() && clientModel->getOptionsModel()->getMinimizeToTray()) {
+            QWindowStateChangeEvent* wsevt = static_cast<QWindowStateChangeEvent*>(e);
+            if (!(wsevt->oldState() & Qt::WindowMinimized) && isMinimized()) {
                 QTimer::singleShot(0, this, SLOT(hide()));
                 e->ignore();
             }
@@ -1671,20 +1648,16 @@ void SoteriaGUI::changeEvent(QEvent *e)
 #endif
 }
 
-void SoteriaGUI::closeEvent(QCloseEvent *event)
+void SoteriaGUI::closeEvent(QCloseEvent* event)
 {
 #ifndef Q_OS_MAC // Ignored on Mac
-    if(clientModel && clientModel->getOptionsModel())
-    {
-        if(!clientModel->getOptionsModel()->getMinimizeOnClose())
-        {
+    if (clientModel && clientModel->getOptionsModel()) {
+        if (!clientModel->getOptionsModel()->getMinimizeOnClose()) {
             // close rpcConsole in case it was open to make some space for the shutdown window
             rpcConsole->close();
 
             QApplication::quit();
-        }
-        else
-        {
+        } else {
             QMainWindow::showMinimized();
             event->ignore();
         }
@@ -1694,7 +1667,7 @@ void SoteriaGUI::closeEvent(QCloseEvent *event)
 #endif
 }
 
-void SoteriaGUI::showEvent(QShowEvent *event)
+void SoteriaGUI::showEvent(QShowEvent* event)
 {
     // enable the debug window when the main window shows up
     openRPCConsoleAction->setEnabled(true);
@@ -1803,7 +1776,7 @@ void SoteriaGUI::setHDStatus(int hdEnabled)
         icon = ":/icons/hd_enabled_44";
     }
 
-    labelWalletHDStatusIcon->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+    labelWalletHDStatusIcon->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
     labelWalletHDStatusIcon->setToolTip(hdEnabled ? tr("HD key generation is <b>enabled</b>") : tr("HD key generation is <b>disabled</b>"));
 
     // eventually disable the QLabel to set its opacity to 50%
@@ -1821,7 +1794,7 @@ void SoteriaGUI::setEncryptionStatus(int status)
         break;
     case WalletModel::Unlocked:
         labelWalletEncryptionIcon->show();
-        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b>"));
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
@@ -1829,7 +1802,7 @@ void SoteriaGUI::setEncryptionStatus(int status)
         break;
     case WalletModel::Locked:
         labelWalletEncryptionIcon->show();
-        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
@@ -1841,7 +1814,7 @@ void SoteriaGUI::setEncryptionStatus(int status)
 
 void SoteriaGUI::showNormalIfMinimized(bool fToggleHidden)
 {
-    if(!clientModel)
+    if (!clientModel)
         return;
 
     // activateWindow() (sometimes) helps with keyboard focus on Windows
@@ -1874,8 +1847,7 @@ void SoteriaGUI::detectShutdown()
 
 void SoteriaGUI::showProgress(const QString& title, int nProgress)
 {
-    if (nProgress == 0)
-    {
+    if (nProgress == 0) {
         progressDialog = new QProgressDialog(title, "", 0, 100);
         progressDialog->setWindowModality(Qt::ApplicationModal);
         progressDialog->setMinimumDuration(0);
@@ -1964,8 +1936,7 @@ void SoteriaGUI::handleRestart(QStringList args)
         Q_EMIT requestedRestart(args);
 }
 
-UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle* platformStyle) :
- optionsModel(0),
+UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle* platformStyle) : optionsModel(0),
     menu(0)
 {
     createContextMenu(platformStyle);
@@ -1982,34 +1953,32 @@ UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(const PlatformStyle* pl
 }
 
 /** So that it responds to button clicks */
-void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent *event)
+void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent* event)
 {
     onDisplayUnitsClicked(event->pos());
 }
 
 /** Creates context menu, its actions, and wires up all the relevant signals for mouse events. */
-void UnitDisplayStatusBarControl::createContextMenu(const PlatformStyle *platformStyle)
+void UnitDisplayStatusBarControl::createContextMenu(const PlatformStyle* platformStyle)
 {
     menu = new QMenu(this);
-    for (SoteriaUnits::Unit u : SoteriaUnits::availableUnits())
-    {
-        QAction *menuAction = new QAction(QString(SoteriaUnits::name(u)), this);
+    for (SoteriaUnits::Unit u : SoteriaUnits::availableUnits()) {
+        QAction* menuAction = new QAction(QString(SoteriaUnits::name(u)), this);
         menuAction->setData(QVariant(u));
         menu->addAction(menuAction);
     }
     menu->setStyleSheet(QString("QMenu::item{ color: %1; } QMenu::item:selected{ color: %2; border: none;}").arg(platformStyle->Soteria_2B737F().name(), platformStyle->Soteria_2B737F().name()));
-    connect(menu,SIGNAL(triggered(QAction*)),this,SLOT(onMenuSelection(QAction*)));
+    connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onMenuSelection(QAction*)));
 }
 
 /** Lets the control know about the Options Model (and its signals) */
-void UnitDisplayStatusBarControl::setOptionsModel(OptionsModel *_optionsModel)
+void UnitDisplayStatusBarControl::setOptionsModel(OptionsModel* _optionsModel)
 {
-    if (_optionsModel)
-    {
+    if (_optionsModel) {
         this->optionsModel = _optionsModel;
 
         // be aware of a display unit change reported by the OptionsModel object.
-        connect(_optionsModel,SIGNAL(displayUnitChanged(int)),this,SLOT(updateDisplayUnit(int)));
+        connect(_optionsModel, SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit(int)));
 
         // initialize the display units label with the current value in the model.
         updateDisplayUnit(_optionsModel->getDisplayUnit());
@@ -2032,8 +2001,7 @@ void UnitDisplayStatusBarControl::onDisplayUnitsClicked(const QPoint& point)
 /** Tells underlying optionsModel to update its current display unit. */
 void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
 {
-    if (action)
-    {
+    if (action) {
         optionsModel->setDisplayUnit(action->data());
     }
 }
@@ -2054,8 +2022,8 @@ void SoteriaGUI::getPriceInfo()
 
 void SoteriaGUI::mnemonic()
 {
-        MnemonicDialog dlg(this);
-        dlg.exec();
+    MnemonicDialog dlg(this);
+    dlg.exec();
 }
 
 void SoteriaGUI::getLatestVersion()
