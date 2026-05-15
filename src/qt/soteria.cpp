@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #if defined(HAVE_CONFIG_H)
 #include <config/soteria-config.h>
@@ -45,17 +43,17 @@
 #include <functional>
 #include <QApplication>
 #include <QDebug>
+#include <QDir>
+#include <QFontDatabase>
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QMessageBox>
 #include <QProcess>
 #include <QSettings>
+#include <QSslConfiguration>
 #include <QThread>
 #include <QTimer>
 #include <QTranslator>
-#include <QSslConfiguration>
-#include <QDir>
-#include <QFontDatabase>
 
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
@@ -77,6 +75,7 @@ Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 Q_IMPORT_PLUGIN(QWindowsPrinterSupportPlugin);
 #elif defined(QT_QPA_PLATFORM_COCOA)
 Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
+Q_IMPORT_PLUGIN(QCocoaPrinterSupportPlugin);
 Q_IMPORT_PLUGIN(QMacStylePlugin);
 #endif
 #endif
@@ -90,7 +89,7 @@ Q_IMPORT_PLUGIN(QMacStylePlugin);
 Q_DECLARE_METATYPE(bool*)
 Q_DECLARE_METATYPE(CAmount)
 
-static void InitMessage(const std::string &message)
+static void InitMessage(const std::string& message)
 {
     LogPrintf("init message: %s\n", message);
 }
@@ -111,7 +110,7 @@ static QString GetLangTerritory()
     QString lang_territory = QLocale::system().name();
     // 2) Language from QSettings
     QString lang_territory_qsettings = settings.value("language", "").toString();
-    if(!lang_territory_qsettings.isEmpty())
+    if (!lang_territory_qsettings.isEmpty())
         lang_territory = lang_territory_qsettings;
     // 3) -lang command line argument
     lang_territory = QString::fromStdString(gArgs.GetArg("-lang", lang_territory.toStdString()));
@@ -119,7 +118,7 @@ static QString GetLangTerritory()
 }
 
 /** Set up translations */
-static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTranslator, QTranslator &translatorBase, QTranslator &translator)
+static void initTranslations(QTranslator& qtTranslatorBase, QTranslator& qtTranslator, QTranslator& translatorBase, QTranslator& translator)
 {
     // Remove old translators
     QApplication::removeTranslator(&qtTranslatorBase);
@@ -158,7 +157,7 @@ static void initTranslations(QTranslator &qtTranslatorBase, QTranslator &qtTrans
 
 /* qDebug() message handler --> debug.log */
 #if QT_VERSION < 0x050000
-void DebugMessageHandler(QtMsgType type, const char *msg)
+void DebugMessageHandler(QtMsgType type, const char* msg)
 {
     if (type == QtDebugMsg) {
         LogPrint(BCLog::QT, "GUI: %s\n", msg);
@@ -167,7 +166,7 @@ void DebugMessageHandler(QtMsgType type, const char *msg)
     }
 }
 #else
-void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString &msg)
+void DebugMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
     Q_UNUSED(context);
     if (type == QtDebugMsg) {
@@ -199,14 +198,14 @@ public Q_SLOTS:
 Q_SIGNALS:
     void initializeResult(bool success);
     void shutdownResult(bool success);
-    void runawayException(const QString &message);
+    void runawayException(const QString& message);
 
 private:
     boost::thread_group threadGroup;
     CScheduler scheduler;
 
     /// Pass fatal exception message to UI thread
-    void handleRunawayException(const std::exception *e);
+    void handleRunawayException(const std::exception* e);
 };
 
 /** Main Soteria application object */
@@ -226,9 +225,9 @@ public:
     /// Create options model
     void createOptionsModel(bool resetSettings);
     /// Create main window
-    void createWindow(const NetworkStyle *networkStyle);
+    void createWindow(const NetworkStyle* networkStyle);
     /// Create splash screen
-    void createSplashScreen(const NetworkStyle *networkStyle);
+    void createSplashScreen(const NetworkStyle* networkStyle);
 
     /// Request core initialization
     void requestInitialize();
@@ -247,27 +246,27 @@ public Q_SLOTS:
     void initializeResult(bool success);
     void shutdownResult(bool success);
     /// Handle runaway exceptions. Shows a message box with the problem and quits the program.
-    void handleRunawayException(const QString &message);
+    void handleRunawayException(const QString& message);
 
 Q_SIGNALS:
     void requestedInitialize();
     void requestedRestart(QStringList args);
     void requestedShutdown();
     void stopThread();
-    void splashFinished(QWidget *window);
+    void splashFinished(QWidget* window);
 
 private:
-    QThread *coreThread;
-    OptionsModel *optionsModel;
-    ClientModel *clientModel;
-    SoteriaGUI *window;
-    QTimer *pollShutdownTimer;
+    QThread* coreThread;
+    OptionsModel* optionsModel;
+    ClientModel* clientModel;
+    SoteriaGUI* window;
+    QTimer* pollShutdownTimer;
 #ifdef ENABLE_WALLET
     PaymentServer* paymentServer;
-    WalletModel *walletModel;
+    WalletModel* walletModel;
 #endif
     int returnValue;
-    const PlatformStyle *platformStyle;
+    const PlatformStyle* platformStyle;
     std::unique_ptr<QWidget> shutdownWindow;
 
     void startThread();
@@ -275,12 +274,11 @@ private:
 
 #include <qt/soteria.moc>
 
-SoteriaCore::SoteriaCore():
-    QObject()
+SoteriaCore::SoteriaCore() : QObject()
 {
 }
 
-void SoteriaCore::handleRunawayException(const std::exception *e)
+void SoteriaCore::handleRunawayException(const std::exception* e)
 {
     PrintExceptionContinue(e, "Runaway exception");
     Q_EMIT runawayException(QString::fromStdString(GetWarnings("gui")));
@@ -288,20 +286,16 @@ void SoteriaCore::handleRunawayException(const std::exception *e)
 
 bool SoteriaCore::baseInitialize()
 {
-    if (!AppInitBasicSetup())
-    {
+    if (!AppInitBasicSetup()) {
         return false;
     }
-    if (!AppInitParameterInteraction())
-    {
+    if (!AppInitParameterInteraction()) {
         return false;
     }
-    if (!AppInitSanityChecks())
-    {
+    if (!AppInitSanityChecks()) {
         return false;
     }
-    if (!AppInitLockDataDirectory())
-    {
+    if (!AppInitLockDataDirectory()) {
         return false;
     }
     return true;
@@ -309,8 +303,7 @@ bool SoteriaCore::baseInitialize()
 
 void SoteriaCore::initialize()
 {
-    try
-    {
+    try {
         qDebug() << __func__ << ": Running initialization in thread";
         bool rv = AppInitMain(threadGroup, scheduler);
         Q_EMIT initializeResult(rv);
@@ -327,8 +320,7 @@ void SoteriaCore::restart(QStringList args)
 
     if(!executing_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
         executing_restart = true;
-        try
-        {
+        try {
             qDebug() << __func__ << ": Running Restart in thread";
             Interrupt(threadGroup);
             threadGroup.join_all();
@@ -350,8 +342,7 @@ void SoteriaCore::restart(QStringList args)
 
 void SoteriaCore::shutdown()
 {
-    try
-    {
+    try {
         qDebug() << __func__ << ": Running Shutdown in thread";
         Interrupt(threadGroup);
         threadGroup.join_all();
@@ -427,20 +418,20 @@ void SoteriaApplication::createOptionsModel(bool resetSettings)
     optionsModel = new OptionsModel(nullptr, resetSettings);
 }
 
-void SoteriaApplication::createWindow(const NetworkStyle *networkStyle)
+void SoteriaApplication::createWindow(const NetworkStyle* networkStyle)
 {
     window = new SoteriaGUI(platformStyle, networkStyle, 0);
-    window->setMinimumSize(1024,768);
-    window->setBaseSize(640,640);
+    window->setMinimumSize(1024, 768);
+    window->setBaseSize(640, 640);
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));
     pollShutdownTimer->start(200);
 }
 
-void SoteriaApplication::createSplashScreen(const NetworkStyle *networkStyle)
+void SoteriaApplication::createSplashScreen(const NetworkStyle* networkStyle)
 {
-    SplashScreen *splash = new SplashScreen(networkStyle);
+    SplashScreen* splash = new SplashScreen(networkStyle);
     // We don't hold a direct pointer to the splash screen after creation, but the splash
     // screen will take care of deleting itself when slotFinish happens.
     splash->show();
@@ -450,10 +441,10 @@ void SoteriaApplication::createSplashScreen(const NetworkStyle *networkStyle)
 
 void SoteriaApplication::startThread()
 {
-    if(coreThread)
+    if (coreThread)
         return;
     coreThread = new QThread(this);
-    SoteriaCore *executor = new SoteriaCore();
+    SoteriaCore* executor = new SoteriaCore();
     executor->moveToThread(coreThread);
 
     /*  communication to and from thread */
@@ -515,8 +506,7 @@ void SoteriaApplication::initializeResult(bool success)
     qDebug() << __func__ << ": Initialization result: " << success;
     // Set exit result.
     returnValue = success ? EXIT_SUCCESS : EXIT_FAILURE;
-    if(success)
-    {
+    if (success) {
         // Log this only after AppInitMain finishes, as then logging setup is guaranteed complete
         qWarning() << "Platform customization:" << platformStyle->getName();
 #ifdef ENABLE_WALLET
@@ -529,25 +519,21 @@ void SoteriaApplication::initializeResult(bool success)
 
 #ifdef ENABLE_WALLET
         // TODO: Expose secondary wallets
-        if (!vpwallets.empty())
-        {
+        if (!vpwallets.empty()) {
             walletModel = new WalletModel(platformStyle, vpwallets[0], optionsModel);
 
             window->addWallet(SoteriaGUI::DEFAULT_WALLET, walletModel);
             window->setCurrentWallet(SoteriaGUI::DEFAULT_WALLET);
 
-            connect(walletModel, SIGNAL(coinsSent(CWallet*,SendCoinsRecipient,QByteArray)),
-                             paymentServer, SLOT(fetchPaymentACK(CWallet*,const SendCoinsRecipient&,QByteArray)));
+            connect(walletModel, SIGNAL(coinsSent(CWallet*, SendCoinsRecipient, QByteArray)),
+                paymentServer, SLOT(fetchPaymentACK(CWallet*, const SendCoinsRecipient&, QByteArray)));
         }
 #endif
 
         // If -min option passed, start window minimized.
-        if(gArgs.GetBoolArg("-min", false))
-        {
+        if (gArgs.GetBoolArg("-min", false)) {
             window->showMinimized();
-        }
-        else
-        {
+        } else {
             window->show();
         }
         Q_EMIT splashFinished(window);
@@ -556,11 +542,11 @@ void SoteriaApplication::initializeResult(bool success)
         // Now that initialization/startup is done, process any command-line
         // soteria: URIs or payment requests:
         connect(paymentServer, SIGNAL(receivedPaymentRequest(SendCoinsRecipient)),
-                         window, SLOT(handlePaymentRequest(SendCoinsRecipient)));
+            window, SLOT(handlePaymentRequest(SendCoinsRecipient)));
         connect(window, SIGNAL(receivedURI(QString)),
-                         paymentServer, SLOT(handleURIOrFile(QString)));
-        connect(paymentServer, SIGNAL(message(QString,QString,unsigned int)),
-                         window, SLOT(message(QString,QString,unsigned int)));
+            paymentServer, SLOT(handleURIOrFile(QString)));
+        connect(paymentServer, SIGNAL(message(QString, QString, unsigned int)),
+            window, SLOT(message(QString, QString, unsigned int)));
         QTimer::singleShot(100, paymentServer, SLOT(uiReady()));
 #endif
     } else {
@@ -575,7 +561,7 @@ void SoteriaApplication::shutdownResult(bool success)
     quit(); // Exit main loop after shutdown finished
 }
 
-void SoteriaApplication::handleRunawayException(const QString &message)
+void SoteriaApplication::handleRunawayException(const QString& message)
 {
     QMessageBox::critical(0, "Runaway exception", SoteriaGUI::tr("A fatal error occurred. Soteria can no longer continue safely and will quit.") + QString("\n\n") + message);
     ::exit(EXIT_FAILURE);
@@ -590,7 +576,7 @@ WId SoteriaApplication::getMainWinId() const
 }
 
 #ifndef SOTERIA_QT_TEST
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     SetupEnvironment();
 
@@ -630,11 +616,11 @@ int main(int argc, char *argv[])
     SoteriaApplication app;
     
     // Register meta types used for QMetaObject::invokeMethod
-    qRegisterMetaType< bool* >();
+    qRegisterMetaType<bool*>();
     //   Need to pass name here as CAmount is a typedef (see http://qt-project.org/doc/qt-5/qmetatype.html#qRegisterMetaType)
     //   IMPORTANT if it is no longer a typedef use the normal variant above
-    qRegisterMetaType< CAmount >("CAmount");
-    qRegisterMetaType< std::function<void(void)> >("std::function<void(void)>");
+    qRegisterMetaType<CAmount>("CAmount");
+    qRegisterMetaType<std::function<void(void)>>("std::function<void(void)>");
 
     /// 3. Application identification
     // must be set before OptionsModel is initialized or translations are loaded,
@@ -642,7 +628,7 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName(QAPP_ORG_NAME);
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
-    
+
     GUIUtil::SubstituteFonts(GetLangTerritory());
     QFontDatabase::addApplicationFont(":/fonts/manrope-regular");
     QFontDatabase::addApplicationFont(":/fonts/manrope-bold");
@@ -681,17 +667,16 @@ int main(int argc, char *argv[])
 
     /// 6. Determine availability of data directory and parse soteria.conf
     /// - Do not call GetDataDir(true) before this step finishes
-    if (!fs::is_directory(GetDataDir(false)))
-    {
+    if (!fs::is_directory(GetDataDir(false))) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
-                              QObject::tr("Error: Specified data directory \"%1\" does not exist.").arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
+            QObject::tr("Error: Specified data directory \"%1\" does not exist.").arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
         return EXIT_FAILURE;
     }
     try {
         gArgs.ReadConfigFile(gArgs.GetArg("-conf", SOTERIA_CONF_FILENAME));
     } catch (const std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME),
-                              QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
+            QObject::tr("Error: Cannot parse configuration file: %1. Only use key=value syntax.").arg(e.what()));
         return EXIT_FAILURE;
     }
 
@@ -704,7 +689,7 @@ int main(int argc, char *argv[])
     // Check for -testnet or -regtest parameter (Params() calls are only valid after this clause)
     try {
         SelectParams(ChainNameFromCommandLine());
-    } catch(std::exception &e) {
+    } catch (std::exception& e) {
         QMessageBox::critical(0, QObject::tr(PACKAGE_NAME), QObject::tr("Error: %1").arg(e.what()));
         return EXIT_FAILURE;
     }
@@ -765,8 +750,7 @@ int main(int argc, char *argv[])
         app.createSplashScreen(networkStyle.data());
 
     int rv = EXIT_SUCCESS;
-    try
-    {
+    try {
         app.createWindow(networkStyle.data());
         // Perform base initialization before spinning up initialization/shutdown thread
         // This is acceptable because this function only contains steps that are quick to execute,
