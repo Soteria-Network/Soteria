@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_PRIMITIVES_BLOCK_H
 #define SOTERIA_PRIMITIVES_BLOCK_H
@@ -35,9 +33,18 @@ enum POW_TYPE {
     NUM_BLOCK_TYPES
 };
 
+/** Nodes collect new transactions into a block, hash them into a hash tree,
+ * and scan through nonce values to make the block's hash satisfy proof-of-work
+ * requirements.  When they solve the proof-of-work, they broadcast the block
+ * to everyone and the block is added to the block chain.  The first transaction
+ * in the block is a special one that creates a new coin owned by the creator
+ * of the block.
+ */
+
 class CBlockHeader
 {
 public:
+    // header
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
@@ -53,7 +60,8 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
         READWRITE(this->nVersion);
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
@@ -91,23 +99,22 @@ public:
     // SoterC
     static uint256 SoterCHashArbitrary(const char* data);
 
-    /// Use for testing algo switch
-    uint256 TestTiger() const;
-    uint256 TestSha512() const;
-    uint256 TestGost512() const;
-
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;
     }
 
     // Dual algo: Get pow type from version bits
-    POW_TYPE GetPoWType() const {
+    POW_TYPE GetPoWType() const
+    {
         return (POW_TYPE)((nVersion >> 16) & 0xFF);
     }
 
     // Dual algo: Get pow type name
-    std::string GetPoWTypeName() const {
+    std::string GetPoWTypeName() const
+    {
+        // if (nVersion >= 0x20000000)
+        //     return POW_TYPE_NAMES[0];
         POW_TYPE pt = GetPoWType();
         if (pt >= NUM_BLOCK_TYPES)
             return "unrecognised";
@@ -130,7 +137,7 @@ public:
         SetNull();
     }
 
-    CBlock(const CBlockHeader &header)
+    CBlock(const CBlockHeader& header)
     {
         SetNull();
         *((CBlockHeader*)this) = header;
@@ -139,7 +146,8 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
         READWRITE(*(CBlockHeader*)this);
         READWRITE(vtx);
     }
@@ -154,22 +162,28 @@ public:
     CBlockHeader GetBlockHeader() const
     {
         CBlockHeader block;
-        block.nVersion       = nVersion;
-        block.hashPrevBlock  = hashPrevBlock;
+        block.nVersion = nVersion;
+        block.hashPrevBlock = hashPrevBlock;
         block.hashMerkleRoot = hashMerkleRoot;
-        block.nTime          = nTime;
-        block.nBits          = nBits;
-        block.nNonce         = nNonce;
+        block.nTime = nTime;
+        block.nBits = nBits;
+        block.nNonce = nNonce;
         return block;
     }
+
+    // void SetPrevBlockHash(uint256 prevHash)
+    // {
+    //     block.hashPrevBlock = prevHash;
+    // }
+
     std::string ToString() const;
 };
+
 /** Describes a place in the block chain to another node such that if the
  * other node doesn't have the same branch, it can find a recent common trunk.
  * The further back it is, the further before the fork it may be.
  */
-struct CBlockLocator
-{
+struct CBlockLocator {
     std::vector<uint256> vHave;
 
     CBlockLocator() {}
@@ -179,7 +193,8 @@ struct CBlockLocator
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
         int nVersion = s.GetVersion();
         if (!(s.GetType() & SER_GETHASH))
             READWRITE(nVersion);
