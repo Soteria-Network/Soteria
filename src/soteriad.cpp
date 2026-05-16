@@ -1,42 +1,39 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
 #endif
 
+#include <boost/thread.hpp>
 #include "chainparams.h"
 #include "clientversion.h"
 #include "compat.h"
+#include <exception>
 #include "fs.h"
-#include "rpc/server.h"
+#include "httprpc.h"
+#include "httpserver.h"
 #include "init.h"
 #include "noui.h"
+#include "rpc/server.h"
 #include "scheduler.h"
-#include <util/system.h>
-#include "httpserver.h"
-#include "httprpc.h"
-#include "util/strencodings.h"
-#include <thread>
 #include <stdio.h>
 #include <string>
-#include <exception>
-#include <boost/thread.hpp>
+#include <thread>
+#include "util/strencodings.h"
+#include <util/system.h>
+
 void WaitForShutdown(boost::thread_group* threadGroup)
 {
     bool fShutdown = ShutdownRequested();
     // Tell the main threads to shutdown.
-    while (!fShutdown)
-    {
+    while (!fShutdown) {
         MilliSleep(200);
         fShutdown = ShutdownRequested();
     }
-    if (threadGroup)
-    {
+    if (threadGroup) {
         Interrupt(*threadGroup);
         threadGroup->join_all();
     }
@@ -60,18 +57,14 @@ bool AppInit(int argc, char* argv[])
     gArgs.ParseParameters(argc, argv);
 
     // Process help and version before taking care about datadir
-    if (gArgs.IsArgSet("-?") || gArgs.IsArgSet("-h") ||  gArgs.IsArgSet("-help") || gArgs.IsArgSet("-version"))
-    {
+    if (gArgs.IsArgSet("-?") || gArgs.IsArgSet("-h") || gArgs.IsArgSet("-help") || gArgs.IsArgSet("-version")) {
         std::string strUsage = strprintf(_("%s Daemon"), _(PACKAGE_NAME)) + " " + _("version") + " " + FormatFullVersion() + "\n";
 
-        if (gArgs.IsArgSet("-version"))
-        {
+        if (gArgs.IsArgSet("-version")) {
             strUsage += FormatParagraph(LicenseInfo());
-        }
-        else
-        {
+        } else {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  soteriad [options]                     " + strprintf(_("Start %s Daemon"), _(PACKAGE_NAME)) + "\n";
+                   "  soteriad [options]                     " + strprintf(_("Start %s Daemon"), _(PACKAGE_NAME)) + "\n";
 
             strUsage += "\n" + HelpMessage(HMM_SOTERIAD);
         }
@@ -80,15 +73,12 @@ bool AppInit(int argc, char* argv[])
         return true;
     }
 
-    try
-    {
-        if (!fs::is_directory(GetDataDir(false)))
-        {
+    try {
+        if (!fs::is_directory(GetDataDir(false))) {
             fprintf(stderr, "Error: Specified data directory \"%s\" does not exist.\n", gArgs.GetArg("-datadir", "").c_str());
             return false;
         }
-        try
-        {
+        try {
             gArgs.ReadConfigFile(gArgs.GetArg("-conf", SOTERIA_CONF_FILENAME));
         } catch (const std::exception& e) {
             fprintf(stderr,"Error reading configuration file: %s\n", e.what());
@@ -115,23 +105,19 @@ bool AppInit(int argc, char* argv[])
         // Set this early so that parameter interactions go to console
         InitLogging();
         InitParameterInteraction();
-        if (!AppInitBasicSetup())
-        {
+        if (!AppInitBasicSetup()) {
             // InitError will have been called with detailed error, which ends up on console
             exit(EXIT_FAILURE);
         }
-        if (!AppInitParameterInteraction())
-        {
+        if (!AppInitParameterInteraction()) {
             // InitError will have been called with detailed error, which ends up on console
             exit(EXIT_FAILURE);
         }
-        if (!AppInitSanityChecks())
-        {
+        if (!AppInitSanityChecks()) {
             // InitError will have been called with detailed error, which ends up on console
             exit(EXIT_FAILURE);
         }
-        if (gArgs.GetBoolArg("-daemon", false))
-        {
+        if (gArgs.GetBoolArg("-daemon", false)) {
 #if HAVE_DECL_DAEMON
 #if defined(MAC_OSX)
 #pragma GCC diagnostic push
@@ -153,21 +139,18 @@ bool AppInit(int argc, char* argv[])
 #endif // HAVE_DECL_DAEMON
         }
         // Lock data directory after daemonization
-        if (!AppInitLockDataDirectory())
-        {
+        if (!AppInitLockDataDirectory()) {
             // If locking the data directory failed, exit immediately
             exit(EXIT_FAILURE);
         }
         fRet = AppInitMain(threadGroup, scheduler);
-    }
-    catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         PrintExceptionContinue(&e, "AppInit()");
     } catch (...) {
         PrintExceptionContinue(nullptr, "AppInit()");
     }
 
-    if (!fRet)
-    {
+    if (!fRet) {
         Interrupt(threadGroup);
         threadGroup.join_all();
     } else {
