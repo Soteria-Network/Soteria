@@ -184,7 +184,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* 
     // Load this bundled font for Settings -> Options in case it's not available on the system
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Bold");
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Light");
-    QFontDatabase::addApplicationFont(":fonts/NotoSans-Medium");
+    QFontDatabase::addApplicationFont(":fonts/NotoSans-Medium");date
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Regular");
 
     // Specify Comic Sans as new font.
@@ -493,8 +493,8 @@ void SoteriaGUI::createActions()
     encryptWalletAction->setCheckable(true);
     backupWalletAction = new QAction(platformStyle->TextColorIcon(":/icons/filesave"), tr("&Backup Wallet..."), this);
     backupWalletAction->setStatusTip(tr("Backup wallet to another location"));
-    dustWalletAction = new QAction(platformStyle->TextColorIcon(":/icons/filesave"), tr("&Dust Wallet..."), this);
-    dustWalletAction->setStatusTip(tr("Dust wallet"));
+    dustWalletAction = new QAction(platformStyle->TextColorIcon(":/icons/filesave"), tr("&Consolidate UTXOs..."), this);
+    dustWalletAction->setStatusTip(tr("Consolidate small balance UTXOs into larger ones to reduce wallet size"));
     changePassphraseAction = new QAction(platformStyle->TextColorIcon(":/icons/key"), tr("&Change Passphrase..."), this);
     changePassphraseAction->setStatusTip(tr("Change the passphrase used for wallet encryption"));
     getMyWordsAction = new QAction(platformStyle->TextColorIcon(":/icons/key"), tr("&Get my words..."), this);
@@ -985,6 +985,8 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
 
                 // Convert into JSON document
                 QJsonDocument doc(QJsonDocument::fromJson(answer.toUtf8()));
+
+                // Get JSON object
                 QJsonObject obj = doc.object();
 
                 // Get soteria-network object
