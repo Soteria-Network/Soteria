@@ -184,7 +184,7 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* 
     // Load this bundled font for Settings -> Options in case it's not available on the system
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Bold");
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Light");
-    QFontDatabase::addApplicationFont(":fonts/NotoSans-Medium");date
+    QFontDatabase::addApplicationFont(":fonts/NotoSans-Medium");
     QFontDatabase::addApplicationFont(":fonts/NotoSans-Regular");
 
     // Specify Comic Sans as new font.
