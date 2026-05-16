@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_QT_WALLETFRAME_H
 #define SOTERIA_QT_WALLETFRAME_H
@@ -33,14 +31,14 @@ class WalletFrame : public QFrame
     Q_OBJECT
 
 public:
-    explicit WalletFrame(const PlatformStyle *platformStyle, SoteriaGUI *_gui = 0);
+    explicit WalletFrame(const PlatformStyle* platformStyle, SoteriaGUI* _gui = 0);
     ~WalletFrame();
 
-    void setClientModel(ClientModel *clientModel);
+    void setClientModel(ClientModel* clientModel);
 
-    bool addWallet(const QString& name, WalletModel *walletModel);
+    bool addWallet(const QString& name, WalletModel* walletModel);
     bool setCurrentWallet(const QString& name);
-    bool removeWallet(const QString &name);
+    bool removeWallet(const QString& name);
     void removeAllWallets();
 
     bool handlePaymentRequest(const SendCoinsRecipient& recipient);
@@ -52,16 +50,16 @@ Q_SIGNALS:
     void requestedSyncWarningInfo();
 
 private:
-    QStackedWidget *walletStack;
-    SoteriaGUI *gui;
-    ClientModel *clientModel;
+    QStackedWidget* walletStack;
+    SoteriaGUI* gui;
+    ClientModel* clientModel;
     QMap<QString, WalletView*> mapWalletViews;
 
     bool bOutOfSync;
 
-    const PlatformStyle *platformStyle;
+    const PlatformStyle* platformStyle;
 
-    WalletView *currentWalletView();
+    WalletView* currentWalletView();
 
 public Q_SLOTS:
     /** Switch to overview (home) page */
@@ -89,9 +87,12 @@ public Q_SLOTS:
     /** Ask for passphrase to unlock wallet temporarily */
     void unlockWallet();
 
+    /** Paper wallet */
+    void printPaperWallets();
+
     /** Import private key */
     void importPrivateKey();
-    
+
     /** Show the 12-words **/
     void getMyWords();
 
