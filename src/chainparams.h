@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #ifndef SOTERIA_CHAINPARAMS_H
 #define SOTERIA_CHAINPARAMS_H
@@ -21,7 +19,7 @@
 struct CDNSSeedData {
     std::string host;
     bool supportsServiceBitsFiltering;
-    CDNSSeedData(const std::string &strHost, bool supportsServiceBitsFilteringIn) : host(strHost), supportsServiceBitsFiltering(supportsServiceBitsFilteringIn) {}
+    CDNSSeedData(const std::string& strHost, bool supportsServiceBitsFilteringIn) : host(strHost), supportsServiceBitsFiltering(supportsServiceBitsFilteringIn) {}
 };
 
 struct SeedSpec6 {
@@ -63,7 +61,7 @@ public:
     const Consensus::ConsensusParams& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
     constexpr int GetDefaultPort() const { return nDefaultPort; }
-    bool MiningRequiresPeers() const {return fMiningRequiresPeers; }
+    bool MiningRequiresPeers() const { return fMiningRequiresPeers; }
     const CBlock& GenesisBlock() const { return genesis; }
     /** Default value for -checkmempool and -checkblockindex argument */
     bool DefaultConsistencyChecks() const { return fDefaultConsistencyChecks; }
@@ -105,7 +103,7 @@ public:
     // Funds
     const CAmount& MiningFund() const { return nMiningFund; }
     const CAmount& NodeOperatorsFund() const { return nNodeOperatorsFund; }
-//    const CAmount& AmbassadorFund() const { return nAmbassadorFund; }
+//  const CAmount& AmbassadorFund() const { return nAmbassadorFund; }
     const CAmount& StakingPool() const { return nStakingPool; }
     const CAmount& ExchangeLiquidityFund() const { return nExchangeLiquidityFund; }
     const CAmount& BackersFund() const { return nBackersFund; }
@@ -134,7 +132,7 @@ public:
     const std::string& GlobalBurnAddress() const { return strGlobalBurnAddress; }
     const std::string& MiningAddress() const { return strMiningAddress; }
     const std::string& NodeOperatorsAddress() const { return strNodeOperatorsAddress; }
-//    const std::string& AmbassadorAddress() const { return strAmbassadorAddress; }
+//  const std::string& AmbassadorAddress() const { return strAmbassadorAddress; }
     const std::string& StakingPoolAddress() const { return strStakingPoolAddress; }
     const std::string& ExchangeLiquidityAddress() const { return strExchangeLiquidityAddress; }
     const std::string& BackersAddress() const { return strBackersAddress; }
@@ -148,7 +146,7 @@ public:
     const std::string& ContributorsAddress() const { return strContributorsAddress; }
     
     /**  Indicates whether or not the provided address is a burn address, some devs keep insert dev address in the IsBurnAddress() function which is potentially dangerous. */
-    bool IsBurnAddress(const std::string & p_address) const
+    bool IsBurnAddress(const std::string& p_address) const
     {
         if (
             p_address == strIssueAssetBurnAddress
@@ -212,7 +210,7 @@ protected:
     // Tokenomics Funds
     CAmount nMiningFund;
     CAmount nNodeOperatorsFund;
-//    CAmount nAmbassadorFund;
+//  CAmount nAmbassadorFund;
     CAmount nStakingPool;
     CAmount nExchangeLiquidityFund;
     CAmount nBackersFund;
@@ -240,10 +238,10 @@ protected:
     // Global Burn Address
     std::string strGlobalBurnAddress;
 	
-	// Tokenomics Addresses  
+    // Tokenomics Addresses  
     std::string strMiningAddress;
     std::string strNodeOperatorsAddress;
-//    std::string strAmbassadorAddress;
+//  std::string strAmbassadorAddress;
     std::string strStakingPoolAddress;
     std::string strExchangeLiquidityAddress;
     std::string strBackersAddress;
@@ -277,7 +275,7 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain);
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams &Params();
+const CChainParams& Params();
 
 /**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
