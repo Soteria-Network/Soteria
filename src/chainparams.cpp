@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
 #include <iostream>
 #include "chainparams.h"
@@ -58,40 +56,49 @@ void CChainParams::UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64
     consensus.vDeployments[d].nTimeout = nTimeout;
 }
 
-void CChainParams::TurnOffSegwit() {
-	consensus.nSegwitEnabled = false;
+void CChainParams::TurnOffSegwit()
+{
+    consensus.nSegwitEnabled = false;
 }
 
-void CChainParams::TurnOffCSV() {
-	consensus.nCSVEnabled = false;
+void CChainParams::TurnOffCSV()
+{
+    consensus.nCSVEnabled = false;
 }
 
-void CChainParams::TurnOffBIP34() {
-	consensus.nBIP34Enabled = false;
+void CChainParams::TurnOffBIP34()
+{
+    consensus.nBIP34Enabled = false;
 }
 
-void CChainParams::TurnOffBIP65() {
-	consensus.nBIP65Enabled = false;
+void CChainParams::TurnOffBIP65()
+{
+    consensus.nBIP65Enabled = false;
 }
 
-void CChainParams::TurnOffBIP66() {
-	consensus.nBIP66Enabled = false;
+void CChainParams::TurnOffBIP66()
+{
+    consensus.nBIP66Enabled = false;
 }
 
-bool CChainParams::BIP34() {
-	return consensus.nBIP34Enabled;
+bool CChainParams::BIP34()
+{
+    return consensus.nBIP34Enabled;
 }
 
-bool CChainParams::BIP65() {
-	return consensus.nBIP34Enabled;
+bool CChainParams::BIP65()
+{
+    return consensus.nBIP34Enabled;
 }
 
-bool CChainParams::BIP66() {
-	return consensus.nBIP34Enabled;
+bool CChainParams::BIP66()
+{
+    return consensus.nBIP34Enabled;
 }
 
-bool CChainParams::CSVEnabled() const{
-	return consensus.nCSVEnabled;
+bool CChainParams::CSVEnabled() const
+{
+    return consensus.nCSVEnabled;
 }
 
 /**
@@ -147,24 +154,26 @@ public:
         consensus.lwmaAveragingWindow = 60;
         consensus.lwmaHeight = 1;
 
-		consensus.diffRetargetStartHeight3  = 1;
-		consensus.diffRetargetEndHeight3    = 175000; 
-			
-		consensus.diffRetargetStartHeight4  = 175000;
+		consensus.diffRetargetStartHeight3  = 1; 
+		consensus.diffRetargetEndHeight3    = 175000;
+		consensus.diffRetargetStartHeight4  = 175000; 
 		consensus.diffRetargetEndHeight4    = 1400000;
-		
+		consensus.diffRetargetStartHeight = 40000000;
+		consensus.diffRetargetEndHeight = 42000000;
+		consensus.diffRetargetStartHeight1 = 45000000; 
+        consensus.diffRetargetEndHeight1   = 47000000;
+		consensus.diffRetargetStartHeight2 = 47000000; 
+		consensus.diffRetargetEndHeight2   = 49000000;
 		consensus.diffRetargetStartHeight5  = 1400000;
-		consensus.diffRetargetEndHeight5    = 2800000;
-
-		consensus.diffRetargetStartHeight6  = 2800000;
-		consensus.diffRetargetEndHeight6    = 4200000;
+		consensus.diffRetargetEndHeight5    = 40000000;
+		
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
         consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // v1.1.2
-        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+        consensus.powTypeLimits.emplace_back(uint256S("00000005ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); 
+        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); // TODO UPDATE
         consensus.defaultAssumeValid = uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8"); 
 
         pchMessageStart[0] = 0x53; 
@@ -184,10 +193,16 @@ public:
         vSeeds.emplace_back("seed.soteria-network.online", false);
         vSeeds.emplace_back("soterianode.vpnopg.ru", false);
         vSeeds.emplace_back("soteria-demon.favoritcoin.ru", false);
+        vSeeds.emplace_back("soter.hashborn.space", false);
+
+        // DNS seeders hardcoded will be added in the next release. TODO
+//      vSeeds.emplace_back("dnsseed.us.soteria-network.online", true);
+//      vSeeds.emplace_back("dnsseed.eu.soteria-network.online", true);
+//      vSeeds.emplace_back("dnsseed.ap.soteria-network.online", true);
 		
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,125);
-        base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,160);
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1,160);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
@@ -219,6 +234,12 @@ public:
               { 1000000, uint256S("00000000b7c5b7cfaa0bff5f2d5711cf3431f1e9658b43bda3be727d6e938f29")},
               { 1050000, uint256S("00000000ba4f0c8cace65d8bde602c19ee67a6f2e83aa7de3c716de8db47b8ac")},
               { 1100000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}
+//            { 1150000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}, // To add v1.1.2
+//            { 1200000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
+//            { 1250000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
+//            { 1300000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
+//            { 1350000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
+//            { 1400000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}			
                 
             }
         };
@@ -284,9 +305,11 @@ public:
 
         // DGW Activation
         nDGWActivationBlock = 0;
+		
+        // Mainnet chain Reorg Settings
         nMaxReorganizationDepth = 120;
         nMinReorganizationPeers = 8;
-        nMinReorganizationAge = 15000;
+        nMinReorganizationAge = 15000; // s
         
         nAssetActivationHeight = 1; // Asset activated block height
         /** SOTER End **/
@@ -411,7 +434,8 @@ public:
 
         // DGW Activation
         nDGWActivationBlock = 0;
-
+		
+        // Testnet chain Reorg Settings
         nMaxReorganizationDepth = 60;
         nMinReorganizationPeers = 4;
         nMinReorganizationAge = 60 * 60 * 3;
@@ -531,7 +555,8 @@ public:
 
         // DGW Activation
         nDGWActivationBlock = 0;
-
+		
+        // Regtest chain Reorg Settings
         nMaxReorganizationDepth = 40;
         nMinReorganizationPeers = 2;
         nMinReorganizationAge = 60 * 60 * 6;
@@ -543,7 +568,8 @@ public:
 
 static std::unique_ptr<CChainParams> globalChainParams;
 
-const CChainParams &Params() {
+const CChainParams& Params()
+{
     assert(globalChainParams);
     return *globalChainParams;
 }
@@ -570,22 +596,27 @@ void UpdateVersionBitsParameters(Consensus::DeploymentPos d, int64_t nStartTime,
     globalChainParams->UpdateVersionBitsParameters(d, nStartTime, nTimeout);
 }
 
-void TurnOffSegwit(){
-	globalChainParams->TurnOffSegwit();
+void TurnOffSegwit()
+{
+    globalChainParams->TurnOffSegwit();
 }
 
-void TurnOffCSV() {
-	globalChainParams->TurnOffCSV();
+void TurnOffCSV()
+{
+    globalChainParams->TurnOffCSV();
 }
 
-void TurnOffBIP34() {
-	globalChainParams->TurnOffBIP34();
+void TurnOffBIP34()
+{
+    globalChainParams->TurnOffBIP34();
 }
 
-void TurnOffBIP65() {
-	globalChainParams->TurnOffBIP65();
+void TurnOffBIP65()
+{
+    globalChainParams->TurnOffBIP65();
 }
 
-void TurnOffBIP66() {
-	globalChainParams->TurnOffBIP66();
+void TurnOffBIP66()
+{
+    globalChainParams->TurnOffBIP66();
 }
