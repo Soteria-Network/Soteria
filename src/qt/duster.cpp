@@ -1,251 +1,241 @@
 // Copyright (c) 2022 The Avian Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
 
+#include "addressbookpage.h"
+#include "addresstablemodel.h"
+#include "coincontroldialog.h"
 #include "duster.h"
+#include "guiutil.h"
+#include "init.h"
+#include <inttypes.h>
+#include <map>
+#include "optionsmodel.h"
+#include "platformstyle.h"
+#include "policy/feerate.h"
+#include "soteriaamountfield.h"
+#include "soteriaunits.h"
 #include "ui_duster.h"
 #include <util/system.h>
-#include <map>
-#include "wallet/coincontrol.h"
-#include "coincontroldialog.h"
-#include <vector>
-#include "init.h"
-#include "soteriaunits.h"
-#include "walletmodel.h"
-#include "addresstablemodel.h"
-#include "optionsmodel.h"
-#include "addressbookpage.h"
 #include <utility>
-#include <inttypes.h>
+#include <vector>
+#include "validation.h"
+#include "wallet/coincontrol.h"
+#include "walletmodel.h"
 
 #include <QClipboard>
-#include <QMessageBox>
-#include <QMenu>
-#include <QFileDialog>
-#include <QProgressDialog>
-#include <QTextStream>
+#include <QDateTime>
 #include <QDesktopServices>
-#include <QUrl>
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMessageBox>
+#include <QProgressDialog>
 #include <QSettings>
 #include <QSize>
+#include <QTextStream>
+#include <QThread>
+#include <QUrl>
 #include <boost/filesystem.hpp>
 #include <string>
-#include <QMainWindow>
-#include <QDateTime>
-#include <QHeaderView>
 
-#include <QDebug>
-
-DustingGui::DustingGui(const PlatformStyle *_platformStyle, QWidget *parent) : 
-    QDialog(parent), 
-    ui(new Ui::DustingGui),
-    platformStyle(_platformStyle)
+DusterDialog::DusterDialog(const PlatformStyle* _platformStyle, QWidget* parent) : QDialog(parent),
+                                                                                   ui(new Ui::DusterDialog),
+                                                                                   platformStyle(_platformStyle),
+                                                                                   coinControl(new CCoinControl())
 {
-	// Setup the UI
-	ui->setupUi(this);
-	ui->mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
-	ui->dustAddress->setReadOnly(true);
+    // Setup the UI
+    ui->setupUi(this);
+    ui->dustAddress->setReadOnly(true);
 
-	// Create and add block list
-	createBlockList();
-	ui->mainLayout->addWidget(blocksTable, 3, 0, 1, 5);
+    // Set default values for amount fields
+    ui->minInputAmount->setValue(1000);       // 0.00001 SOTER
+    ui->maxInputAmount->setValue(2500000);    // 0.025 SOTER
+    ui->maxBatchAmount->setValue(1000000000); // 10 SOTER
+    // maxBatches default is 0 (unlimited) - set in UI form
 
-	// General info label
-	infoLabel = new QLabel();
-	ui->mainLayout->addWidget(infoLabel, 4, 0, 1, 5);
+    // Use the table and info label from the UI file
+    blocksTable = ui->blocksTable;
+    infoLabel = ui->infoLabel;
 
-	// Create and add refresh button
-	QPushButton *refreshButton = new QPushButton(tr("&Refresh"));
-	connect(refreshButton, SIGNAL(clicked()), this, SLOT(updateBlockList()));
-	ui->mainLayout->addWidget(refreshButton, 5, 0);
+    // Configure the table properties
+    createBlockList();
 
-	// Create and add dust button
-	QPushButton *dustButton = new QPushButton(tr("&Dust now"));
-	connect(dustButton, SIGNAL(clicked()), this, SLOT(compactBlocks()));
-	ui->mainLayout->addWidget(dustButton, 5, 4);
+    // Connect UI elements that are now defined in the .ui file
+    connect(ui->refreshButton, SIGNAL(clicked()), this, SLOT(updateBlockList()));
+    connect(ui->consolidateButton, SIGNAL(clicked()), this, SLOT(compactBlocks()));
 
-	// Load settings
-	userClosed = false;
-	maxNumTX = 250;
-	minimumBlocks = 3;
-	defaultFee = 1000000;
-	minAmtInput = 10000000;
-	maxAmtInput = 2500000000;
+    ui->addressBookButton->setIcon(platformStyle->SingleColorIcon(":/icons/address-book"));
+
+    // Load settings - mimicking Python script limits
+    minimumBlockAmount = 3; // MIN_TXOUTS_TO_CONSOLIDATE = 3
+    blockDivisor = 500;     // max_num_tx = 500 (default from Python script)
 }
 
-DustingGui::~DustingGui()
+DusterDialog::~DusterDialog()
 {
-	userClosed = true;
+    // Clean up coin control instance member
+    delete coinControl;
     delete ui;
 }
 
-void DustingGui::setModel(WalletModel *model)
+void DusterDialog::setModel(WalletModel* model)
 {
     this->model = model;
 }
 
-void DustingGui::createBlockList()
+void DusterDialog::createBlockList()
 {
-	blocksTable = new QTableWidget(0, 9);
-	blocksTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    blocksTable->setColumnCount(9);
 
-	QStringList labels;
-	labels << tr("Amount") << tr("Date") << tr("Label") << tr("Received with") << tr("Confirmations") << tr("_transaction_id") << tr("_amount_int_64") << tr("_vout_index") << ("_input_size");
-	blocksTable->setHorizontalHeaderLabels(labels);
+    QStringList headers;
+    headers << tr("Address") << tr("Amount") << tr("Confirmations") << tr("Date") << tr("Details")
+            << tr("Label") << tr("Amount64") << tr("Vout") << tr("Size");
+    blocksTable->setHorizontalHeaderLabels(headers);
 
-	blocksTable->setColumnWidth(COLUMN_AMOUNT, 120);
-	blocksTable->setColumnWidth(COLUMN_DATE, 110);
-	blocksTable->setColumnWidth(COLUMN_LABEL, 110);
-	blocksTable->setColumnWidth(COLUMN_ADDRESS, 330);
-	blocksTable->setColumnWidth(COLUMN_CONFIRMATIONS, 130);
-	blocksTable->setColumnHidden(COLUMN_TXHASH, true);					// Store transacton hash in this column, but do not show it.
-	blocksTable->setColumnHidden(COLUMN_AMOUNT_INT64, true);			// Store int 64 amount in this column, but do not show it.
-	blocksTable->setColumnHidden(COLUMN_VOUT_INDEX, true);				// Store vout index.
-	blocksTable->setColumnHidden(COLUMN_INPUT_SIZE, true);				// Store input size.
+    blocksTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    blocksTable->setSelectionMode(QAbstractItemView::NoSelection);
+    blocksTable->setShowGrid(false);
+    blocksTable->setAlternatingRowColors(true);
 
-	blocksTable->verticalHeader()->hide();
-	blocksTable->setShowGrid(true);
-	blocksTable->setSelectionMode(QAbstractItemView::MultiSelection);
+    // Hide internal columns
+    blocksTable->hideColumn(COLUMN_LABEL);
+    blocksTable->hideColumn(COLUMN_AMOUNT_INT64);
+    blocksTable->hideColumn(COLUMN_VOUT_INDEX);
+    blocksTable->hideColumn(COLUMN_INPUT_SIZE);
 
-//	connect(filesTable, SIGNAL(cellActivated(int,int)),
-//		this, SLOT(openFileOfItem(int,int)));
+    // Set column widths for visible columns
+    blocksTable->horizontalHeader()->setStretchLastSection(true);
+    blocksTable->horizontalHeader()->resizeSection(COLUMN_ADDRESS, 240);
+    blocksTable->horizontalHeader()->resizeSection(COLUMN_AMOUNT, 120);
+    blocksTable->horizontalHeader()->resizeSection(COLUMN_CONFIRMATIONS, 100);
+    blocksTable->horizontalHeader()->resizeSection(COLUMN_DATE, 150);
 }
 
-void DustingGui::updateBlockList()
+void DusterDialog::updateBlockList()
 {
-	// Prepare to refresh
+    // Prepare to refresh
     blocksTable->setRowCount(0);
     blocksTable->setEnabled(false);
     blocksTable->setAlternatingRowColors(true);
 
     int nDisplayUnit = SoteriaUnits::SOTER;
     if (model && model->getOptionsModel())
-		nDisplayUnit = model->getOptionsModel()->getDisplayUnit();
+        nDisplayUnit = model->getOptionsModel()->getDisplayUnit();
 
-	// Loop own coins    
-	std::map<QString, std::vector<COutput>> mapCoins;
-	model->listCoins(mapCoins);
+    // Loop own coins
+    std::map<QString, std::vector<COutput>> mapCoins;
+    model->listCoins(mapCoins);
 
-    for (const std::pair<QString, std::vector<COutput>>& coins : mapCoins)
-    {
+    for (const std::pair<QString, std::vector<COutput>>& coins : mapCoins) {
         QString sWalletAddress = coins.first;
         QString sWalletLabel = "";
         if (model->getAddressTableModel()) {
             sWalletLabel = model->getAddressTableModel()->labelForAddress(sWalletAddress);
-		}
+        }
         if (sWalletLabel.length() == 0) {
             sWalletLabel = tr("(no label)");
-		}
+        }
 
         int64_t nSum = 0;
         int nChildren = 0;
-        for (const COutput& out : coins.second)
-        {
-			if(out.nDepth >= 100 && out.tx->tx->vout[out.i].nValue < maxAmtInput && out.tx->tx->vout[out.i].nValue > minAmtInput) {
-				// Create cell objects and associate values
-				QTableWidgetItem *amountItem = new QTableWidgetItem();
-				amountItem->setFlags(amountItem->flags() ^ Qt::ItemIsEditable);
-				QTableWidgetItem *dateItem = new QTableWidgetItem();
-				dateItem->setFlags(dateItem->flags() ^ Qt::ItemIsEditable);
-				QTableWidgetItem *labelItem = new QTableWidgetItem();
-				labelItem->setFlags(labelItem->flags() ^ Qt::ItemIsEditable);
-				QTableWidgetItem *addressItem = new QTableWidgetItem();
-				addressItem->setFlags(addressItem->flags() ^ Qt::ItemIsEditable);
-				QTableWidgetItem *confirmationItem = new QTableWidgetItem();
-				confirmationItem->setFlags(confirmationItem->flags() ^ Qt::ItemIsEditable);
-				QTableWidgetItem *transactionItem = new QTableWidgetItem();
-				QTableWidgetItem *amountInt64Item = new QTableWidgetItem();
-				QTableWidgetItem *voutIndex = new QTableWidgetItem();
-				QTableWidgetItem *inputSize = new QTableWidgetItem();
+        for (const COutput& out : coins.second) {
+            // Create cell objects and associate values
+            QTableWidgetItem* amountItem = new QTableWidgetItem();
+            amountItem->setFlags(amountItem->flags() ^ Qt::ItemIsEditable);
+            QTableWidgetItem* dateItem = new QTableWidgetItem();
+            dateItem->setFlags(dateItem->flags() ^ Qt::ItemIsEditable);
+            QTableWidgetItem* labelItem = new QTableWidgetItem();
+            labelItem->setFlags(labelItem->flags() ^ Qt::ItemIsEditable);
+            QTableWidgetItem* addressItem = new QTableWidgetItem();
+            addressItem->setFlags(addressItem->flags() ^ Qt::ItemIsEditable);
+            QTableWidgetItem* confirmationItem = new QTableWidgetItem();
+            confirmationItem->setFlags(confirmationItem->flags() ^ Qt::ItemIsEditable);
+            QTableWidgetItem* transactionItem = new QTableWidgetItem();
+            QTableWidgetItem* amountInt64Item = new QTableWidgetItem();
+            QTableWidgetItem* voutIndex = new QTableWidgetItem();
+            QTableWidgetItem* inputSize = new QTableWidgetItem();
 
-				int nInputSize = 148; // 180 if uncompressed public key
-				nSum += out.tx->tx->vout[out.i].nValue;
-				nChildren++;
-								
-				// Address
-				CTxDestination outputAddress;
-				QString sAddress = "";
-				if(ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, outputAddress))
-				{
-					sAddress = CSoteriaAddress(outputAddress).ToString().c_str();
-					addressItem->setText(sAddress);
-					CPubKey pubkey;
-					CKeyID *keyid = boost::get< CKeyID >(&outputAddress);
-					if (keyid && model->getPubKey(*keyid, pubkey) && !pubkey.IsCompressed())
-						nInputSize = 180;
-				}
+            int nInputSize = 148; // 180 if uncompressed public key
+            nSum += out.tx->tx->vout[out.i].nValue;
+            nChildren++;
 
-				// Label
-				if (!(sAddress == sWalletAddress)) // Change
-				{
-					// Tooltip from where the change comes from
-					labelItem->setToolTip(tr("change from %1 (%2)").arg(sWalletLabel).arg(sWalletAddress));
-					labelItem->setText(tr("(change)"));
-				}
-				else
-				{
-					QString sLabel = "";
-					if (model->getAddressTableModel())
-						sLabel = model->getAddressTableModel()->labelForAddress(sAddress);
-					if (sLabel.length() == 0)
-						sLabel = tr("(no label)");
-					labelItem->setText(sLabel);
-					if (ui->dustAddress->text() == "") {
-						ui->dustAddress->setText(sAddress);
-					}
-				}
+            // Address
+            CTxDestination outputAddress;
+            QString sAddress = "";
+            if (ExtractDestination(out.tx->tx->vout[out.i].scriptPubKey, outputAddress)) {
+                sAddress = CSoteriaAddress(outputAddress).ToString().c_str();
+                addressItem->setText(sAddress);
+                CPubKey pubkey;
+                CKeyID* keyid = boost::get<CKeyID>(&outputAddress);
+                if (keyid && model->getPubKey(*keyid, pubkey) && !pubkey.IsCompressed())
+                    nInputSize = 180;
+            }
 
-				// Amount
-				amountItem->setText(SoteriaUnits::format(nDisplayUnit, out.tx->tx->vout[out.i].nValue));
-				amountInt64Item->setText(strPad(QString::number(out.tx->tx->vout[out.i].nValue), 18, "0")); // Padding so that sorting works correctly.
+            // Label
+            if (!(sAddress == sWalletAddress)) {
+                labelItem->setToolTip(tr("change from %1 (%2)").arg(sWalletLabel).arg(sWalletAddress));
+                labelItem->setText(tr("(change)"));
+            } else {
+                QString sLabel = "";
+                if (model->getAddressTableModel())
+                    sLabel = model->getAddressTableModel()->labelForAddress(sAddress);
+                if (sLabel.length() == 0)
+                    sLabel = tr("(no label)");
+                labelItem->setText(sLabel);
+                if (ui->dustAddress->text() == "") {
+                    ui->dustAddress->setText(sAddress);
+                }
+            }
 
-				// Date
-				dateItem->setText(QDateTime::fromTime_t(out.tx->GetTxTime()).toUTC().toString("yy-MM-dd hh:mm"));
-				
-				// Confirmations
-				confirmationItem->setText(strPad(QString::number(out.nDepth), 8, " "));
-				
-				// Transaction hash
-				uint256 txhash = out.tx->GetHash();
-				transactionItem->setText(txhash.GetHex().c_str());
+            // Amount
+            amountItem->setText(SoteriaUnits::format(nDisplayUnit, out.tx->tx->vout[out.i].nValue));
+            amountInt64Item->setText(strPad(QString::number(out.tx->tx->vout[out.i].nValue), 18, "0")); // Padding so that sorting works correctly.
 
-				// vout index
-				voutIndex->setText(QString::number(out.i));
+            // Date
+            dateItem->setText(QDateTime::fromTime_t(out.tx->GetTxTime()).toUTC().toString("yy-MM-dd hh:mm"));
 
-				// Input size
-				inputSize->setText(QString::number(nInputSize));
+            // Confirmations
+            confirmationItem->setText(strPad(QString::number(out.nDepth), 8, " "));
 
-				// Add row
-				int row = blocksTable->rowCount();
-				blocksTable->insertRow(row);
-				blocksTable->setItem(row, COLUMN_AMOUNT, amountItem);
-				blocksTable->setItem(row, COLUMN_DATE, dateItem);
-				blocksTable->setItem(row, COLUMN_LABEL, labelItem);
-				blocksTable->setItem(row, COLUMN_ADDRESS, addressItem);
-				blocksTable->setItem(row, COLUMN_CONFIRMATIONS, confirmationItem);
-				blocksTable->setItem(row, COLUMN_TXHASH, transactionItem);
-				blocksTable->setItem(row, COLUMN_AMOUNT_INT64, amountInt64Item);
-				blocksTable->setItem(row, COLUMN_VOUT_INDEX, voutIndex);
-				blocksTable->setItem(row, COLUMN_INPUT_SIZE, inputSize);
-			}
-		}
-	}
-    
+            // Transaction hash
+            uint256 txhash = out.tx->GetHash();
+            transactionItem->setText(txhash.GetHex().c_str());
+
+            // vout index
+            voutIndex->setText(QString::number(out.i));
+
+            // Input size
+            inputSize->setText(QString::number(nInputSize));
+
+            // Add row
+            int row = blocksTable->rowCount();
+            blocksTable->insertRow(row);
+            blocksTable->setItem(row, COLUMN_AMOUNT, amountItem);
+            blocksTable->setItem(row, COLUMN_DATE, dateItem);
+            blocksTable->setItem(row, COLUMN_LABEL, labelItem);
+            blocksTable->setItem(row, COLUMN_ADDRESS, addressItem);
+            blocksTable->setItem(row, COLUMN_CONFIRMATIONS, confirmationItem);
+            blocksTable->setItem(row, COLUMN_TXHASH, transactionItem);
+            blocksTable->setItem(row, COLUMN_AMOUNT_INT64, amountInt64Item);
+            blocksTable->setItem(row, COLUMN_VOUT_INDEX, voutIndex);
+            blocksTable->setItem(row, COLUMN_INPUT_SIZE, inputSize);
+        }
+    }
+
     // Sort view to default
     sortView(COLUMN_AMOUNT_INT64, Qt::AscendingOrder);
     blocksTable->setEnabled(true);
 
-	// Add count
-	if (blocksTable->rowCount() <= minimumBlocks) {
-		infoLabel->setText(tr("The wallet is clean."));
-	}
-	else {
-		infoLabel->setText("<b>" + tr("Found ") + QString::number(blocksTable->rowCount()) + tr(" blocks to compact.") + "</b>");
-	}
+    // Add count
+    if (blocksTable->rowCount() <= minimumBlockAmount) {
+        infoLabel->setText(tr("The wallet is clean."));
+    } else {
+        infoLabel->setText("<b>" + tr("Found ") + QString::number(blocksTable->rowCount()) + tr(" blocks to compact.") + "</b>");
+    }
 }
 
-void DustingGui::on_addressBookButton_clicked()
+void DusterDialog::on_addressBookButton_clicked()
 {
     if (!model)
         return;
@@ -253,221 +243,316 @@ void DustingGui::on_addressBookButton_clicked()
     AddressBookPage dlg(platformStyle, AddressBookPage::ForSelection, AddressBookPage::ReceivingTab, this);
     dlg.setModel(model->getAddressTableModel());
 
-    if(dlg.exec()) {
-		ui->dustAddress->setText(dlg.getReturnValue());
+    if (dlg.exec()) {
+        ui->dustAddress->setText(dlg.getReturnValue());
     }
 }
 
-void DustingGui::compactBlocks()
+void DusterDialog::compactBlocks()
 {
-	// Check number of blocks
-	if (blocksTable->rowCount() <= minimumBlocks)
-	{
-		QMessageBox::information(this, tr("Wallet Dusting"), tr("The wallet is already optimized."), QMessageBox::Ok, QMessageBox::Ok);
-		return;
-	}
+    // Safety check: ensure we have a model
+    if (!model) {
+        QMessageBox::warning(this, tr("UTXO Consolidation"), tr("No wallet model available."), QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
 
-	// Warn the user
-	QString strMessage = tr("The wallet will now be dusted. If your wallet is encrypted, enter the passphrase only once. <b>Are you sure you want to do it now</b> ?");
-	QMessageBox::StandardButton retval = QMessageBox::question(
-	      this, tr("Wallet Dusting"), strMessage,
-	      QMessageBox::Yes|QMessageBox::Cancel, QMessageBox::Yes);
+    // Safety check: ensure we have a destination address
+    if (ui->dustAddress->text().isEmpty()) {
+        QMessageBox::warning(this, tr("UTXO Consolidation"), tr("Please select a destination address first."), QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
 
-	if (retval == QMessageBox::Cancel)
-	    return;
+    // Check if blockchain is synchronized - consolidation requires accurate UTXO state
+    if (IsInitialBlockDownload()) {
+        GUIUtil::SyncWarningMessage syncWarning(this);
+        bool sendTransaction = syncWarning.showTransactionSyncWarningMessage();
+        if (!sendTransaction)
+            return;
+    }
 
-    CCoinControl coinControl;
+    // Check number of blocks
+    if (blocksTable->rowCount() <= minimumBlockAmount) {
+        QMessageBox::information(this, tr("UTXO Consolidation"), tr("The wallet is already optimized."), QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
 
-	// Refresh the selection after having put it offline
-	updateBlockList();
+    QString strMessage = tr("UTXOs will now be consolidated. If your wallet is encrypted, enter the passphrase only once. <b>Are you sure you want to do it now</b> ?");
+    QMessageBox::StandardButton retval = QMessageBox::question(
+        this, tr("UTXO Consolidation"), strMessage,
+        QMessageBox::Yes | QMessageBox::Cancel, QMessageBox::Yes);
 
-	// Unlock the wallet for dusting only once
-	WalletModel::UnlockContext ctx(model->requestUnlock());
-	if (!ctx.isValid())
-	{
-		QMessageBox::warning(this, tr("Send Coins"),
-	        tr("Cannot unlock wallet at this time, please try again later."),
-	        QMessageBox::Ok, QMessageBox::Ok);
-		return;
-	}
+    if (retval == QMessageBox::Cancel)
+        return;
 
-	// Select the first batch of items
-    QList<SendCoinsRecipient> recipients;
-	qint64 selectionSum;
-	WalletModel::SendCoinsReturn sendstatus;
-	while (blocksTable->rowCount() > minimumBlocks) {
-		// Reset previous selection
-		coinControl.SetNull();
-		recipients.clear();
-		selectionSum = 0;
-		int blockCounter = maxNumTX;
-		if(blocksTable->rowCount() < maxNumTX) {
-			blockCounter = blocksTable->rowCount();
-		}
-		for (int i = 0; i < blockCounter; i++)
-		{
-			// Prepare this selection
-			QTableWidgetItem *itemAmount = blocksTable->item(i, COLUMN_AMOUNT_INT64);
-			QTableWidgetItem *itemTx = blocksTable->item(i, COLUMN_TXHASH);
-			QTableWidgetItem *itemVout = blocksTable->item(i, COLUMN_VOUT_INDEX);
-			COutPoint outpt(uint256(itemTx->text().toStdString()), itemVout->text().toUInt());
-			coinControl.Select(outpt);
-			selectionSum += itemAmount->text().toULong();
+    // Unlock the wallet for consolidation only once
+    WalletModel::UnlockContext ctx(model->requestUnlock());
+    if (!ctx.isValid()) {
+        QMessageBox::warning(this, tr("Send Coins"),
+            tr("Cannot unlock wallet at this time, please try again later."),
+            QMessageBox::Ok, QMessageBox::Ok);
+        return;
+    }
 
-			// Select the row to show something on screen
-			blocksTable->selectRow(i);
-			QApplication::instance()->processEvents();
-			MilliSleep(5);
-		}
-		MilliSleep(500);
-		for (int i = 0; i < blockCounter; i++)
-		{
-			blocksTable->removeRow(i);
-			QApplication::instance()->processEvents();
-		}
-		blocksTable->clearSelection();
-		QApplication::instance()->processEvents();
+    // Create a simple progress dialog
+    QProgressDialog progressDialog(tr("Consolidating UTXOs..."), tr("Cancel"), 0, 100, this);
+    progressDialog.setWindowModality(Qt::WindowModal);
+    progressDialog.setValue(0);
+    progressDialog.show();
 
-		// Append this selection
-		SendCoinsRecipient rcp;
-		rcp.amount = selectionSum;
-		rcp.fSubtractFeeFromAmount = true;
-		rcp.label = "[DUSTING]";
-		rcp.address = ui->dustAddress->text();
-		recipients.append(rcp);
+    // Process UTXOs in batches without manipulating the table during processing
+    int batchCount = 0;
+    int totalProcessed = 0;
 
-		// Show the send coin interface
-		WalletModelTransaction* tx = new WalletModelTransaction(recipients);
+    while (true) {
+        // Check if user cancelled
+        if (progressDialog.wasCanceled()) {
+            QMessageBox::information(this, tr("UTXO Consolidation"),
+                tr("Consolidation was cancelled after processing %1 batches.").arg(batchCount),
+                QMessageBox::Ok, QMessageBox::Ok);
+            updateBlockList();
+            return;
+        }
 
-		WalletModel::SendCoinsReturn prepareStatus;
-		coinControl.m_feerate = CFeeRate(defaultFee);
-		coinControl.fOverrideFeeRate = true;
-		prepareStatus = model->prepareTransaction(*tx, coinControl);
+        // Check if we've reached the maximum batch limit
+        int maxBatches = ui->maxBatches->value();
+        if (maxBatches > 0 && batchCount >= maxBatches) {
+            QMessageBox::information(this, tr("UTXO Consolidation"),
+                tr("Reached maximum batch limit of %1. Processed %2 batches.").arg(maxBatches).arg(batchCount),
+                QMessageBox::Ok, QMessageBox::Ok);
+            updateBlockList();
+            return;
+        }
 
-		bool breakCycle = true;
-		switch(prepareStatus.status)
-		{
-		case WalletModel::InvalidAddress:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("The recipient address is not valid, please recheck."), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::InvalidAmount:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("The amount to pay must be larger than 0"), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::AmountExceedsBalance:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("The amount exceeds your balance."), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::AmountWithFeeExceedsBalance:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("The total exceeds your balance when the transaction fee is included"), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::DuplicateAddress:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("Duplicate address found, can only send to each address once per send operation."), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::TransactionCreationFailed:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("Transaction creation failed!"), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		case WalletModel::OK:
-			breakCycle = false;
-			break;
-		default:
-			QMessageBox::critical(this, tr("Prepare Coins"), 
-				tr("Transaction creation failed!"), 
-				QMessageBox::Ok, QMessageBox::Ok);
-			break;
-		}
+        // Safety check: ensure model is still valid
+        if (!model || !model->getWallet()) {
+            progressDialog.close();
+            QMessageBox::warning(this, tr("UTXO Consolidation"),
+                tr("Wallet model became unavailable during consolidation."),
+                QMessageBox::Ok, QMessageBox::Ok);
+            return;
+        }
 
-		// Something went wrong, just quit.
-		if (breakCycle || userClosed) {
-			updateBlockList();
-			delete tx;
-			return;
-		}
-		sendstatus = model->sendCoins(*tx);
+        // Get fresh UTXO list from model (safer than using table)
+        std::map<QString, std::vector<COutput>> mapCoins;
+        model->listCoins(mapCoins);
 
-		breakCycle = true;
-		// Check the return value
-		switch(sendstatus.status)
-		{
-		case WalletModel::InvalidAddress:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Send: The recipient address is not valid, please recheck."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::InvalidAmount:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Send: The amount to pay must be larger than 0."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::AmountExceedsBalance:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Send: The amount exceeds your balance."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::AmountWithFeeExceedsBalance:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Send: The total exceeds your balance when the the transaction fee is included."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::DuplicateAddress:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Send: Duplicate address found, can only send to each address once per send operation."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::TransactionCreationFailed:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Error: Transaction creation failed."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::TransactionCommitFailed:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Error: The transaction was rejected. This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::AbsurdFee:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Error: The transaction was rejected due to an absurd fee, please use a lower fee."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::PaymentRequestExpired:
-		    QMessageBox::warning(this, tr("Send Coins"),
-		        tr("Error: The transaction was rejected because the payment request expired."),
-		        QMessageBox::Ok, QMessageBox::Ok);
-		    break;
-		case WalletModel::OK:
-			breakCycle = false;
-		    break;
-		}
+        // Count total UTXOs
+        int totalUTXOs = 0;
+        for (const auto& coins : mapCoins) {
+            totalUTXOs += coins.second.size();
+        }
 
-		// Something went wrong, just quit.
-		if (breakCycle || userClosed) {
-			updateBlockList();
-			return;
-		}
+        // Check if we're done
+        if (totalUTXOs <= minimumBlockAmount) {
+            break;
+        }
 
-		updateBlockList();
-	}
+        // Update progress
+        int estimatedBatches = qMax(1, (totalUTXOs + blockDivisor - 1) / blockDivisor); // Round up division
+        int progress = qMin(99, (batchCount * 100) / estimatedBatches);
+        progressDialog.setValue(progress);
+        progressDialog.setLabelText(tr("Processing batch %1... (%2 UTXOs remaining)").arg(batchCount + 1).arg(totalUTXOs));
+        QApplication::processEvents();
+
+        // Collect UTXOs for this batch
+        coinControl->SetNull();
+
+        CFeeRate minFeeRate(1000); // 1000 satoshis per kilobyte = 1 sat/byte
+        coinControl->m_feerate = minFeeRate;
+        coinControl->fOverrideFeeRate = true;
+
+        QList<SendCoinsRecipient> recipients;
+        qint64 selectionSum = 0;
+        int utxosInBatch = 0;
+
+        // Collect UTXOs from the coin map
+        for (const auto& coins : mapCoins) {
+            for (const COutput& out : coins.second) {
+                if (utxosInBatch >= ui->maxUtxosPerBatch->value()) {
+                    break;
+                }
+
+                if (!out.tx || out.i >= out.tx->tx->vout.size()) {
+                    continue;
+                }
+
+                CAmount utxoValue = out.tx->tx->vout[out.i].nValue;
+                CAmount minAmount = ui->minInputAmount->value();
+                CAmount maxAmount = ui->maxInputAmount->value();
+
+                if (utxoValue < minAmount || utxoValue > maxAmount) {
+                    continue;
+                }
+
+                // Stop when we reach max batch amount from UI
+                CAmount maxBatchAmount = ui->maxBatchAmount->value();
+                if (selectionSum + utxoValue > maxBatchAmount) {
+                    break;
+                }
+                COutPoint outpt(out.tx->GetHash(), out.i);
+                coinControl->Select(outpt);
+                selectionSum += utxoValue;
+                utxosInBatch++;
+            }
+            if (utxosInBatch >= ui->maxUtxosPerBatch->value()) {
+                break;
+            }
+        }
+
+        CAmount minBatchAmount = ui->minInputAmount->value();
+        if (utxosInBatch < 3 || selectionSum <= minBatchAmount) {
+            break;
+        }
+
+        // Check against user-configured maximum batch amount
+        CAmount maxBatchAmount = ui->maxBatchAmount->value();
+        if (selectionSum > maxBatchAmount) {
+            break;
+        }
+
+        // Create the consolidation transaction
+        SendCoinsRecipient rcp;
+        rcp.amount = selectionSum;
+        rcp.fSubtractFeeFromAmount = true;
+        rcp.address = ui->dustAddress->text();
+
+        // Preserve existing label or create new one
+        QString existingLabel = model->getAddressTableModel()->labelForAddress(rcp.address);
+        if (existingLabel.isEmpty()) {
+            rcp.label = "[CONSOLIDATION]";
+        } else {
+            rcp.label = existingLabel;
+        }
+
+        if (selectionSum <= 100000LL) {
+            continue;
+        }
+
+        // Validate address format
+        if (rcp.address.isEmpty()) {
+            progressDialog.close();
+            QMessageBox::warning(this, tr("UTXO Consolidation"),
+                tr("Destination address is empty."),
+                QMessageBox::Ok, QMessageBox::Ok);
+            return;
+        }
+
+        recipients.append(rcp);
+
+        // Send the transaction
+        WalletModelTransaction* tx = nullptr;
+        WalletModel::SendCoinsReturn sendstatus;
+        try {
+            tx = new WalletModelTransaction(recipients);
+
+            // Prepare transaction with coin control
+            WalletModel::SendCoinsReturn prepareStatus = model->prepareTransaction(*tx, *coinControl);
+            if (prepareStatus.status != WalletModel::OK) {
+                sendstatus = prepareStatus;
+            } else {
+                sendstatus = model->sendCoins(*tx);
+            }
+        } catch (const std::exception& e) {
+            if (tx) {
+                delete tx;
+            }
+            progressDialog.close();
+            QMessageBox::critical(this, tr("UTXO Consolidation"),
+                tr("Exception occurred during transaction creation: %1").arg(e.what()),
+                QMessageBox::Ok, QMessageBox::Ok);
+            return;
+        } catch (...) {
+            if (tx) {
+                delete tx;
+            }
+            progressDialog.close();
+            QMessageBox::critical(this, tr("UTXO Consolidation"),
+                tr("Unknown exception occurred during transaction creation."),
+                QMessageBox::Ok, QMessageBox::Ok);
+            return;
+        }
+
+        if (tx) {
+            delete tx;
+        }
+
+        // Check result
+        if (sendstatus.status != WalletModel::OK) {
+            progressDialog.close();
+            QString errorMsg = tr("Transaction failed: ");
+            QString debugInfo = tr("\nBatch: %1, UTXOs: %2, Amount: %3")
+                                    .arg(batchCount + 1)
+                                    .arg(utxosInBatch)
+                                    .arg(selectionSum);
+
+            switch (sendstatus.status) {
+            case WalletModel::InvalidAddress:
+                errorMsg += tr("Invalid address");
+                break;
+            case WalletModel::InvalidAmount:
+                errorMsg += tr("Invalid amount");
+                break;
+            case WalletModel::AmountExceedsBalance:
+                errorMsg += tr("Amount exceeds balance");
+                break;
+            case WalletModel::AmountWithFeeExceedsBalance:
+                errorMsg += tr("Amount with fee exceeds balance");
+                break;
+            case WalletModel::DuplicateAddress:
+                errorMsg += tr("Duplicate address");
+                break;
+            case WalletModel::TransactionCreationFailed:
+                errorMsg += tr("Transaction creation failed (wallet may be locked)");
+                break;
+            case WalletModel::TransactionCommitFailed:
+                errorMsg += tr("Transaction commit failed");
+                break;
+            case WalletModel::AbsurdFee:
+                errorMsg += tr("Absurd fee");
+                break;
+            case WalletModel::PaymentRequestExpired:
+                errorMsg += tr("Payment request expired");
+                break;
+            default:
+                errorMsg += tr("Unknown error (code: %1)").arg((int)sendstatus.status);
+                break;
+            }
+
+            QMessageBox::warning(this, tr("UTXO Consolidation"),
+                errorMsg + debugInfo,
+                QMessageBox::Ok, QMessageBox::Ok);
+            updateBlockList();
+            return;
+        }
+
+        batchCount++;
+        totalProcessed += utxosInBatch;
+
+        // Small delay to prevent overwhelming the system
+        QThread::msleep(100);
+    }
+
+    // Consolidation completed
+    progressDialog.setValue(100);
+    progressDialog.close();
+
+    QMessageBox::information(this, tr("UTXO Consolidation"),
+        tr("Consolidation completed! Processed %1 batches with %2 total UTXOs.").arg(batchCount).arg(totalProcessed),
+        QMessageBox::Ok, QMessageBox::Ok);
+
+    // Refresh the display
+    updateBlockList();
 }
 
-QString DustingGui::strPad(QString s, int nPadLength, QString sPadding)
+QString DusterDialog::strPad(QString s, int nPadLength, QString sPadding)
 {
-	while (s.length() < nPadLength) {
-		s = sPadding + s;
-	}
+    while (s.length() < nPadLength) {
+        s = sPadding + s;
+    }
     return s;
 }
 
-void DustingGui::sortView(int column, Qt::SortOrder order)
+void DusterDialog::sortView(int column, Qt::SortOrder order)
 {
     sortColumn = column;
     sortOrder = order;
@@ -476,14 +561,12 @@ void DustingGui::sortView(int column, Qt::SortOrder order)
 }
 
 
-void DustingGui::resizeEvent(QResizeEvent* event)
+void DusterDialog::resizeEvent(QResizeEvent* event)
 {
-// resize the inner table when necessary
-//	int ww = width();
-//	filesTable->setColumnWidth(1, ww - 278);
+    QWidget::resizeEvent(event);
 }
 
-void DustingGui::showEvent(QShowEvent* event)
+void DusterDialog::showEvent(QShowEvent* event)
 {
-	updateBlockList();
+    updateBlockList();
 }
