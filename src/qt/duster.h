@@ -1,80 +1,75 @@
 // Copyright (c) 2022 The Avian Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-present The Soteria Core developers
+
 
 #ifndef SOTER_DUSTER_H
 #define SOTER_DUSTER_H
 
-#include <QDialog>
-#include <QWidget>
 #include <QComboBox>
-#include <QTableWidget>
+#include <QDialog>
 #include <QDir>
-#include <QPushButton>
 #include <QLabel>
 #include <QMainWindow>
+#include <QPushButton>
+#include <QTableWidget>
+#include <QWidget>
 #include <boost/filesystem.hpp>
 
-namespace Ui {
-  class DustingGui;
+namespace Ui
+{
+class DusterDialog;
 }
 
 class WalletModel;
 class CCoinControl;
 class PlatformStyle;
 
-class DustingGui : public QDialog
+class DusterDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	DustingGui(const PlatformStyle*, QWidget *parent = 0);
-	~DustingGui();
-	void setModel(WalletModel *model);
+    DusterDialog(const PlatformStyle*, QWidget* parent = 0);
+    ~DusterDialog();
+    void setModel(WalletModel* model);
 
 private Q_SLOTS:
-	void updateBlockList();
-	void compactBlocks();
+    void updateBlockList();
+    void compactBlocks();
     void on_addressBookButton_clicked();
 
 protected:
-	void resizeEvent(QResizeEvent *event);
-	void showEvent(QShowEvent * event);
+    void resizeEvent(QResizeEvent* event);
+    void showEvent(QShowEvent* event);
 
 private:
-	Ui::DustingGui *ui;
-    const PlatformStyle *platformStyle;
-	QTableWidget *blocksTable;
-	WalletModel *model;
-	int sortColumn;
-	Qt::SortOrder sortOrder;
-	QLabel *infoLabel;
-	QPushButton *refreshButton;
-	QPushButton *dustButton;
-	bool userClosed;
-	int maxNumTX;
-	int minimumBlocks;
-	int64_t defaultFee;
-	int64_t minAmtInput;
-	int64_t maxAmtInput;
-
-    enum
-    {
-        COLUMN_AMOUNT,
-        COLUMN_DATE,
-        COLUMN_LABEL,
-        COLUMN_ADDRESS,
-        COLUMN_CONFIRMATIONS,
-        COLUMN_TXHASH,
-        COLUMN_AMOUNT_INT64,
-        COLUMN_VOUT_INDEX,
-		COLUMN_INPUT_SIZE
+    Ui::DusterDialog* ui;
+    const PlatformStyle* platformStyle;
+    QTableWidget* blocksTable;
+    WalletModel* model;
+    CCoinControl* coinControl;
+    int sortColumn;
+    Qt::SortOrder sortOrder;
+    QLabel* infoLabel;
+    QPushButton* refreshButton;
+    QPushButton* dustButton;
+    int blockDivisor;
+    int minimumBlockAmount;
+    enum {
+        COLUMN_ADDRESS,       // 0 - Address
+        COLUMN_AMOUNT,        // 1 - Amount
+        COLUMN_CONFIRMATIONS, // 2 - Confirmations
+        COLUMN_DATE,          // 3 - Date
+        COLUMN_TXHASH,        // 4 - Details (Transaction Hash)
+        COLUMN_LABEL,         // 5 - Label (hidden column for internal use)
+        COLUMN_AMOUNT_INT64,  // 6 - Amount as int64 (hidden column for sorting)
+        COLUMN_VOUT_INDEX,    // 7 - Vout index (hidden column)
+        COLUMN_INPUT_SIZE     // 8 - Input size (hidden column)
     };
 
-	void createBlockList();
-	void sortView(int column, Qt::SortOrder order);
-	QString strPad(QString s, int nPadLength, QString sPadding);
+    void createBlockList();
+    void sortView(int column, Qt::SortOrder order);
+    QString strPad(QString s, int nPadLength, QString sPadding);
 };
 
 #endif // SOTER_DUSTER_H
