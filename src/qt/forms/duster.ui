@@ -28,7 +28,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="AvianAmountField" name="minInputAmount">
+       <widget class="SoteriaAmountField" name="minInputAmount">
        </widget>
       </item>
       <item row="0" column="2">
@@ -39,7 +39,7 @@
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="AvianAmountField" name="maxInputAmount">
+       <widget class="SoteriaAmountField" name="maxInputAmount">
        </widget>
       </item>
       <item row="1" column="0">
@@ -50,7 +50,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="AvianAmountField" name="maxBatchAmount">
+       <widget class="SoteriaAmountField" name="maxBatchAmount">
        </widget>
       </item>
       <item row="1" column="2">
@@ -134,7 +134,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../avian.qrc">
+         <iconset resource="../soteria.qrc">
           <normaloff>:/icons/address-book</normaloff>:/icons/address-book</iconset>
         </property>
        </widget>
@@ -230,7 +230,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../avian.qrc"/>
+  <include location="../soteria.qrc"/>
  </resources>
  <connections/>
 </ui>
