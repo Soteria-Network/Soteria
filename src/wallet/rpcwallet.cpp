@@ -3560,18 +3560,18 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
     UniValue ret(UniValue::VARR);
 
     if (request.fHelp || request.params.size() < 1)
-        throw std::runtime_error("consolidateutxos <address> [min_utxos=2000] [max_batches=0] [min_amount=0.01] [max_amount=25]\n"
+        throw std::runtime_error("consolidateutxos <address> [min_utxos=2] [max_batches=0] [min_amount=0.001] [max_amount=20]\n"
                                  "Consolidate (compact) unspent transaction outputs (UTXOs) to the specified <address>.\n"
                                  "\nArguments:\n"
                                  "1. address        (string, required) Destination address (must belong to this wallet)\n"
-                                 "2. min_utxos      (numeric, optional, default=2000) Minimum UTXOs required to trigger consolidation\n"
+                                 "2. min_utxos      (numeric, optional, default=2) Minimum UTXOs required to trigger consolidation\n"
                                  "3. max_batches    (numeric, optional, default=0=unlimited) Maximum number of batches to process\n"
                                  "4. min_amount     (numeric, optional, default=0.001) Minimum UTXO amount in SOTER to include\n" // TODO v1.1.2
                                  "5. max_amount     (numeric, optional, default=20) Maximum UTXO amount in SOTER to include\n"
                                  "\nSecurity: For safety, the destination address must belong to your wallet.\n"
                                  "Use 'getnewaddress' to generate a new address or 'getaddressesbyaccount \"\"' to list existing addresses.\n"
                                  "\nThis reduces the number of small UTXOs by combining them into larger ones.\n"
-                                 "Each batch processes up to 500 UTXOs (matching Python consolidation script limits).\n");
+                                 "Each batch processes up to 100 UTXOs (matching Python consolidation script limits).\n"); // TODO v1.1.2, set 100
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -3625,8 +3625,8 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
         maxInputAmount = AmountFromValue(request.params[4]);
     }
 
-    int batchDivisor = 500;
-    CAmount maxOutputAmount = 1000000000000;
+    int batchDivisor = 100; // TODO v1.1.2 set 100
+    CAmount maxOutputAmount = 10000000000;
 
     if (utxoCount <= minimumUtxoAmount) {
         return ("The wallet is already optimized.");
@@ -3635,7 +3635,7 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
     int nOdds = (utxoCount - minimumUtxoAmount) % batchDivisor;
 
     if (nOdds == 0) {
-        nOdds = batchDivisor; // Full batch of 500
+        nOdds = batchDivisor; // Full batch of 100
     } else if (nOdds < 10) {
         nOdds = batchDivisor;
         nOps--;
@@ -3652,7 +3652,7 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
         UniValue obj(UniValue::VOBJ);
         coinControl.SetNull();
 
-        CFeeRate minFeeRate(1000); // 1000 satoshis per kilobyte = 1 sat/byte
+        CFeeRate minFeeRate(10000); // 10000 satoshis per kilobyte = 10 sat/byte, TODO v1.1.2
         coinControl.m_feerate = minFeeRate;
         coinControl.fOverrideFeeRate = true;
 
@@ -3729,7 +3729,7 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
                                                      FormatMoney(selectionSum), FormatMoney(maxOutputAmount)));
         }
 
-        CAmount estimatedFee = (180 + (selectedCount * 150)) * 1; // 1 sat/byte minimum, TODO v1.1.2
+        CAmount estimatedFee = (180 + (selectedCount * 150)) * 10; // 10 sat/byte minimum, TODO v1.1.2
         if (estimatedFee < 1000) estimatedFee = 1000;           // Minimum 0.001 SOTER fee, TODO v1.1.2
         if (selectionSum <= estimatedFee * 3) {
             throw JSONRPCError(RPC_WALLET_ERROR, strprintf("Selected amount %s too small for consolidation (estimated fee: %s, need at least %s)",
@@ -3791,7 +3791,7 @@ UniValue consolidateutxos(const JSONRPCRequest& request)
         nOdds = (utxoCount - minimumUtxoAmount) % batchDivisor;
 
         if (nOdds == 0) {
-            nOdds = batchDivisor; // Full batch of 500
+            nOdds = batchDivisor; // Full batch of 100
         } else if (nOdds < 10) {
             nOdds = batchDivisor;
             nOps--;
