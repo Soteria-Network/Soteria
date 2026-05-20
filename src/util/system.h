@@ -28,7 +28,7 @@
 // Application startup time (used for uptime calculation)
 int64_t GetStartupTime();
 
-static constexpr int DEFAULT_POW_CACHE_SIZE = 10000000;
+static constexpr int DEFAULT_POW_CACHE_SIZE = 13000000; // still less than 1GiB
 
 static constexpr bool DEFAULT_LOGTIMEMICROS = false;
 static constexpr bool DEFAULT_LOGIPS = false;
