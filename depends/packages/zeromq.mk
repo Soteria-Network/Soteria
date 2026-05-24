@@ -6,7 +6,10 @@ $(package)_sha256_hash=c593001a89f5a85dd2ddf564805deb860e02471171b3f204944857336
 $(package)_patches=remove_libstd_link.patch clock-unused-nsecs.patch 0002-disable-pthread_set_name_np.patch
 
 define $(package)_set_vars
-  $(package)_config_opts=--without-documentation --disable-shared
+  $(package)_config_opts=--without-docs --disable-shared --disable-curve --disable-curve-keygen --disable-perf
+  $(package)_config_opts += --without-libsodium --without-libgssapi_krb5 --without-pgm --without-norm
+  $(package)_config_opts += --disable-libunwind --disable-radix-tree --without-gcov --disable-dependency-tracking
+  $(package)_config_opts += --disable-Werror --disable-drafts --enable-option-checking
   $(package)_config_opts_linux=--with-pic
   $(package)_cxxflags+=-std=c++17
 endef
