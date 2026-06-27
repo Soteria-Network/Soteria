@@ -89,9 +89,9 @@ For detailed information, visit **Website:** [soteria-network.online] https://so
 <tr><td>Maximum SOTER supply</td><td>1,500,000</td></tr>
 <tr><td>Premine</td><td>0 SOTER</td></tr>
 <tr><td>Blocksize</td><td>3 MB</td></tr>
-<tr><td>Blocktime average</td><td>12 seconds (LWMA-EMA v3)</td></tr>
+<tr><td>Blocktime average</td><td>10 seconds (LWMA-EMA v3)</td></tr>
 <tr><td>Number of transaction confirmations</td><td>6</td></tr>
-<tr><td>Mined Maturity</td><td>4201 confirmations</td></tr>
+<tr><td>Mined Maturity</td><td>4200 confirmations</td></tr>
 <tr><td>Transaction Maturity</td><td>6 confirmations</td></tr>
 <tr><td>Difficulty Readjustment</td><td>Every 60 blocks (LWMA-EMA v3)</td></tr>
 </table>
