@@ -4,6 +4,68 @@ Soteria Network [SOTER]
 <img src="./src/qt/res/icons/soteria.png" alt="Soteria" width="300"/>
 </h1>
 
+
+
+<p align="center">
+    <a href="https://discord.gg/Uv4bBnGc2C">
+        <img src="https://img.shields.io/discord/302123079818149888?logo=discord" alt="chat on Discord">
+    </a>
+    <a href="https://x.com/Soteria_Network">
+        <img src="https://img.shields.io/badge/X-Follow%20%40Soteria__Network-black?logo=x&style=social" 
+             alt="Follow on X">
+    </a>
+    <a href="https://bsky.app/profile/soteriaofficial.bsky.social">
+        <img src="https://img.shields.io/badge/Bluesky-Follow%20%40handle-blue?logo=bluesky&style=social" 
+             alt="Follow on Bluesky">
+    </a>
+    <a href="https://t.me/soteria_official">
+        <img src="https://img.shields.io/badge/Telegram-Join%20Chat-blue?logo=telegram&style=social" 
+             alt="Join Telegram">
+    </a>
+    <a href="https://www.livecoinwatch.com/price/SOTERIA-_SOTER">
+        <img src="https://img.shields.io/badge/Livecoinwatch-View%20Stats-lightgrey?logo=graph&style=social" 
+             alt="View on Livecoinwatch">
+    </a>
+    <a href="https://coinpaprika.com/coin/soter-soteria/">
+        <img src="https://img.shields.io/badge/Coinpaprika-View%20Profile-orange?logo=coinpaprika&style=social" 
+             alt="View on Coinpaprika">
+    </a>
+    <a href="https://www.tiktok.com/@soteriafoundation">
+        <img src="https://img.shields.io/badge/TikTok-%40handle-black?logo=tiktok&style=social" 
+             alt="Follow on TikTok">
+    </a>
+    <a href="https://medium.com/@soteriaofficial">
+        <img src="https://img.shields.io/badge/Medium-Read%20Articles-black?logo=medium&style=social" 
+             alt="Read on Medium">
+    </a>
+<a href="PLACEHOLDER_URL_INSTAGRAM">
+    <img src="https://img.shields.io/badge/Instagram-%40handle-E4405F?logo=instagram&logoColor=white&style=social"
+         alt="Follow on Instagram">
+</a>
+<a href="https://www.facebook.com/SoteriaNetworkOfficial/">
+    <img src="https://img.shields.io/badge/Facebook-Follow%20Page-1877F2?logo=facebook&logoColor=white&style=social"
+         alt="Follow on Facebook">
+</a>
+<a href="PLACEHOLDER_URL_COINMARKETCAP">
+    <img src="https://img.shields.io/badge/CoinMarketCap-View%20Stats-171717?logo=coinmarketcap&style=social"
+         alt="View on CoinMarketCap">
+</a>
+<a href="PLACEHOLDER_URL_YOUTUBE">
+    <img src="https://img.shields.io/badge/YouTube-Subscribe-FF0000?logo=youtube&logoColor=white&style=social"
+         alt="Subscribe on YouTube">
+</a>
+<a href="PLACEHOLDER_URL_COINGECKO">
+    <img src="https://img.shields.io/badge/CoinGecko-View%20Page-8DC63F?logo=coingecko&style=social"
+         alt="View on CoinGecko">
+</a>
+<a href="https://blockspot.io/coin/soteria-4/">
+    <img src="https://img.shields.io/badge/BlockSpot-View%20Stats-000000?style=flat-square"
+         alt="View on BlockSpot">
+</a>   
+</p>
+
+
+
 # What is Soteria?
 
 Soteria Network based on RVN/BTC Core designed for efficient and interoperable asset management. 
@@ -40,8 +102,8 @@ For detailed information, visit **Website:** [soteria-network.online] https://so
 
 ##### Ultra-High Performance
 
-    Lightning-fast 12‑second block confirmations with a 9‑second buffer cap.
-    Industry-leading 1000+ TPS capacity.
+    Lightning-fast 10‑second block confirmations with a 6‑second buffer cap.
+    Industry-leading up to 2000 TPS capacity.
     Smart contract supports using Lua VM integrated.
     3 MB blocks for maximum throughput.
     Optimized codebase for fast block time and minimum orphan rate.
