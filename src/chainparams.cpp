@@ -171,6 +171,7 @@ public:
 		consensus.diffRetargetEndHeight6    = 40000000;
 		
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
+		consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         // 4 for N, 3 or 2 for L - TEST
@@ -358,6 +359,7 @@ public:
 		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 60;
+		consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
         consensus.lwma1Timestamp = 2147483647;
@@ -486,6 +488,8 @@ public:
 
         consensus.lwmaTimestamp = 1759421432;        
         consensus.lwmaAveragingWindow = 180; 
+		
+		consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));  
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));   
 
