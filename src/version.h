@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #ifndef SOTERIA_VERSION_H
 #define SOTERIA_VERSION_H
@@ -11,7 +9,7 @@
  * network protocol versioning
  */
 
-static constexpr int PROTOCOL_VERSION = 70057;
+static constexpr int PROTOCOL_VERSION = 70058;
 
 //! initial proto version, to be increased after version/verack negotiation
 static constexpr int INIT_PROTO_VERSION = 209;
@@ -55,6 +53,9 @@ static constexpr int INVALID_CB_NO_BAN_VERSION = 70015;
 
 //! getassetdata reutrn asstnotfound, and assetdata doesn't have blockhash in the data
 static constexpr int ASSETDATA_VERSION_UPDATED = 70020;
+
+//! migrate to a new mining algo
+static constexpr int SOTERHASH_VERSION = 70058;
 
 //! getassetdata return asstnotfound, and assetdata doesn't have blockhash in the data
 static constexpr int X12RV2_VERSION = 70025;
