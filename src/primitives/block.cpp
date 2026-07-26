@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #include <chainparams.h>
 #include <string>
@@ -37,11 +37,13 @@ uint256 CBlockHeader::ComputePoWHash() const
     unsigned int profile = 0x0;
 
     uint32_t nSoterGTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp;
+    uint32_t nSoterHASHTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp;
     uint32_t nSoterCTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp;
 
     if (nTime > nSoterGTimestamp) {
-        if (nTime > nSoterCTimestamp) {
-            // Dual algo
+        if(nTime > nSoterHASHTimestamp) 
+           if(nTime > nSoterCTimestamp)
+        {
             switch (GetPoWType()) {
             case POW_TYPE_SOTERG: {
                 int32_t nTimeSoterG = nTime & TIME_MASK;
@@ -49,6 +51,12 @@ uint256 CBlockHeader::ComputePoWHash() const
                 thash = HashX12R(BEGIN(nVersion), END(nNonce), hashTime);
                 break;
             }
+            case POW_TYPE_SOTERHASH: {
+                int32_t nTimeSoterHASH = nTime & TIME_MASK;
+                uint256 hashTime = Hash(BEGIN(nTimeSoterHASH), END(nTimeSoterHASH));
+                thash = HashX12ST(BEGIN(nVersion), END(nNonce), hashTime);
+                break;
+            }            
             case POW_TYPE_SOTERC: {
                 return Soterc(BEGIN(nVersion), END(nNonce), true);
                 break;
@@ -57,12 +65,18 @@ uint256 CBlockHeader::ComputePoWHash() const
                 return HIGH_HASH;
             }
         } else {
-            // soterg before dual-algo
-            int32_t nTimeSoterG = nTime & TIME_MASK;
+               int32_t nTimeSoterG = nTime & TIME_MASK;
             uint256 hashTime = Hash(BEGIN(nTimeSoterG), END(nTimeSoterG));
             thash = HashX12R(BEGIN(nVersion), END(nNonce), hashTime);
         }
-    } else {
+        else {
+            // soterhash before dual-algo
+            int32_t nTimeSoterHASH = nTime & TIME_MASK;
+            uint256 hashTime = Hash(BEGIN(nTimeSoterHASH), END(nTimeSoterHASH));
+            thash = HashX12ST(BEGIN(nVersion), END(nNonce), hashTime);
+        }   
+    }
+    else {
         // we keep it for testing only.
         thash = HashX12R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
     }
@@ -86,7 +100,7 @@ uint256 CBlockHeader::GetHash(bool readCache) const
     if (!found || cache.IsValidate()) {
         uint256 powHash2 = ComputePoWHash();
         if (found && powHash2 != powHash) {
-            LogPrintf("PowCache failure: headerHash: %s, from cache: %s, computed: %s, correcting\n", headerHash.ToString(), powHash.ToString(), powHash2.ToString());
+           LogPrintf("PowCache failure: headerHash: %s, from cache: %s, computed: %s, correcting\n", headerHash.ToString(), powHash.ToString(), powHash2.ToString());
         }
         powHash = powHash2;
         cache.erase(headerHash); // If it exists, replace it.
@@ -96,8 +110,7 @@ uint256 CBlockHeader::GetHash(bool readCache) const
 }
 
 // Soterc algo
-uint256 CBlockHeader::SoterCHashArbitrary(const char* data)
-{
+uint256 CBlockHeader::SoterCHashArbitrary(const char* data) {
     return Soterc(data, data + strlen(data), true);
 }
 
@@ -106,6 +119,13 @@ uint256 CBlockHeader::GetSOTERGHash() const
 {
     return HashX12R(BEGIN(nVersion), END(nNonce), hashPrevBlock);
 }
+
+// soterhash algo
+uint256 CBlockHeader::GetSOTERHASHHash() const
+{
+    return HashX12ST(BEGIN(nVersion), END(nNonce), hashPrevBlock);
+}
+
 
 std::string CBlock::ToString() const
 {
@@ -122,3 +142,4 @@ std::string CBlock::ToString() const
     }
     return s.str();
 }
+
