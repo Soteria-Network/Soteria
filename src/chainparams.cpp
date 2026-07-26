@@ -166,7 +166,9 @@ public:
 		consensus.diffRetargetStartHeight2 = 47000000; 
 		consensus.diffRetargetEndHeight2   = 49000000;
 		consensus.diffRetargetStartHeight5  = 1400000;
-		consensus.diffRetargetEndHeight5    = 40000000;
+		consensus.diffRetargetEndHeight5    = 2500000;
+		consensus.diffRetargetStartHeight6  = 2500000;
+		consensus.diffRetargetEndHeight6    = 40000000;
 		
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
