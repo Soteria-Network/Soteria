@@ -19,18 +19,20 @@
 // Dual algo: An impossible pow hash (can't meet any target)
 const uint256 HIGH_HASH = uint256S("0x0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 // Dual algo: Default value for -powalgo argument
-const std::string DEFAULT_POW_TYPE = "soterhash";
+const std::string DEFAULT_POW_TYPE = "soterg";
 // Dual algo: Pow type names
 const std::string POW_TYPE_NAMES[] = {
-    "soterhash",
     "soterg",
-    "soterc"
+    "soterc",
+    "soterhash",
+    "X8S"
 };
 // Dual algo: Pow type IDs
 enum POW_TYPE {
-    POW_TYPE_SOTERHASH,
     POW_TYPE_SOTERG,
     POW_TYPE_SOTERC,
+    POW_TYPE_SOTERHASH,
+    POW_TYPE_X8S,
     //
     NUM_BLOCK_TYPES
 };
@@ -93,10 +95,7 @@ public:
     // SoterC
     static uint256 SoterCHashArbitrary(const char* data);
 
-    /// Use for testing algo switch
-    uint256 TestTiger() const;
-    uint256 TestSha512() const;
-    uint256 TestGost512() const;
+    uint256 GetX8SHash() const;
 
     int64_t GetBlockTime() const
     {
