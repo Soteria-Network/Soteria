@@ -690,12 +690,12 @@ inline uint256 HashX12ST(const T1 pbegin, const T1 pend, const uint256 PrevBlock
                 sph_jh512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
             }
-            case 8: // Step 9: CUBEHASH
+            case 8: // Step 9: shavite
             {
-                sph_cubehash512_context ctx;
-                sph_cubehash512_init(&ctx);
-                sph_cubehash512(&ctx, toHash, lenToHash);
-                sph_cubehash512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                sph_shavite512_context ctx;
+                sph_shavite512_init(&ctx);
+                sph_shavite512(&ctx, toHash, lenToHash);
+                sph_shavite512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
             }
             
