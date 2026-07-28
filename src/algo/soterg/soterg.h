@@ -698,10 +698,100 @@ inline uint256 HashX12ST(const T1 pbegin, const T1 pend, const uint256 PrevBlock
                 sph_shavite512_close(&ctx, static_cast<void*>(hash[i].begin()));
                 break;
             }
-            
         }
     }
 
     return hash[11].trim256();
+}
+// merge mining @block ~4M
+template<typename T1>
+inline uint256 X8S(const T1 pbegin, const T1 pend, const uint256 PrevBlockHash)
+{
+    static unsigned char pblank[1];
+    uint512 hash[9];  // 9 steps
+
+    for (int i = 0; i < 9; i++)
+    {
+        const void *toHash;
+        int lenToHash;
+
+        if (i == 0) {
+            toHash = (pbegin == pend ? pblank : static_cast<const void*>(&pbegin[0]));
+            lenToHash = (pend - pbegin) * sizeof(pbegin[0]);
+        } else {
+            toHash = static_cast<const void*>(hash[i-1].begin());
+            lenToHash = 64;
+        }
+
+        switch (i)
+        {
+            case 0: // Step 1: FUGUE (80-bit), 64
+            case 1: // Step 2: FUGUE (64-bit), 67
+            {
+                sph_fugue512_context ctx;
+                sph_fugue512_init(&ctx);
+                sph_fugue512(&ctx, toHash, lenToHash);
+                sph_fugue512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 2: // Step 3: WHIRLPOOL
+            {
+                sph_whirlpool_context ctx;
+                sph_whirlpool_init(&ctx);
+                sph_whirlpool(&ctx, toHash, lenToHash);
+                sph_whirlpool_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 3: // Step 4: ECHO
+            {
+                sph_echo512_context ctx;
+                sph_echo512_init(&ctx);
+                sph_echo512(&ctx, toHash, lenToHash);
+                sph_echo512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 4: // Step 5: LUFFA
+            {
+                sph_luffa512_context ctx;
+                sph_luffa512_init(&ctx);
+                sph_luffa512(&ctx, toHash, lenToHash);
+                sph_luffa512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 5: // Step 6: SHAVITE, 79
+            {
+                sph_shavite512_context ctx;
+                sph_shavite512_init(&ctx);
+                sph_shavite512(&ctx, toHash, lenToHash);
+                sph_shavite512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 6: // Step 7: HAMSI
+            {
+                sph_hamsi512_context ctx;
+                sph_hamsi512_init(&ctx);
+                sph_hamsi512(&ctx, toHash, lenToHash);
+                sph_hamsi512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 7: // Step 8: JH, 83
+            {
+                sph_jh512_context ctx;
+                sph_jh512_init(&ctx);
+                sph_jh512(&ctx, toHash, lenToHash);
+                sph_jh512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+            case 8: // Step 9: CUBEHASH, 93
+            {
+                sph_cubehash512_context ctx;
+                sph_cubehash512_init(&ctx);
+                sph_cubehash512(&ctx, toHash, lenToHash);
+                sph_cubehash512_close(&ctx, static_cast<void*>(hash[i].begin()));
+                break;
+            }
+        }
+    }
+    return hash[8].trim256(); 
 }
 #endif // SOTER_HASHALGOS_H
