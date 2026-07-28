@@ -134,6 +134,7 @@ public:
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759415968;
 		consensus.vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp = 1790812800; // v1.1.2
         consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
+		consensus.vUpgrades[Consensus::X8S_SWITCH].nTimestamp = 2147483647; // MERGE
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_NAME_SYSTEM].nTimestamp = MAX_TIMESTAMP; 
@@ -351,6 +352,7 @@ public:
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759419050;
 		consensus.vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp = 1790812000; // v1.1.2
+		consensus.vUpgrades[Consensus::X8S_SWITCH].nTimestamp = 2147483647;
         consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP;
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP;
@@ -483,6 +485,7 @@ public:
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759421432; 
 		consensus.vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp = 1790811000; // v1.1.2
+		consensus.vUpgrades[Consensus::X8S_SWITCH].nTimestamp = 2147483647;
         consensus.vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp = 2147483647; // deactivate
         consensus.vUpgrades[Consensus::SOTERIA_ASSETS].nTimestamp = MAX_TIMESTAMP; 
         consensus.vUpgrades[Consensus::SOTERIA_SMART_CONTRACTS].nTimestamp = MAX_TIMESTAMP; 
