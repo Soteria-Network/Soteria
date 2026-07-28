@@ -174,6 +174,7 @@ public:
 		consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
+		consensus.powTypeLimits.emplace_back(uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // merge mining
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
@@ -360,8 +361,9 @@ public:
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 60;
 		consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
+        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
-        consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
+		consensus.powTypeLimits.emplace_back(uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // merge mining
         consensus.lwma1Timestamp = 2147483647;
         consensus.nMinimumChainWork = uint256S("0x0000000000000000000000000000000000000000000000000000000000000000");
         consensus.defaultAssumeValid = uint256S("000000c1936b6133451bb7d064833da83a015337d7b6598d156a451085009cb5");
@@ -491,7 +493,8 @@ public:
 		
 		consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));  
-        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));   
+        consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
+		consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // merge mining
 
         consensus.nMinimumChainWork = uint256S("0x00");
         consensus.defaultAssumeValid = uint256S("606c795ca9d9ee08dba32d599dd65af25ba9e0b9aaeabc4b8a43533805e43136");
