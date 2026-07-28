@@ -39,10 +39,11 @@ uint256 CBlockHeader::ComputePoWHash() const
     uint32_t nSoterGTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp;
     uint32_t nSoterHASHTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp;
     uint32_t nSoterCTimestamp = Params().GetConsensus().vUpgrades[Consensus::SOTERC_SWITCH].nTimestamp;
-
+    uint32_t nX8STimestamp = Params().GetConsensus().vUpgrades[Consensus::X8S_SWITCH].nTimestamp;
     if (nTime > nSoterGTimestamp) {
         if(nTime > nSoterHASHTimestamp) 
            if(nTime > nSoterCTimestamp)
+              if(nTime > nX8STimestamp)
         {
             switch (GetPoWType()) {
             case POW_TYPE_SOTERG: {
@@ -56,7 +57,13 @@ uint256 CBlockHeader::ComputePoWHash() const
                 uint256 hashTime = Hash(BEGIN(nTimeSoterHASH), END(nTimeSoterHASH));
                 thash = HashX12ST(BEGIN(nVersion), END(nNonce), hashTime);
                 break;
-            }            
+            }   
+            case POW_TYPE_X8S: {
+                int32_t nTimeX8S = nTime;
+                uint256 hashTime = Hash(BEGIN(nTimeX8S), END(nTimeX8S));
+                thash = HashX8S(BEGIN(nVersion), END(nNonce), hashTime);
+                break;
+            }    
             case POW_TYPE_SOTERC: {
                 return Soterc(BEGIN(nVersion), END(nNonce), true);
                 break;
@@ -70,7 +77,7 @@ uint256 CBlockHeader::ComputePoWHash() const
             thash = HashX12R(BEGIN(nVersion), END(nNonce), hashTime);
         }
         else {
-            // soterhash before dual-algo
+            
             int32_t nTimeSoterHASH = nTime & TIME_MASK;
             uint256 hashTime = Hash(BEGIN(nTimeSoterHASH), END(nTimeSoterHASH));
             thash = HashX12ST(BEGIN(nVersion), END(nNonce), hashTime);
