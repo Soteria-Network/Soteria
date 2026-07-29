@@ -49,6 +49,7 @@
 
 class CBlockIndex;
 class CBlockTreeDB;
+class CBlockUndo;
 class CChainParams;
 class CCoinsViewDB;
 class CInv;
@@ -480,6 +481,7 @@ bool GetAddressUnspent(uint160 addressHash, int type,
 /** Functions for disk access for blocks */
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::ConsensusParams& consensusParams);
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex, const Consensus::ConsensusParams& consensusParams);
+bool UndoReadFromDisk(CBlockUndo& blockundo, const CDiskBlockPos& pos, const uint256& hashBlock);
 
 /** Functions for validating blocks and updating the block tree */
 
