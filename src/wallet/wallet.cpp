@@ -151,7 +151,7 @@ const CWalletTx* CWallet::GetWalletTx(const uint256& hash) const
 
 CPubKey CWallet::GenerateNewKey(CWalletDB& walletdb, bool internal)
 {
-    AssertLockHeld(cs_wallet); // mapKeyMetadata
+    AssertLockHeld(cs_wallet);                                 // mapKeyMetadata
     bool fCompressed = CanSupportFeature(FEATURE_COMPRPUBKEY); // default to compressed public keys if we want 0.6.0 wallets
 
     CKey secret;
@@ -213,29 +213,29 @@ void CWallet::DeriveNewChildKey(CWalletDB& walletdb, CKeyMetadata& metadata, CKe
     uint32_t& nChildIndex = internal ? hdChain.nInternalChainCounter : hdChain.nExternalChainCounter;
 
     do {
-	if(hdChain.IsBip44()) {
-	   // Use BIP44 keypath scheme i.e. m / purpose' / coin_type' / account' / change / address_index
+        if (hdChain.IsBip44()) {
+            // Use BIP44 keypath scheme i.e. m / purpose' / coin_type' / account' / change / address_index
 
-           // derive m/purpose'
-           masterKey.Derive(purposeKey, 44 | BIP32_HARDENED_KEY_LIMIT);
-				// derive m/purpose'/coin_type'
-				purposeKey.Derive(coinTypeKey, Params().ExtCoinType() | BIP32_HARDENED_KEY_LIMIT);
-				// derive m/purpose'/coin_type'/account'
-				coinTypeKey.Derive(accountKey, nAccountIndex | BIP32_HARDENED_KEY_LIMIT);
-				// derive m/purpose'/coin_type'/account'/change
-				accountKey.Derive(chainChildKey, internal ? 1 : 0);
-				// derive m/purpose'/coin_type'/account'/change/address_index
-				chainChildKey.Derive(childKey, nChildIndex);
-			} else	{
-				// Use BIP32 keypath scheme i.e. m / account' / change' / address_index'
+            // derive m/purpose'
+            masterKey.Derive(purposeKey, 44 | BIP32_HARDENED_KEY_LIMIT);
+            // derive m/purpose'/coin_type'
+            purposeKey.Derive(coinTypeKey, Params().ExtCoinType() | BIP32_HARDENED_KEY_LIMIT);
+            // derive m/purpose'/coin_type'/account'
+            coinTypeKey.Derive(accountKey, nAccountIndex | BIP32_HARDENED_KEY_LIMIT);
+            // derive m/purpose'/coin_type'/account'/change
+            accountKey.Derive(chainChildKey, internal ? 1 : 0);
+            // derive m/purpose'/coin_type'/account'/change/address_index
+            chainChildKey.Derive(childKey, nChildIndex);
+        } else {
+            // Use BIP32 keypath scheme i.e. m / account' / change' / address_index'
 
-				// derive m/account'
-				masterKey.Derive(accountKey, nAccountIndex | BIP32_HARDENED_KEY_LIMIT);
-				// derive m/account'/change
-				accountKey.Derive(chainChildKey, BIP32_HARDENED_KEY_LIMIT + (internal ? 1 : 0));
-				// derive m/account'/change/address_index
-				chainChildKey.Derive(childKey, BIP32_HARDENED_KEY_LIMIT |  nChildIndex);
-			}
+            // derive m/account'
+            masterKey.Derive(accountKey, nAccountIndex | BIP32_HARDENED_KEY_LIMIT);
+            // derive m/account'/change
+            accountKey.Derive(chainChildKey, BIP32_HARDENED_KEY_LIMIT + (internal ? 1 : 0));
+            // derive m/account'/change/address_index
+            chainChildKey.Derive(childKey, BIP32_HARDENED_KEY_LIMIT | nChildIndex);
+        }
 
         // increment childkey index
         nChildIndex++;
@@ -1790,14 +1790,23 @@ void CWallet::ReacceptWalletTransactions()
     // Try to add wallet transactions to memory pool
     if (!mapSorted.empty()) {
         uiInterface.InitMessage(strprintf(_("Reaccepting wallet transactions... (%d pending)"), mapSorted.size()));
-    }
 
-    for (std::pair<const int64_t, CWalletTx*>& item : mapSorted) {
-        CWalletTx& wtx = *(item.second);
+        int processed = 0;
+        for (std::pair<const int64_t, CWalletTx*>& item : mapSorted) {
+            CWalletTx& wtx = *(item.second);
 
-        LOCK(mempool.cs);
-        CValidationState state;
-        wtx.AcceptToMemoryPool(maxTxFee, state);
+            LOCK(mempool.cs);
+            CValidationState state;
+            wtx.AcceptToMemoryPool(maxTxFee, state);
+
+            processed++;
+            // Update progress every 100 transactions to avoid UI spam
+            if (processed % 100 == 0) {
+                uiInterface.InitMessage(strprintf(_("Reaccepting wallet transactions... (%d/%d)"), processed, mapSorted.size()));
+            }
+        }
+
+        uiInterface.InitMessage(_("Wallet transactions processed, starting interface..."));
     }
 }
 
@@ -3006,7 +3015,8 @@ bool CWallet::SelectAssets(const std::map<std::string, std::vector<COutput>>& ma
 bool CWallet::SignTransaction(CMutableTransaction& tx)
 {
     AssertLockHeld(cs_wallet); // mapWallet
-    
+
+    // sign the new tx
     CTransaction txNewConst(tx);
     // Always use FORKID since activated from genesis
     const uint32_t nHashType = SIGHASH_ALL | SIGHASH_FORKID;
@@ -4780,7 +4790,9 @@ void CWallet::postInitProcess(CScheduler& scheduler)
 {
     // Add wallet transactions that aren't already in a block to mempool
     // Do this here as mempool requires genesis block to be loaded
+    uiInterface.InitMessage(_("Reprocessing wallet transactions..."));
     ReacceptWalletTransactions();
+    uiInterface.InitMessage(_("Wallet ready, starting interface..."));
 
     // Run a thread to flush wallet periodically
     if (!CWallet::fFlushScheduled.exchange(true)) {
