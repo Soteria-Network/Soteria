@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "validation.h"
 #include "arith_uint256.h"
@@ -18,6 +18,7 @@
 #include "fs.h"
 #include "hash.h"
 #include "init.h"
+#include "net.h"
 #include "policy/fees.h"
 #include "policy/policy.h"
 #include "policy/rbf.h"
@@ -41,7 +42,6 @@
 #include "validationinterface.h"
 #include "versionbits.h"
 #include "warnings.h"
-#include "net.h"
 #include <algorithm>
 #include <vector>
 #include <set>
@@ -59,16 +59,17 @@
 #include <stdexcept>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 #include <script/ismine.h>
 #include <wallet/wallet.h>
 
-#include "assets/assets.h"
 #include "assets/assetdb.h"
+#include "assets/assets.h"
 #include "base58.h"
 
-#include "assets/snapshotrequestdb.h"
 #include "assets/assetsnapshotdb.h"
+#include "assets/snapshotrequestdb.h"
 
 // Fixing Boost 1.73 compile errors
 #include <boost/bind/bind.hpp>
@@ -1756,6 +1757,27 @@ bool UndoWriteToDisk(const CBlockUndo& blockundo, CDiskBlockPos& pos, const uint
     return true;
 }
 
+/** Abort with a message */
+bool AbortNode(const std::string& strMessage, const std::string& userMessage = "")
+{
+    SetMiscWarning(strMessage);
+    LogPrintf("*** %s\n", strMessage);
+    uiInterface.ThreadSafeMessageBox(
+        userMessage.empty() ? _("Error: A fatal internal error occurred, see debug.log for details") : userMessage,
+        "", CClientUIInterface::MSG_ERROR);
+
+    StartShutdown();
+    return false;
+}
+
+bool AbortNode(CValidationState& state, const std::string& strMessage, const std::string& userMessage = "")
+{
+    AbortNode(strMessage, userMessage);
+    return state.Error(strMessage);
+}
+
+} // namespace
+
 bool UndoReadFromDisk(CBlockUndo& blockundo, const CDiskBlockPos& pos, const uint256& hashBlock)
 {
     // Open history file to read
@@ -1780,27 +1802,6 @@ bool UndoReadFromDisk(CBlockUndo& blockundo, const CDiskBlockPos& pos, const uin
 
     return true;
 }
-
-/** Abort with a message */
-bool AbortNode(const std::string& strMessage, const std::string& userMessage = "")
-{
-    SetMiscWarning(strMessage);
-    LogPrintf("*** %s\n", strMessage);
-    uiInterface.ThreadSafeMessageBox(
-        userMessage.empty() ? _("Error: A fatal internal error occurred, see debug.log for details") : userMessage,
-        "", CClientUIInterface::MSG_ERROR);
-
-    StartShutdown();
-    return false;
-}
-
-bool AbortNode(CValidationState& state, const std::string& strMessage, const std::string& userMessage = "")
-{
-    AbortNode(strMessage, userMessage);
-    return state.Error(strMessage);
-}
-
-} // namespace
 
 enum DisconnectResult {
     DISCONNECT_OK,      // All good.
@@ -4608,7 +4609,7 @@ static bool AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CValidation
     return true;
 }
 
-bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool *fNewBlock)
+bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<const CBlock> pblock, bool fForceProcessing, bool* fNewBlock)
 {
     {
         CBlockIndex* pindex = nullptr;
@@ -4910,17 +4911,13 @@ bool static LoadBlockIndexDB(const CChainParams& chainparams)
     int64_t nLastNow = 0;
     int nHeight = 0;
     int nLastPercent = -1;
-    for (const std::pair<int, CBlockIndex*>& item : vSortedByHeight)
- {
-        nNow = GetTime();
-        if (nNow >= nLastNow + 5) {
-            int nPercent = 100 * nHeight / nHighest;
-            if (nPercent > nLastPercent) {
-                uiInterface.InitMessage(strprintf(_("Indexing blocks... %d%%"), (100 * nHeight) / nHighest));
-                nLastPercent = nPercent;
-            }
-            nLastNow = nNow;
+    for (const std::pair<int, CBlockIndex*>& item : vSortedByHeight) {
+        int nPercent = 100 * nHeight / nHighest;
+        if (nPercent % 5 == 0 && nPercent != nLastPercent) {
+            uiInterface.InitMessage(strprintf(_("Indexing blocks... %d%%"), nPercent));
+            nLastPercent = nPercent;
         }
+        nHeight++;
         CBlockIndex* pindex = item.second;
         pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) + GetBlockProof(*pindex);
         pindex->nTimeMax = (pindex->pprev ? std::max(pindex->pprev->nTimeMax, pindex->nTime) : pindex->nTime);
@@ -5922,7 +5919,8 @@ double GuessVerificationProgress(const ChainTxData& data, CBlockIndex* pindex)
 /** SOTER START */
 
 // Only used by test framework
-void SetEnforcedValues(bool value){
+void SetEnforcedValues(bool value)
+{
     fEnforcedValuesIsActive = value;
 }
 
@@ -5985,7 +5983,8 @@ bool AreMessagesDeployed() {
     return fMessaging;
 }
 
-bool AreRestrictedAssetsDeployed() {
+bool AreRestrictedAssetsDeployed()
+{
     if (fRestricted)
         return true;
 
