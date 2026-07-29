@@ -3823,6 +3823,8 @@ extern UniValue getmasterkeyinfo(const JSONRPCRequest& request);
 extern UniValue importwallet(const JSONRPCRequest& request);
 extern UniValue importprunedfunds(const JSONRPCRequest& request);
 extern UniValue removeprunedfunds(const JSONRPCRequest& request);
+extern UniValue removewatchonly(const JSONRPCRequest& request);
+extern UniValue listwatchonly(const JSONRPCRequest& request);
 extern UniValue importmulti(const JSONRPCRequest& request);
 extern UniValue rescanblockchain(const JSONRPCRequest& request);
 
@@ -3884,6 +3886,8 @@ static const CRPCCommand commands[] =
         {"wallet", "walletpassphrasechange", &walletpassphrasechange, {"oldpassphrase", "newpassphrase"}},
         {"wallet", "walletpassphrase", &walletpassphrase, {"passphrase", "timeout"}},
         {"wallet", "removeprunedfunds", &removeprunedfunds, {"txid"}},
+        {"wallet", "removewatchonly", &removewatchonly, {"address"}},
+        {"wallet", "listwatchonly", &listwatchonly, {}},
         {"wallet", "rescanblockchain", &rescanblockchain, {"start_height", "stop_height"}},
         {"wallet", "consolidateutxos", &consolidateutxos, {"address", "min_utxos", "max_batches", "min_amount", "max_amount"}},
 
