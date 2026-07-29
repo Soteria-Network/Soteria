@@ -25,7 +25,8 @@
 #include <limits>
 #include <utility>
 #include <univalue.h>
-
+#include <algorithm>
+#include <random>
 static UniValue getconnectioncount(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
@@ -34,10 +35,8 @@ static UniValue getconnectioncount(const JSONRPCRequest& request)
             "\nReturns the number of connections to other nodes.\n"
             "\nResult:\n"
             "n          (numeric) The connection count\n"
-            "\nExamples:\n"
-            + HelpExampleCli("getconnectioncount", "")
-            + HelpExampleRpc("getconnectioncount", "")
-        );
+            "\nExamples:\n" +
+            HelpExampleCli("getconnectioncount", "") + HelpExampleRpc("getconnectioncount", ""));
 
     if (!g_connman)
         throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
