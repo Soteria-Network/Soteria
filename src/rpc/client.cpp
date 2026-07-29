@@ -1,9 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #include <rpc/client.h>
 #include <rpc/protocol.h>
@@ -132,6 +130,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "getblock", 1, "verbosity" },
     { "getblock", 1, "verbose" },
     { "getblockheader", 1, "verbose" },
+    {"getblockstats", 0, "hash_or_height"},
+    {"getblockstats", 1, "stats"},
     { "getchaintxstats", 0, "nblocks" },
     { "gettransaction", 1, "include_watchonly" },
     { "getrawtransaction", 1, "verbose" },
@@ -232,10 +232,12 @@ private:
 public:
     CRPCConvertTable();
 
-    bool convert(const std::string& method, int idx) {
+    bool convert(const std::string& method, int idx)
+    {
         return (members.count(std::make_pair(method, idx)) > 0);
     }
-    bool convert(const std::string& method, const std::string& name) {
+    bool convert(const std::string& method, const std::string& name)
+    {
         return (membersByName.count(std::make_pair(method, name)) > 0);
     }
 };
@@ -247,9 +249,9 @@ CRPCConvertTable::CRPCConvertTable()
 
     for (unsigned int i = 0; i < n_elem; i++) {
         members.insert(std::make_pair(vRPCConvertParams[i].methodName,
-                                      vRPCConvertParams[i].paramIdx));
+            vRPCConvertParams[i].paramIdx));
         membersByName.insert(std::make_pair(vRPCConvertParams[i].methodName,
-                                            vRPCConvertParams[i].paramName));
+            vRPCConvertParams[i].paramName));
     }
 }
 
@@ -261,13 +263,13 @@ static CRPCConvertTable rpcCvtTable;
 UniValue ParseNonRFCJSONValue(const std::string& strVal)
 {
     UniValue jVal;
-    if (!jVal.read(std::string("[")+strVal+std::string("]")) ||
-        !jVal.isArray() || jVal.size()!=1)
-        throw std::runtime_error(std::string("Error parsing JSON:")+strVal);
+    if (!jVal.read(std::string("[") + strVal + std::string("]")) ||
+        !jVal.isArray() || jVal.size() != 1)
+        throw std::runtime_error(std::string("Error parsing JSON:") + strVal);
     return jVal[0];
 }
 
-UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams)
+UniValue RPCConvertValues(const std::string& strMethod, const std::vector<std::string>& strParams)
 {
     UniValue params(UniValue::VARR);
 
@@ -286,18 +288,18 @@ UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::s
     return params;
 }
 
-UniValue RPCConvertNamedValues(const std::string &strMethod, const std::vector<std::string> &strParams)
+UniValue RPCConvertNamedValues(const std::string& strMethod, const std::vector<std::string>& strParams)
 {
     UniValue params(UniValue::VOBJ);
 
-    for (const std::string &s: strParams) {
-        size_t pos = s.find('=');
+    for (const std::string& s : strParams) {
+        size_t pos = s.find("=");
         if (pos == std::string::npos) {
-            throw(std::runtime_error("No '=' in named argument '"+s+"', this needs to be present for every argument (even if it is empty)"));
+            throw(std::runtime_error("No '=' in named argument '" + s + "', this needs to be present for every argument (even if it is empty)"));
         }
 
         std::string name = s.substr(0, pos);
-        std::string value = s.substr(pos+1);
+        std::string value = s.substr(pos + 1);
 
         if (!rpcCvtTable.convert(strMethod, name)) {
             // insert string value directly
