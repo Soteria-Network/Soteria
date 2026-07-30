@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #ifndef SOTERIA_QT_SOTERIAGUI_H
 #define SOTERIA_QT_SOTERIAGUI_H
@@ -180,7 +180,7 @@ private:
     QNetworkRequest* versionRequest = nullptr;
     QLabel* labelToolbar = nullptr;
     QToolBar* m_toolbar = nullptr;
-
+    QTimer* initializationTimer = nullptr;
     /** SOTER END */
     QSystemTrayIcon* trayIcon = nullptr;
     QMenu* trayIconMenu = nullptr;
@@ -317,6 +317,8 @@ private Q_SLOTS:
     void showDebugWindowActivatePeers();    
     /** Show help message dialog */
     void showHelpMessageClicked();
+    /** Perform deferred network initialization after GUI is rendered */
+    void performDeferredInitialization();
 #ifndef Q_OS_MAC
     /** Handle tray icon clicked */
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
