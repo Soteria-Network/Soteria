@@ -152,7 +152,7 @@ QGraphicsDropShadowEffect* getShadowEffect()
 
 QString dateTimeStr(const QDateTime& date)
 {
-    return QLocale::system().toString(date.date(), QLocale::ShortFormat) + " " + date.toString("hh:mm");
+    return QLocale::system().toString(date.date(), QLocale::ShortFormat) + QString(" ") + date.toString("hh:mm");
 }
 
 QString dateTimeStr(qint64 nTime)
