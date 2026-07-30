@@ -1,12 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #if defined(HAVE_CONFIG_H)
 #include <config/soteria-config.h>
 #endif
-
 #include <algorithm>
 #include <atomic>
 #include <map>
@@ -15,9 +14,6 @@
 #include <init.h>
 #include <addrman.h>
 #include <amount.h>
-#include "assets/assets.h"
-#include "assets/assetdb.h"
-#include "assets/snapshotrequestdb.h"
 #include <chain.h>
 #include <chainparams.h>
 #include <checkpoints.h>
@@ -27,6 +23,7 @@
 #include <httpserver.h>
 #include <httprpc.h>
 #include <key.h>
+#include <validation.h>
 #include <miner.h>
 #include <netbase.h>
 #include <net.h>
@@ -51,6 +48,9 @@
 #include <util/moneystr.h>
 #include <validation.h>
 #include <validationinterface.h>
+#include "assets/assets.h"
+#include "assets/assetdb.h"
+#include "assets/snapshotrequestdb.h"
 #ifdef ENABLE_WALLET
 #include <wallet/init.h>
 #include "wallet/wallet.h"
@@ -190,7 +190,7 @@ bool ShutdownRequested()
  * This is a minimally invasive approach to shutdown on LevelDB read errors from the
  * chainstate, while keeping user interface out of the common library, which is shared
  * between soteriad, and soteria-qt and non-server tools.
- */
+*/
 class CCoinsViewErrorCatcher final : public CCoinsViewBacked
 {
 public:
@@ -683,7 +683,10 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-rpcservertimeout=<n>", strprintf("Timeout during HTTP requests (default: %d)", DEFAULT_HTTP_SERVER_TIMEOUT));
     }
     // Allow switching of default pow algo via conf / command line, for miners that can't easily adjust their getblocktemplate calls
-    strUsage += HelpMessageOpt("-powalgo=soterg|soterc", strprintf(_("Default pow mining algorithm. Miners who can't easily adjust their getblocktemplate calls should use this argument to set their preferred mining algorithm. (default: %s)"), DEFAULT_POW_TYPE));
+    strUsage += HelpMessageOpt("-powalgo=soterg|soterc|sotehash|X8S", strprintf(_("Default pow mining algorithm. Miners who can't easily adjust their getblocktemplate calls should use this argument to set their preferred mining algorithm. (default: %s)"), DEFAULT_POW_TYPE));
+    strUsage += HelpMessageOpt("-powhashcache=<n>", _("Size of the PoW hash cache in megabytes (default: built-in default)"));
+    if (showDebug)
+        strUsage += HelpMessageOpt("-powcachevalidate", _("Enable/disable PoW cache validation (default: disabled)"));
     // Smartplan: Show how to enable smartcontracts
     strUsage += HelpMessageOpt("-smartcontracts", strprintf(_("Enable Soteria Smartcontracts for use via JSON-RPC")));
     return strUsage;
@@ -698,7 +701,7 @@ std::string LicenseInfo()
  // return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2025, COPYRIGHT_YEAR) + " ") + "\n" +
  //          "\n" +
  
-   return CopyrightHolders(strprintf(_("Copyright (C) %i"), COPYRIGHT_YEAR) + " ") + "\n" +
+    return CopyrightHolders(strprintf(_("Copyright (C) %i"), COPYRIGHT_YEAR) + " ") + "\n" +
            "\n" +
            strprintf(_("Please contribute to the Soteria ecosystem if you find it useful. "
                        "Visit %s for further information about the software."), URL_WEBSITE) +
@@ -802,7 +805,7 @@ static void ThreadImport(std::vector<fs::path> vImportFiles)
     RenameThread("soteria-loadblk");
 
     {
-    CImportingNow imp;
+        CImportingNow imp;
 
     // -reindex
     if (fReindex) {
@@ -874,7 +877,7 @@ static void ThreadImport(std::vector<fs::path> vImportFiles)
         LogPrintf("Stopping after block import\n");
         StartShutdown();
         return;
-    }
+}
     } // End scope of CImportingNow
     if (gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
         LoadMempool();
@@ -1099,7 +1102,6 @@ bool AppInitParameterInteraction()
 if (!fs::is_directory(GetDataDir(false))) {
         return InitError(strprintf(_("Specified blocks directory \"%s\" does not exist."), gArgs.GetArg("-blocksdir", "").c_str()));
     }
-
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
         if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX))
@@ -1496,7 +1498,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     CFlatDB<CPowCache> flatdb7(strDBName, "powCache");
-    if(!flatdb7.Load(CPowCache::Instance())) {
+    if (!flatdb7.Load(CPowCache::Instance())) {
         return InitError(_("Failed to load POW cache from") + "\n" + (pathDB / strDBName).string() + "\n\n" + "Delete this file and it will be recreated.");
     }
 
@@ -1647,6 +1649,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         std::string strLoadError;
 
         uiInterface.InitMessage(_("Loading block index..."));
+
         nStart = GetTimeMillis();
         do {
             try {
@@ -1730,11 +1733,11 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                         passetsCache->Size());
 
                     // Check for changed -disablemessaging state
-                    if (gArgs.GetBoolArg("-disablemessaging", false)) {
+                    if (!AreMessagesDeployed() || gArgs.GetArg("-disablemessaging", false)) {
                         LogPrintf("Messaging is disabled\n");
                         fMessaging = false;
                     } else {
-                        // TODO: This can be misleading.
+                        fMessaging = true;
                         LogPrintf("Messaging is enabled\n");
                     }
                 }
@@ -1860,8 +1863,8 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                         RPCNotifyBlockChange(true, tip);
                         if (tip && tip->nTime > GetAdjustedTime() + MAX_FUTURE_BLOCK_TIME) {
                             strLoadError = _("The block database contains a block which appears to be from the future. "
-                                    "This may be due to your computer's date and time being set incorrectly. "
-                                    "Only rebuild the block database if you are sure that your computer's date and time are correct");
+                                             "This may be due to your computer's date and time being set incorrectly. "
+                                             "Only rebuild the block database if you are sure that your computer's date and time are correct");
                             break;
                         }
                     }
@@ -1979,8 +1982,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         while (!fHaveGenesis) {
             condvar_GenesisWait.wait(lock);
         }
-      // uiInterface.NotifyBlockTip.disconnect(BlockNotifyGenesisWait); // Boost < 1.83+
-         uiInterface.NotifyBlockTip.disconnect(&BlockNotifyGenesisWait); // Boost > 1.83+
+        uiInterface.NotifyBlockTip.disconnect(&BlockNotifyGenesisWait); // Boost > 1.83+
     }
 
     // ********************************************************* Step 13: start node
@@ -2069,12 +2071,13 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     if (!fReindex && fLoaded && fMessaging && pmessagechanneldb && !gArgs.GetBoolArg("-disablewallet", false)) {
         bool found;
         if (!pmessagechanneldb->ReadFlag("init", found)) {
-            uiInterface.InitMessage(_("Init Message Channels - Scanning Asset Transactions"));
+            uiInterface.InitMessage(_("Scanning message channels..."));
             std::string strLoadError;
             if (!ScanForMessageChannels(strLoadError)) {
                 LogPrintf("%s : Failed to scan for message channels, %s\n", __func__, strLoadError);
             } else {
                 pmessagechanneldb->WriteFlag("init", true);
+                uiInterface.InitMessage(_("Message channels initialized"));
             }
         }
     }
@@ -2082,6 +2085,9 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 15: finished
     uiInterface.InitMessage(_("Done Loading"));
+
+    // Allow UI event loop to process before fully completing
+    uiInterface.InitMessage(_("Initializing user interface..."));
 
     return !fRequestShutdown;
 }
