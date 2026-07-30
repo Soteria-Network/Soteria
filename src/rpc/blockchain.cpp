@@ -605,7 +605,7 @@ UniValue getblockstats(const JSONRPCRequest& request)
     return stats;
 }
 
-UniValue getblockcount(const JSONRPCRequest& request)
+static UniValue getblockcount(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
@@ -1707,7 +1707,7 @@ static void BIP9SoftForkDescPushBack(UniValue& bip9_softforks, const std::string
         bip9_softforks.push_back(Pair(name, BIP9SoftForkDesc(consensusParams, id)));
 }
 
-UniValue getblockchaininfo(const JSONRPCRequest& request)
+static UniValue getblockchaininfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
