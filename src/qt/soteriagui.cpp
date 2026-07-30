@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
@@ -63,11 +63,13 @@
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QStyle>
+#include <QThread>
 #include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
+#include <QtConcurrent/QtConcurrentRun>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
 
@@ -296,6 +298,11 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* 
         connect(progressBar, SIGNAL(clicked(QPoint)), this, SLOT(showModalOverlay()));
     }
 #endif
+
+    initializationTimer = new QTimer(this);
+    connect(initializationTimer, SIGNAL(timeout()), this, SLOT(performDeferredInitialization()));
+    initializationTimer->setSingleShot(true);
+    initializationTimer->start(100);
 }
 
 SoteriaGUI::~SoteriaGUI()
