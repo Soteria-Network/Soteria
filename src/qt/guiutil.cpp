@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #include "guiutil.h"
 #include <algorithm>
@@ -42,7 +42,6 @@
 #include <QString>
 #include <QTextStream>
 #include <QLocale>
-#include <QThread>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #include <QUrl>
@@ -153,7 +152,7 @@ QGraphicsDropShadowEffect* getShadowEffect()
 
 QString dateTimeStr(const QDateTime& date)
 {
-    return QLocale().toString(date.date(), QLocale::ShortFormat) + QString(" ") + date.toString("hh:mm");
+    return QLocale::system().toString(date.date(), QLocale::ShortFormat) + " " + date.toString("hh:mm");
 }
 
 QString dateTimeStr(qint64 nTime)
@@ -253,7 +252,7 @@ bool parseSoteriaURI(const QUrl& uri, SendCoinsRecipient* out)
             fShouldReturnFalse = false;
         } else if (i->first == "amount") {
             if (!i->second.isEmpty()) {
-                if(!SoteriaUnits::parse(SoteriaUnits::SOTER, i->second, &rv.amount)) {
+                if (!SoteriaUnits::parse(SoteriaUnits::SOTER, i->second, &rv.amount)) {
                     return false;
                 }
             }
@@ -442,10 +441,10 @@ bool checkPoint(const QPoint& p, const QWidget* w)
 bool isObscured(QWidget* w)
 {
     return !(checkPoint(QPoint(0, 0), w)
-        && checkPoint(QPoint(w->width() - 1, 0), w)
-        && checkPoint(QPoint(0, w->height() - 1), w)
-        && checkPoint(QPoint(w->width() - 1, w->height() - 1), w)
-        && checkPoint(QPoint(w->width() / 2, w->height() / 2), w));
+ && checkPoint(QPoint(w->width() - 1, 0), w)
+ && checkPoint(QPoint(0, w->height() - 1), w)
+ && checkPoint(QPoint(w->width() - 1, w->height() - 1), w)
+ && checkPoint(QPoint(w->width() / 2, w->height() / 2), w));
 }
 
 void openDebugLogfile()
@@ -547,7 +546,8 @@ bool ToolTipToRichTextFilter::eventFilter(QObject* obj, QEvent* evt)
 // The current TableViewLastColumnResizingFixer implementation could put the last column content out of the view port and confuse a user.
 // Drop buggy TableViewLastColumnResizingFixer class (btc#204)
 
-/* void TableViewLastColumnResizingFixer::connectViewHeadersSignals()
+/* 
+void TableViewLastColumnResizingFixer::connectViewHeadersSignals()
 {
     connect(tableView->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(on_sectionResized(int, int, int)));
     connect(tableView->horizontalHeader(), SIGNAL(geometriesChanged()), this, SLOT(on_geometriesChanged()));
@@ -646,8 +646,9 @@ void TableViewLastColumnResizingFixer::on_geometriesChanged()
  * Initializes all internal variables and prepares the
  * the resize modes of the last 2 columns of the table and
  */
-/* TableViewLastColumnResizingFixer::TableViewLastColumnResizingFixer(QTableView* table, int lastColMinimumWidth, int allColsMinimumWidth, QObject *parent) :
-    QObject(parent),
+/* 
+TableViewLastColumnResizingFixer::TableViewLastColumnResizingFixer(QTableView* table, int lastColMinimumWidth, int allColsMinimumWidth, QObject* parent) :
+ QObject(parent),
     tableView(table),
     lastColumnMinimumWidth(lastColMinimumWidth),
     allColumnsMinimumWidth(allColsMinimumWidth)
@@ -659,7 +660,8 @@ void TableViewLastColumnResizingFixer::on_geometriesChanged()
     setViewHeaderResizeMode(columnCount - 3, QHeaderView::Interactive);
     setViewHeaderResizeMode(secondToLastColumnIndex, QHeaderView::Interactive);
     setViewHeaderResizeMode(lastColumnIndex, QHeaderView::Interactive);
-} */
+}
+*/
 
 #ifdef WIN32
 // Windows headers for startup shortcut functionality
@@ -930,6 +932,10 @@ void saveWindowGeometry(const QString& strSetting, QWidget* parent)
     QSettings settings;
     settings.setValue(strSetting + "Pos", parent->pos());
     settings.setValue(strSetting + "Size", parent->size());
+    // Only save maximized state for main window (identified by "MainWindowGeometry" key)
+    if (strSetting == "MainWindowGeometry") {
+        settings.setValue(strSetting + "State", (int)(parent->windowState() & Qt::WindowMaximized));
+    }
 }
 
 void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, QWidget* parent)
@@ -937,6 +943,7 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
     QSettings settings;
     QPoint pos = settings.value(strSetting + "Pos").toPoint();
     QSize size = settings.value(strSetting + "Size", defaultSize).toSize();
+    int state = settings.value(strSetting + "State", 0).toInt();
 
     if (!pos.x() && !pos.y()) {
         QRect screen = QApplication::desktop()->screenGeometry();
@@ -946,6 +953,11 @@ void restoreWindowGeometry(const QString& strSetting, const QSize& defaultSize, 
 
     parent->resize(size);
     parent->move(pos);
+
+    // Only restore maximized state for main window (identified by "MainWindowGeometry" key)
+    if (strSetting == "MainWindowGeometry" && (state & Qt::WindowMaximized)) {
+        parent->setWindowState(parent->windowState() | Qt::WindowMaximized);
+    }
 }
 
 void setClipboard(const QString& str)
