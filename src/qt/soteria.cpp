@@ -364,14 +364,15 @@ void SoteriaCore::shutdown()
 }
 
 static int qt_argc = 1;
-static const char* qt_argv = "soteria-qt";
-SoteriaApplication::SoteriaApplication():
-    QApplication(qt_argc, const_cast<char **>(&qt_argv)),    
-    coreThread(0),
-    optionsModel(0),
-    clientModel(0),
-    window(0),
-    pollShutdownTimer(0),
+static char qt_argv0[] = "soteria-qt";
+static char* qt_argv[] = { qt_argv0, nullptr };
+
+SoteriaApplication::SoteriaApplication(): QApplication(qt_argc, qt_argv),    
+coreThread(0),    
+optionsModel(0),    
+clientModel(0),    
+window(0),    
+pollShutdownTimer(0),
 #ifdef ENABLE_WALLET
     paymentServer(0),
     walletModel(0),
@@ -580,6 +581,12 @@ void SoteriaApplication::initializeResult(bool success)
             window->show();
         }
 
+        // Ensure window is rendered
+        for (int i = 0; i < 3; ++i) {
+            processUIEvents();
+            QThread::msleep(50);
+        }
+
         // Dismiss splash screen now that everything is ready
         Q_EMIT splashFinished(window);
 
@@ -657,7 +664,7 @@ int main(int argc, char* argv[])
     QSslConfiguration::setDefaultConfiguration(sslconf);
 #endif
 
-    // This should be after the attributes.
+    // This should be after the attributes, avoid relying on argc/argv for safer argument handling.
     SoteriaApplication app;
     
     // Register meta types used for QMetaObject::invokeMethod
