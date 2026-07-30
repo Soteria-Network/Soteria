@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #if defined(HAVE_CONFIG_H)
 #include <config/soteria-config.h>
@@ -325,7 +325,7 @@ void SoteriaCore::restart(QStringList args)
 {
     static bool executing_restart{false};
 
-    if(!executing_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
+    if (!executing_restart) { // Only restart 1x, no matter how often a user clicks on a restart-button
         executing_restart = true;
         try {
             qDebug() << __func__ << ": Running Restart in thread";
@@ -393,8 +393,7 @@ SoteriaApplication::SoteriaApplication():
 
 SoteriaApplication::~SoteriaApplication()
 {
-    if(coreThread)
-    {
+    if (coreThread) {
         qDebug() << __func__ << ": Stopping thread";
         Q_EMIT stopThread();
         coreThread->wait();
