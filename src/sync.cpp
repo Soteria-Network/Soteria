@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #include "sync.h"
 #include <util/system.h>
@@ -50,15 +48,16 @@ struct CLockLocation {
     }
 
     bool fTry;
+
 private:
     std::string mutexName;
     std::string sourceFile;
     int sourceLine;
 };
 
-typedef std::vector<std::pair<void*, CLockLocation> > LockStack;
+typedef std::vector<std::pair<void*, CLockLocation>> LockStack;
 typedef std::map<std::pair<void*, void*>, LockStack> LockOrders;
-typedef std::set<std::pair<void*, void*> > InvLockOrders;
+typedef std::set<std::pair<void*, void*>> InvLockOrders;
 
 struct LockData {
     // Very ugly hack: as the global constructs and destructors run single
@@ -80,7 +79,7 @@ static void potential_deadlock_detected(const std::pair<void*, void*>& mismatch,
 {
     LogPrintf("POTENTIAL DEADLOCK DETECTED\n");
     LogPrintf("Previous lock order was:\n");
-    for (const std::pair<void*, CLockLocation> & i : s2) {
+    for (const std::pair<void*, CLockLocation>& i : s2) {
         if (i.first == mismatch.first) {
             LogPrintf(" (1)");
         }
@@ -90,7 +89,7 @@ static void potential_deadlock_detected(const std::pair<void*, void*>& mismatch,
         LogPrintf(" %s\n", i.second.ToString());
     }
     LogPrintf("Current lock order is:\n");
-    for (const std::pair<void*, CLockLocation> & i : s1) {
+    for (const std::pair<void*, CLockLocation>& i : s1) {
         if (i.first == mismatch.first) {
             LogPrintf(" (1)");
         }
@@ -111,7 +110,7 @@ static void push_lock(void* c, const CLockLocation& locklocation)
 
     (*lockstack).push_back(std::make_pair(c, locklocation));
 
-    for (const std::pair<void*, CLockLocation> & i : (*lockstack)) {
+    for (const std::pair<void*, CLockLocation>& i : (*lockstack)) {
         if (i.first == c)
             break;
 
@@ -145,14 +144,14 @@ void LeaveCritical()
 std::string LocksHeld()
 {
     std::string result;
-    for (const std::pair<void*, CLockLocation> & i : *lockstack)
+    for (const std::pair<void*, CLockLocation>& i : *lockstack)
         result += i.second.ToString() + std::string("\n");
     return result;
 }
 
 void AssertLockHeldInternal(const char* pszName, const char* pszFile, int nLine, void* cs)
 {
-    for (const std::pair<void*, CLockLocation> & i : *lockstack)
+    for (const std::pair<void*, CLockLocation>& i : *lockstack)
         if (i.first == cs)
             return;
     fprintf(stderr, "Assertion failed: lock %s not held in %s:%i; locks held:\n%s", pszName, pszFile, nLine, LocksHeld().c_str());
