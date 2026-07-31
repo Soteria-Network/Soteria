@@ -217,7 +217,9 @@ PaperWalletDialog::PaperWalletDialog(QWidget *parent) :
     ui->addressText->setAlignment(Qt::AlignJustify);
     ui->privateKeyText->setAlignment(Qt::AlignJustify);
 
-    QMessageBox::critical(this, "Warning", tr("It is recommended to disconnect from the internet before printing paper wallets. Although paper wallets are generated locally, a compromised system may still expose sensitive information through screen capture, remote-access malware, clipboard history, or other monitoring tools. For improved security, use a locally connected printer rather than a network printer, since network traffic may be intercepted and some printers retain copies of printed documents. Additional risks include printer memory, print spooler storage, shoulder surfing, and accidental disclosure during the generation process. Proceed with caution and limit the amount of value stored on each address."), QMessageBox::Ok, QMessageBox::Ok);
+    QMessageBox::critical(this, "Warning", tr("It is recommended to disconnect from the internet before printing paper wallets. Although paper wallets are generated locally, a compromised system may still expose sensitive information through screen capture, remote-access malware, clipboard history, or other monitoring tools. For improved security, use a locally connected printer rather than a network printer, since network traffic may be intercepted and some printers retain copies of printed documents. Additional risks include printer memory, print spooler storage, shoulder surfing, and accidental disclosure during the generation process. Proceed with caution and limit the amount of value stored on each address.
+
+"), QMessageBox::Ok, QMessageBox::Ok);
 }
 
 void PaperWalletDialog::setModel(WalletModel *model)
