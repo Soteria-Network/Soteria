@@ -1707,7 +1707,7 @@ static void BIP9SoftForkDescPushBack(UniValue& bip9_softforks, const std::string
         bip9_softforks.push_back(Pair(name, BIP9SoftForkDesc(consensusParams, id)));
 }
 
-static UniValue getblockchaininfo(const JSONRPCRequest& request)
+UniValue getblockchaininfo(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
         throw std::runtime_error(
