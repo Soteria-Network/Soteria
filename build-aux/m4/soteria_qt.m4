@@ -1,8 +1,6 @@
 dnl Copyright (c) 2013-2016 The Bitcoin Core developers
 dnl Copyright (c) 2021 The Raven Core developers
-dnl Copyright (c) 2022 The Soteria Core developers
-dnl Distributed under the MIT software license, see the accompanying
-dnl file COPYING or http://www.opensource.org/licenses/mit-license.php.
+dnl Copyright (c) 2025-2026 The Soteria Core developer
 
 dnl Helper for cases where a qt dependency is not met.
 dnl Output: If qt version is auto, set soteria_enable_qt to false. Else, exit.
@@ -135,6 +133,9 @@ AC_DEFUN([SOTERIA_QT_CONFIGURE],[
       if test -d "$qt_plugin_path/accessible"; then
         QT_LIBS="$QT_LIBS -L$qt_plugin_path/accessible"
       fi
+      if test -d "$qt_plugin_path/printsupport"; then
+        QT_LIBS="$QT_LIBS -L$qt_plugin_path/printsupport"
+      fi
       if test -d "$qt_plugin_path/platforms/android"; then
         QT_LIBS="$QT_LIBS -L$qt_plugin_path/platforms/android -lqtfreetype -lEGL"
       fi
@@ -150,6 +151,7 @@ AC_DEFUN([SOTERIA_QT_CONFIGURE],[
       dnl https://bugreports.qt.io/browse/QTBUG-27097.
       AX_CHECK_LINK_FLAG([-lwtsapi32], [QT_LIBS="$QT_LIBS -lwtsapi32"], [AC_MSG_ERROR([could not link against -lwtsapi32])])
       _SOTERIA_QT_CHECK_STATIC_PLUGIN([QWindowsIntegrationPlugin], [-lqwindows])
+      _SOTERIA_QT_CHECK_STATIC_PLUGIN([QWindowsPrinterSupportPlugin], [-lwindowsprintersupport])
       AC_DEFINE(QT_QPA_PLATFORM_WINDOWS, 1, [Define this symbol if the qt platform is windows])
     elif test "x$TARGET_OS" = xlinux; then
       dnl workaround for https://bugreports.qt.io/browse/QTBUG-74874
@@ -157,11 +159,21 @@ AC_DEFUN([SOTERIA_QT_CONFIGURE],[
       _SOTERIA_QT_CHECK_STATIC_PLUGIN([QXcbIntegrationPlugin], [-lqxcb])
       AC_DEFINE(QT_QPA_PLATFORM_XCB, 1, [Define this symbol if the qt platform is xcb])
     elif test "x$TARGET_OS" = xdarwin; then
+      AX_CHECK_LINK_FLAG([[-framework AppKit]],[QT_LIBS="$QT_LIBS -framework AppKit"],[AC_MSG_ERROR(could not link against AppKit framework)])
+      AX_CHECK_LINK_FLAG([[-framework ApplicationServices]],[QT_LIBS="$QT_LIBS -framework ApplicationServices"],[AC_MSG_ERROR(could not link against ApplicationServices framework)])
       AX_CHECK_LINK_FLAG([[-framework Carbon]],[QT_LIBS="$QT_LIBS -framework Carbon"],[AC_MSG_ERROR(could not link against Carbon framework)])
+      AX_CHECK_LINK_FLAG([[-framework CoreFoundation]],[QT_LIBS="$QT_LIBS -framework CoreFoundation"],[AC_MSG_ERROR(could not link against CoreFoundation framework)])
+      AX_CHECK_LINK_FLAG([[-framework CoreGraphics]],[QT_LIBS="$QT_LIBS -framework CoreGraphics"],[AC_MSG_ERROR(could not link against CoreGraphics framework)])
+      AX_CHECK_LINK_FLAG([[-framework CoreServices]],[QT_LIBS="$QT_LIBS -framework CoreServices"],[AC_MSG_ERROR(could not link against CoreServices framework)])
+      AX_CHECK_LINK_FLAG([[-framework CoreText]],[QT_LIBS="$QT_LIBS -framework CoreText"],[AC_MSG_ERROR(could not link against CoreText framework)])
+      AX_CHECK_LINK_FLAG([[-framework Foundation]],[QT_LIBS="$QT_LIBS -framework Foundation"],[AC_MSG_ERROR(could not link against Foundation framework)])
+      AX_CHECK_LINK_FLAG([[-framework IOKit]],[QT_LIBS="$QT_LIBS -framework IOKit"],[AC_MSG_ERROR(could not link against IOKit framework)])
       AX_CHECK_LINK_FLAG([[-framework IOSurface]],[QT_LIBS="$QT_LIBS -framework IOSurface"],[AC_MSG_ERROR(could not link against IOSurface framework)])
       AX_CHECK_LINK_FLAG([[-framework Metal]],[QT_LIBS="$QT_LIBS -framework Metal"],[AC_MSG_ERROR(could not link against Metal framework)])
       AX_CHECK_LINK_FLAG([[-framework QuartzCore]],[QT_LIBS="$QT_LIBS -framework QuartzCore"],[AC_MSG_ERROR(could not link against QuartzCore framework)])
+      AX_CHECK_LINK_FLAG([[-lcups]],[QT_LIBS="$QT_LIBS -lcups"],[AC_MSG_ERROR(could not link against CUPS library)])
       _SOTERIA_QT_CHECK_STATIC_PLUGIN([QCocoaIntegrationPlugin], [-lqcocoa])
+      _SOTERIA_QT_CHECK_STATIC_PLUGIN([QCocoaPrinterSupportPlugin], [-lcocoaprintersupport])
       _SOTERIA_QT_CHECK_STATIC_PLUGIN([QMacStylePlugin], [-lqmacstyle])
       AC_DEFINE(QT_QPA_PLATFORM_COCOA, 1, [Define this symbol if the qt platform is cocoa])
     elif test "x$TARGET_OS" = xandroid; then
@@ -377,8 +389,12 @@ AC_DEFUN([_SOTERIA_QT_FIND_LIBS],[
     PKG_CHECK_MODULES([QT_NETWORK], [${qt_lib_prefix}Network${qt_lib_suffix} $qt_version], [],
                       [SOTERIA_QT_FAIL([${qt_lib_prefix}Network${qt_lib_suffix} $qt_version not found])])
   ])
-  QT_INCLUDES="$QT_CORE_CFLAGS $QT_GUI_CFLAGS $QT_WIDGETS_CFLAGS $QT_NETWORK_CFLAGS"
-  QT_LIBS="$QT_CORE_LIBS $QT_GUI_LIBS $QT_WIDGETS_LIBS $QT_NETWORK_LIBS"
+  SOTERIA_QT_CHECK([
+    PKG_CHECK_MODULES([QT_PRINTSUPPORT], [${qt_lib_prefix}PrintSupport${qt_lib_suffix} $qt_version], [],
+                      [SOTERIA_QT_FAIL([${qt_lib_prefix}PrintSupport${qt_lib_suffix} $qt_version not found])])
+  ])  
+  QT_INCLUDES="$QT_CORE_CFLAGS $QT_GUI_CFLAGS $QT_WIDGETS_CFLAGS $QT_NETWORK_CFLAGS $QT_PRINTSUPPORT_CFLAGS"
+  QT_LIBS="$QT_CORE_LIBS $QT_GUI_LIBS $QT_WIDGETS_LIBS $QT_NETWORK_LIBS $QT_PRINTSUPPORT_LIBS"  
 
   SOTERIA_QT_CHECK([
     PKG_CHECK_MODULES([QT_TEST], [${qt_lib_prefix}Test${qt_lib_suffix} $qt_version], [QT_TEST_INCLUDES="$QT_TEST_CFLAGS"; have_qt_test=yes], [have_qt_test=no])
