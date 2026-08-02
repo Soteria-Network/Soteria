@@ -1908,25 +1908,29 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                 const CTxOut& out = tx.vout[k];
 
                 if (out.scriptPubKey.IsPayToScriptHash()) {
-                    std::vector<unsigned char> hashBytes(out.scriptPubKey.begin() + 2, out.scriptPubKey.begin() + 22);
+                    // Perf: use fixed-size uint160 instead of heap-allocated vector
+                    uint160 hashBytes;
+                    memcpy(hashBytes.begin(), out.scriptPubKey.data() + 2, 20);
 
                     // undo receiving activity
-                    addressIndex.push_back(std::make_pair(CAddressIndexKey(2, uint160(hashBytes), pindex->nHeight, i, hash, k, false), out.nValue));
+                    addressIndex.push_back(std::make_pair(CAddressIndexKey(2, hashBytes, pindex->nHeight, i, hash, k, false), out.nValue));
 
                     // undo unspent index
-                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, uint160(hashBytes), hash, k), CAddressUnspentValue()));
+                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, hashBytes, hash, k), CAddressUnspentValue()));
 
                 } else if (out.scriptPubKey.IsPayToPublicKeyHash()) {
-                    std::vector<unsigned char> hashBytes(out.scriptPubKey.begin() + 3, out.scriptPubKey.begin() + 23);
+                    // Perf: use fixed-size uint160 instead of heap-allocated vector
+                    uint160 hashBytes;
+                    memcpy(hashBytes.begin(), out.scriptPubKey.data() + 3, 20);
 
                     // undo receiving activity
-                    addressIndex.push_back(std::make_pair(CAddressIndexKey(1, uint160(hashBytes), pindex->nHeight, i, hash, k, false), out.nValue));
+                    addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, hash, k, false), out.nValue));
 
                     // undo unspent index
-                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, uint160(hashBytes), hash, k), CAddressUnspentValue()));
+                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, hash, k), CAddressUnspentValue()));
 
                 } else if (out.scriptPubKey.IsPayToPublicKey()) {
-                    uint160 hashBytes(Hash160(out.scriptPubKey.begin() + 1, out.scriptPubKey.end() - 1));
+                    uint160 hashBytes(Hash160(out.scriptPubKey.begin()+1, out.scriptPubKey.end()-1));
                     addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, hash, k, false), out.nValue));
                     addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, hash, k), CAddressUnspentValue()));
                 } else {
@@ -2236,23 +2240,27 @@ static DisconnectResult DisconnectBlock(const CBlock& block, const CBlockIndex* 
                 if (fAddressIndex) {
                     const CTxOut& prevout = view.AccessCoin(tx.vin[j].prevout).out;
                     if (prevout.scriptPubKey.IsPayToScriptHash()) {
-                        std::vector<unsigned char> hashBytes(prevout.scriptPubKey.begin() + 2, prevout.scriptPubKey.begin() + 22);
+                        // Perf: use fixed-size uint160 instead of heap-allocated vector
+                        uint160 hashBytes;
+                        memcpy(hashBytes.begin(), prevout.scriptPubKey.data() + 2, 20);
 
                         // undo spending activity
-                        addressIndex.push_back(std::make_pair(CAddressIndexKey(2, uint160(hashBytes), pindex->nHeight, i, hash, j, true), prevout.nValue * -1));
+                        addressIndex.push_back(std::make_pair(CAddressIndexKey(2, hashBytes, pindex->nHeight, i, hash, j, true), prevout.nValue * -1));
 
                         // restore unspent index
-                        addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, uint160(hashBytes), input.prevout.hash, input.prevout.n), CAddressUnspentValue(prevout.nValue, prevout.scriptPubKey, undo.nHeight)));
+                        addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, hashBytes, input.prevout.hash, input.prevout.n), CAddressUnspentValue(prevout.nValue, prevout.scriptPubKey, undo.nHeight)));
 
 
                     } else if (prevout.scriptPubKey.IsPayToPublicKeyHash()) {
-                        std::vector<unsigned char> hashBytes(prevout.scriptPubKey.begin() + 3, prevout.scriptPubKey.begin() + 23);
+                        // Perf: use fixed-size uint160 instead of heap-allocated vector
+                        uint160 hashBytes;
+                        memcpy(hashBytes.begin(), prevout.scriptPubKey.data() + 3, 20);
 
                         // undo spending activity
-                        addressIndex.push_back(std::make_pair(CAddressIndexKey(1, uint160(hashBytes), pindex->nHeight, i, hash, j, true), prevout.nValue * -1));
+                        addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, hash, j, true), prevout.nValue * -1));
 
                         // restore unspent index
-                        addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, uint160(hashBytes), input.prevout.hash, input.prevout.n), CAddressUnspentValue(prevout.nValue, prevout.scriptPubKey, undo.nHeight)));
+                        addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, input.prevout.hash, input.prevout.n), CAddressUnspentValue(prevout.nValue, prevout.scriptPubKey, undo.nHeight)));
 
                     } else if (prevout.scriptPubKey.IsPayToPublicKey()) {
                         uint160 hashBytes(Hash160(prevout.scriptPubKey.begin() + 1, prevout.scriptPubKey.end() - 1));
@@ -2598,6 +2606,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
 
     std::set<CMessage> setMessages;
     std::vector<std::pair<std::string, CNullAssetTxData>> myNullAssetData;
+    const bool fAssetsActive = AreAssetsDeployed();
     for (unsigned int i = 0; i < block.vtx.size(); i++) {
         const CTransaction& tx = *(block.vtx[i]);
         const uint256 txhash = tx.GetHash();
@@ -2616,7 +2625,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
             }
 
             /** SOTER START */
-            if (!AreAssetsDeployed()) {
+            if (!fAssetsActive) {
                 for (auto out : tx.vout)
                     if (out.scriptPubKey.IsAssetScript())
                         return state.DoS(100, error("%s : Received Block with tx that contained an asset when assets wasn't active", __func__), REJECT_INVALID, "bad-txns-assets-not-active");
@@ -2624,7 +2633,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                         return state.DoS(100, error("%s : Received Block with tx that contained an null asset data tx when assets wasn't active", __func__), REJECT_INVALID, "bad-txns-null-data-assets-not-active");
             }
 
-            if (AreAssetsDeployed()) {
+            if (fAssetsActive) {
                 std::vector<std::pair<std::string, uint256>> vReissueAssets;
                 if (!Consensus::CheckTxAssets(tx, state, view, assetsCache, false, vReissueAssets, false, &setMessages, block.nTime, &myNullAssetData)) {
                     state.SetFailedTransaction(tx.GetHash());
@@ -2659,17 +2668,19 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                     CAmount assetAmount;
 
                     if (prevout.scriptPubKey.IsPayToScriptHash()) {
-                        hashBytes = uint160(std::vector<unsigned char>(prevout.scriptPubKey.begin() + 2, prevout.scriptPubKey.begin() + 22));
+                        // Perf: use memcpy into uint160 instead of heap-allocated vector
+                        memcpy(hashBytes.begin(), prevout.scriptPubKey.data() + 2, 20);
                         addressType = 2;
                     } else if (prevout.scriptPubKey.IsPayToPublicKeyHash()) {
-                        hashBytes = uint160(std::vector<unsigned char>(prevout.scriptPubKey.begin() + 3, prevout.scriptPubKey.begin() + 23));
+                        // Perf: use memcpy into uint160 instead of heap-allocated vector
+                        memcpy(hashBytes.begin(), prevout.scriptPubKey.data() + 3, 20);
                         addressType = 1;
                     } else if (prevout.scriptPubKey.IsPayToPublicKey()) {
                         hashBytes = Hash160(prevout.scriptPubKey.begin() + 1, prevout.scriptPubKey.end() - 1);
                         addressType = 1;
                     } else {
                         /** SOTER START */
-                        if (AreAssetsDeployed()) {
+                        if (fAssetsActive) {
                             hashBytes.SetNull();
                             addressType = 0;
 
@@ -2736,22 +2747,26 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                 const CTxOut& out = tx.vout[k];
 
                 if (out.scriptPubKey.IsPayToScriptHash()) {
-                    std::vector<unsigned char> hashBytes(out.scriptPubKey.begin() + 2, out.scriptPubKey.begin() + 22);
+                    // Perf: use fixed-size uint160 instead of heap-allocated vector
+                    uint160 hashBytes;
+                    memcpy(hashBytes.begin(), out.scriptPubKey.data() + 2, 20);
 
                     // record receiving activity
-                    addressIndex.push_back(std::make_pair(CAddressIndexKey(2, uint160(hashBytes), pindex->nHeight, i, txhash, k, false), out.nValue));
+                    addressIndex.push_back(std::make_pair(CAddressIndexKey(2, hashBytes, pindex->nHeight, i, txhash, k, false), out.nValue));
 
                     // record unspent output
-                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, uint160(hashBytes), txhash, k), CAddressUnspentValue(out.nValue, out.scriptPubKey, pindex->nHeight)));
+                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(2, hashBytes, txhash, k), CAddressUnspentValue(out.nValue, out.scriptPubKey, pindex->nHeight)));
 
                 } else if (out.scriptPubKey.IsPayToPublicKeyHash()) {
-                    std::vector<unsigned char> hashBytes(out.scriptPubKey.begin() + 3, out.scriptPubKey.begin() + 23);
+                    // Perf: use fixed-size uint160 instead of heap-allocated vector
+                    uint160 hashBytes;
+                    memcpy(hashBytes.begin(), out.scriptPubKey.data() + 3, 20);
 
                     // record receiving activity
-                    addressIndex.push_back(std::make_pair(CAddressIndexKey(1, uint160(hashBytes), pindex->nHeight, i, txhash, k, false), out.nValue));
+                    addressIndex.push_back(std::make_pair(CAddressIndexKey(1, hashBytes, pindex->nHeight, i, txhash, k, false), out.nValue));
 
                     // record unspent output
-                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, uint160(hashBytes), txhash, k), CAddressUnspentValue(out.nValue, out.scriptPubKey, pindex->nHeight)));
+                    addressUnspentIndex.push_back(std::make_pair(CAddressUnspentKey(1, hashBytes, txhash, k), CAddressUnspentValue(out.nValue, out.scriptPubKey, pindex->nHeight)));
 
                 } else if (out.scriptPubKey.IsPayToPublicKey()) {
                     uint160 hashBytes(Hash160(out.scriptPubKey.begin() + 1, out.scriptPubKey.end() - 1));
@@ -2763,7 +2778,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
                             pindex->nHeight)));
                 } else {
                     /** SOTER START */
-                    if (AreAssetsDeployed()) {
+                    if (fAssetsActive) {
                         std::string assetName;
                         CAmount assetAmount;
                         uint160 hashBytes;
