@@ -63,8 +63,8 @@ case $host in
   ;;
 esac
 
-dnl Require C++17 compiler (no GNU extensions)
-AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory], [nodefault])
+dnl Require C++14 compiler (no GNU extensions)
+AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])
 dnl Check if -latomic is required for <std::atomic>
 CHECK_ATOMIC
 
@@ -485,7 +485,7 @@ case $host in
        esac
      fi
 
-     AX_CHECK_LINK_FLAG([[-lboost_system -Wl,-headerpad_max_install_names]], [LDFLAGS="$LDFLAGS -lboost_system -Wl,-headerpad_max_install_names"])
+     AX_CHECK_LINK_FLAG([[-Wl,-headerpad_max_install_names]], [LDFLAGS="$LDFLAGS -Wl,-headerpad_max_install_names"])
      CPPFLAGS="$CPPFLAGS -DMAC_OSX -DOBJC_OLD_DISPATCH_PROTOTYPES=0"
      OBJCXXFLAGS="$CXXFLAGS"
      ;;
@@ -831,7 +831,9 @@ define(MINIMUM_REQUIRED_BOOST, 1.81.0)
 
 dnl Check for boost libs
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST], AC_MSG_RESULT(ok), AC_MSG_ERROR(Need at least boost 1.81.0))
-AX_BOOST_SYSTEM
+dnl Boost.System is header-only since Boost 1.70
+dnl AX_BOOST_SYSTEM
+BOOST_SYSTEM_LIB=""
 AX_BOOST_FILESYSTEM
 AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_THREAD
