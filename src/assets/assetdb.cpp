@@ -1,7 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 #include <util/system.h>
 #include <consensus/params.h>
@@ -84,6 +82,43 @@ bool CAssetsDB::EraseAddressAssetQuantity(const std::string &address, const std:
 
 bool EraseAddressAssetQuantity(const std::string &address, const std::string &assetName);
 
+// all operations to commit them in a single LevelDB write.
+void CAssetsDB::WriteAssetDataBatch(CDBBatch& batch, const CNewAsset &asset, const int nHeight, const uint256& blockHash)
+{
+    CDatabasedAssetData data(asset, nHeight, blockHash);
+    batch.Write(std::make_pair(ASSET_FLAG, asset.strName), data);
+}
+
+void CAssetsDB::WriteAssetAddressQuantityBatch(CDBBatch& batch, const std::string &assetName, const std::string &address, const CAmount &quantity)
+{
+    batch.Write(std::make_pair(ASSET_ADDRESS_QUANTITY_FLAG, std::make_pair(assetName, address)), quantity);
+}
+
+void CAssetsDB::WriteAddressAssetQuantityBatch(CDBBatch& batch, const std::string &address, const std::string &assetName, const CAmount& quantity)
+{
+    batch.Write(std::make_pair(ADDRESS_ASSET_QUANTITY_FLAG, std::make_pair(address, assetName)), quantity);
+}
+
+void CAssetsDB::EraseAssetDataBatch(CDBBatch& batch, const std::string& assetName)
+{
+    batch.Erase(std::make_pair(ASSET_FLAG, assetName));
+}
+
+void CAssetsDB::EraseAssetAddressQuantityBatch(CDBBatch& batch, const std::string &assetName, const std::string &address)
+{
+    batch.Erase(std::make_pair(ASSET_ADDRESS_QUANTITY_FLAG, std::make_pair(assetName, address)));
+}
+
+void CAssetsDB::EraseAddressAssetQuantityBatch(CDBBatch& batch, const std::string &address, const std::string &assetName)
+{
+    batch.Erase(std::make_pair(ADDRESS_ASSET_QUANTITY_FLAG, std::make_pair(address, assetName)));
+}
+
+bool CAssetsDB::FlushBatch(CDBBatch& batch)
+{
+    return WriteBatch(batch, true);
+}
+
 bool CAssetsDB::WriteBlockUndoAssetData(const uint256& blockhash, const std::vector<std::pair<std::string, CBlockAssetUndo> >& assetUndoData)
 {
     return Write(std::make_pair(BLOCK_ASSET_UNDO_DATA, blockhash), assetUndoData);
@@ -91,9 +126,8 @@ bool CAssetsDB::WriteBlockUndoAssetData(const uint256& blockhash, const std::vec
 
 bool CAssetsDB::ReadBlockUndoAssetData(const uint256 &blockhash, std::vector<std::pair<std::string, CBlockAssetUndo> > &assetUndoData)
 {
-    // If it exists, return the read value.
-    if (Exists(std::make_pair(BLOCK_ASSET_UNDO_DATA, blockhash)))
-           return Read(std::make_pair(BLOCK_ASSET_UNDO_DATA, blockhash), assetUndoData);
+    if (Read(std::make_pair(BLOCK_ASSET_UNDO_DATA, blockhash), assetUndoData))
+        return true;
 
     // If it doesn't exist, we just return true because we don't want to fail just because it didn't exist in the db
     return true;
@@ -111,7 +145,7 @@ bool CAssetsDB::ReadReissuedMempoolState()
     // If it exists, return the read value.
     bool rv = Read(MEMPOOL_REISSUED_TX, mapReissuedAssets);
     if (rv) {
-        for (auto pair : mapReissuedAssets)
+        for (const auto& pair : mapReissuedAssets)
             mapReissuedTx.insert(std::make_pair(pair.second, pair.first));
     }
     return rv;
