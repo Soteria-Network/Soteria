@@ -1,7 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_ASSETDB_H
 #define SOTERIA_ASSETDB_H
@@ -76,6 +74,15 @@ public:
     bool WriteAddressAssetQuantity( const std::string& address, const std::string& assetName, const CAmount& quantity);
     bool WriteBlockUndoAssetData(const uint256& blockhash, const std::vector<std::pair<std::string, CBlockAssetUndo> >& assetUndoData);
     bool WriteReissuedMempoolState();
+
+    // Batch writes functions
+    void WriteAssetDataBatch(CDBBatch& batch, const CNewAsset& asset, const int nHeight, const uint256& blockHash);
+    void WriteAssetAddressQuantityBatch(CDBBatch& batch, const std::string& assetName, const std::string& address, const CAmount& quantity);
+    void WriteAddressAssetQuantityBatch(CDBBatch& batch, const std::string& address, const std::string& assetName, const CAmount& quantity);
+    void EraseAssetDataBatch(CDBBatch& batch, const std::string& assetName);
+    void EraseAssetAddressQuantityBatch(CDBBatch& batch, const std::string& assetName, const std::string& address);
+    void EraseAddressAssetQuantityBatch(CDBBatch& batch, const std::string& address, const std::string& assetName);
+    bool FlushBatch(CDBBatch& batch);
 
     // Read from database functions
     bool ReadAssetData(const std::string& strName, CNewAsset& asset, int& nHeight, uint256& blockHash);
