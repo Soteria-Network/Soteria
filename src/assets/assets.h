@@ -1,7 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developers
 
 
 #ifndef SOTERIA_ASSET_PROTOCOL_H
@@ -536,6 +534,7 @@ std::string EncodeANS(std::string decoded);
 #ifdef ENABLE_WALLET
 
 bool GetAllMyAssetBalances(std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations = 0, const std::string& prefix = "");
+bool GetAllMyAssetBalances(CWallet* pwallet, std::map<std::string, std::vector<COutput> >& outputs, std::map<std::string, CAmount>& amounts, const int confirmations = 0, const std::string& prefix = "");
 bool GetMyAssetBalance(const std::string& name, CAmount& balance, const int& confirmations);
 
 //! Creates new asset issuance transaction
