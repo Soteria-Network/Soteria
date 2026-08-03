@@ -1416,8 +1416,11 @@ bool AppInitLockDataDirectory()
     return true;
 }
 
+CScheduler* pScheduler = nullptr;
+
 bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 {
+    pScheduler = &scheduler;
     const CChainParams& chainparams = Params();
     // ********************************************************* Step 4a: application initialization
 #ifndef WIN32
