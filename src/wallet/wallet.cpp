@@ -1621,6 +1621,25 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
         nFee = nDebit - nValueOut;
     }
 
+    // multi-wallet support
+    bool fIsFromMe = (nDebit > 0);
+    std::set<std::string> myAssetInputs;
+    if (fIsFromMe) {
+        for (const auto& txin : tx->vin) {
+            const CWalletTx* prevTx = pwallet->GetWalletTx(txin.prevout.hash);
+            if (prevTx && txin.prevout.n < prevTx->tx->vout.size()) {
+                const CTxOut& prevOut = prevTx->tx->vout[txin.prevout.n];
+                if (!(pwallet->IsMine(prevOut) & filter))
+                    continue;
+                if (prevOut.scriptPubKey.IsAssetScript()) {
+                    CAssetOutputEntry prevAsset;
+                    if (GetAssetData(prevOut.scriptPubKey, prevAsset))
+                        myAssetInputs.insert(prevAsset.assetName);
+                }
+            }
+        }
+    }
+
     // Sent/received.
     for (unsigned int i = 0; i < tx->vout.size(); ++i) {
         const CTxOut& txout = tx->vout[i];
@@ -1648,8 +1667,7 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
         if (!txout.scriptPubKey.IsAssetScript()) {
             COutputEntry output = {address, txout.nValue, (int)i};
 
-            // If we are debited by the transaction, add the output as a "sent" entry
-            if (nDebit > 0)
+            if (nDebit > 0 && !(fIsMine & filter))
                 listSent.push_back(output);
 
             // If we are receiving the output, add it as a "received" entry
@@ -1658,19 +1676,18 @@ void CWalletTx::GetAmounts(std::list<COutputEntry>& listReceived,
         }
 
         /** SOTER START */
-        if (AreAssetsDeployed()) {
-            if (txout.scriptPubKey.IsAssetScript()) {
-                CAssetOutputEntry assetoutput;
-                assetoutput.vout = i;
-                GetAssetData(txout.scriptPubKey, assetoutput);
-
-                // The only asset type we send is transfer_asset. We need to skip all other types for the sent category
-                if (nDebit > 0 && assetoutput.type == TX_TRANSFER_ASSET)
-                    assetsSent.emplace_back(assetoutput);
-
-                if (fIsMine & filter)
-                    assetsReceived.emplace_back(assetoutput);
+        if (AreAssetsDeployed() && txout.scriptPubKey.IsAssetScript()) {
+            CAssetOutputEntry assetoutput;
+            assetoutput.vout = i;
+            GetAssetData(txout.scriptPubKey, assetoutput);
+            if (fIsFromMe && assetoutput.type == TX_TRANSFER_ASSET
+                && !(fIsMine & filter)
+                && myAssetInputs.count(assetoutput.assetName))
+            {
+                assetsSent.emplace_back(assetoutput);
             }
+            if (fIsMine & filter)
+                assetsReceived.emplace_back(assetoutput);
         }
         /** SOTER END */
     }
