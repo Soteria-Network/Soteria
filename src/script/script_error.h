@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_SCRIPT_SCRIPT_ERROR_H
 #define SOTERIA_SCRIPT_SCRIPT_ERROR_H
@@ -70,6 +68,12 @@ typedef enum ScriptError_t
     SCRIPT_ERR_ILLEGAL_FORKID,
     SCRIPT_ERR_MUST_USE_FORKID,
 
+    /* RIP-25: post-quantum witness v2 */
+    SCRIPT_ERR_PQ_PUBKEY_SIZE,
+    SCRIPT_ERR_PQ_SIGNATURE_SIZE,
+    SCRIPT_ERR_PQ_SIGNATURE_VERIFY_FAILED,
+    SCRIPT_ERR_PQ_WITNESS_PROGRAM_MISMATCH,
+
     SCRIPT_ERR_ERROR_COUNT
 } ScriptError;
 
@@ -77,4 +81,4 @@ typedef enum ScriptError_t
 
 const char* ScriptErrorString(const ScriptError error);
 
-#endif // SOTERIA_SCRIPT_SCRIPT_ERROR_H
+#endif
