@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_SCRIPT_SIGN_H
 #define SOTERIA_SCRIPT_SIGN_H
@@ -45,6 +43,12 @@ public:
     TransactionSignatureCreator(const CKeyStore* keystoreIn, const CTransaction* txToIn, unsigned int nInIn, const CAmount& amountIn, int nHashTypeIn=SIGHASH_ALL);
     const BaseSignatureChecker& Checker() const override { return checker; }
     bool CreateSig(std::vector<unsigned char>& vchSig, const CKeyID& keyid, const CScript& scriptCode, SigVersion sigversion) const override;
+
+    // RIP-25: Accessors for PQ signing
+    const CTransaction* GetTransaction() const { return txTo; }
+    unsigned int GetInput() const { return nIn; }
+    int GetHashType() const { return nHashType; }
+    CAmount GetAmount() const { return amount; }
 };
 
 class MutableTransactionSignatureCreator : public TransactionSignatureCreator {
@@ -84,4 +88,4 @@ SignatureData CombineSignatures(const CScript& scriptPubKey, const BaseSignature
 SignatureData DataFromTransaction(const CMutableTransaction& tx, unsigned int nIn);
 void UpdateTransaction(CMutableTransaction& tx, unsigned int nIn, const SignatureData& data);
 
-#endif // SOTERIA_SCRIPT_SIGN_H
+#endif
