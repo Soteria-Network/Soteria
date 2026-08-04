@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "script_error.h"
 
@@ -95,6 +93,14 @@ const char* ScriptErrorString(const ScriptError serror)
             return "Illegal use of SIGHASH_FORKID";
         case SCRIPT_ERR_MUST_USE_FORKID:
             return "Signature must use SIGHASH_FORKID";
+        case SCRIPT_ERR_PQ_PUBKEY_SIZE:
+            return "PQ public key has incorrect size (expected 1312 bytes)";
+        case SCRIPT_ERR_PQ_SIGNATURE_SIZE:
+            return "PQ signature has incorrect size (expected 2420 bytes)";
+        case SCRIPT_ERR_PQ_SIGNATURE_VERIFY_FAILED:
+            return "PQ ML-DSA-44 signature verification failed";
+        case SCRIPT_ERR_PQ_WITNESS_PROGRAM_MISMATCH:
+            return "PQ witness program does not match SHA256(mldsa_pubkey)";
         case SCRIPT_ERR_UNKNOWN_ERROR:
         case SCRIPT_ERR_ERROR_COUNT:
         default: break;
