@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 // NOTE: This file is intended to be customised by the end user, and includes only local node policy logic
 
@@ -42,9 +40,15 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
     std::vector<unsigned char> witnessprogram;
 
     if (txout.scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram)) {
-        // sum the sizes of the parts of a transaction input
-        // with 75% segwit discount applied to the script size.
-        nSize += (32 + 4 + 1 + (107 / WITNESS_SCALE_FACTOR) + 4);
+        if (witnessversion == 2) {
+            // RIP-25: PQ witness v2 inputs: ML-DSA sig (2420) + ML-DSA pk (1312) = 3732 bytes
+            // Apply PQ witness discount (1/8 weight)
+            nSize += (32 + 4 + 1 + (3732 / PQ_WITNESS_SCALE_FACTOR) + 4);
+        } else {
+            // sum the sizes of the parts of a transaction input
+            // with 75% segwit discount applied to the script size.
+            nSize += (32 + 4 + 1 + (107 / WITNESS_SCALE_FACTOR) + 4);
+        }
     } else {
         nSize += (32 + 4 + 1 + 107 + 4); // the 148 mentioned above
     }
@@ -82,6 +86,8 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool w
         return false;
     else if (!witnessEnabled && (whichType == TX_WITNESS_V0_KEYHASH || whichType == TX_WITNESS_V0_SCRIPTHASH))
         return false;
+    else if (whichType == TX_WITNESS_V2_PQ_KEYHASH)
+        return true; // RIP-25: PQ witness v2 outputs are always standard when solved
 
     return whichType != TX_NONSTANDARD ;
 }
@@ -254,6 +260,18 @@ bool IsWitnessStandard(const CTransaction& tx, const CCoinsViewCache& mapInputs)
                 return false;
             for (unsigned int j = 0; j < sizeWitnessStack; j++) {
                 if (tx.vin[i].scriptWitness.stack[j].size() > MAX_STANDARD_P2WSH_STACK_ITEM_SIZE)
+                    return false;
+            }
+        }
+
+        // RIP-25: Check witness v2 PQ standard limits
+        if (witnessversion == 2 && witnessprogram.size() == 32) {
+            // Must have exactly 2 stack items: mldsa_sig, mldsa_pk
+            if (tx.vin[i].scriptWitness.stack.size() != 2)
+                return false;
+            // Each element must be within the PQ witness element size limit
+            for (unsigned int j = 0; j < tx.vin[i].scriptWitness.stack.size(); j++) {
+                if (tx.vin[i].scriptWitness.stack[j].size() > MAX_PQ_WITNESS_ELEMENT_SIZE)
                     return false;
             }
         }
