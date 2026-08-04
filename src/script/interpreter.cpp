@@ -1,16 +1,16 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "interpreter.h"
 #include <vector>
 #include "primitives/transaction.h"
+#include "consensus/consensus.h"
 #include "crypto/ripemd160.h"
 #include "crypto/sha1.h"
 #include "crypto/sha256.h"
+#include "crypto/mldsa.h"
 #include "pubkey.h"
 #include "script/script.h"
 #include <stdexcept>
@@ -1066,7 +1066,7 @@ bool EvalScript(std::vector<std::vector<unsigned char> > &stack, const CScript &
                             {
                                     if (nHashType & SIGHASH_FORKID) {
                                     if (!(flags & SCRIPT_ENABLE_SIGHASH_FORKID))
-                                 std::cout << "check hashtype" << std::endl; // remove after release
+                                std::cout << "check hashtype" << std::endl; // remove after release
                                 return set_error(serror,
                                                  SCRIPT_ERR_ILLEGAL_FORKID);
                                 }
@@ -1198,6 +1198,8 @@ namespace
               fHashSingle((nHashTypeIn & 0x1f) == SIGHASH_SINGLE),
               fHashNone((nHashTypeIn & 0x1f) == SIGHASH_NONE)
       { }
+
+
         /** Serialize the passed scriptCode, skipping OP_CODESEPARATORs */
         template<typename S>
         void SerializeScriptCode(S &s) const
@@ -1241,10 +1243,10 @@ namespace
             else
                 SerializeScriptCode(s);
             // Serialize the nSequence
-             if (nInput != nIn && (fHashSingle || fHashNone))
+            if (nInput != nIn && (fHashSingle || fHashNone))
                 // let the others update at will
                 ::Serialize(s, (int) 0);
-            else 
+            else
                 ::Serialize(s, txTo.vin[nInput].nSequence);
         }
 
@@ -1255,7 +1257,7 @@ namespace
             if (fHashSingle && nOutput != nIn)
                 // Do not lock-in the txout payee at other indices as txin
                 ::Serialize(s, CTxOut());
-            else 
+            else
                 ::Serialize(s, txTo.vout[nOutput]);
         }
 
@@ -1273,7 +1275,6 @@ namespace
             unsigned int nOutputs = fHashNone ? 0 : (fHashSingle ? nIn + 1 : txTo.vout.size());
             ::WriteCompactSize(s, nOutputs);
             for (unsigned int nOutput = 0; nOutput < nOutputs; nOutput++) SerializeOutput(s, nOutput);
-            // Serialize nLockTime
             // Serialize nLockTime
             ::Serialize(s, txTo.nLockTime);
         }
@@ -1327,7 +1328,7 @@ uint256 SignatureHash(const CScript &scriptCode, const CTransaction &txTo, unsig
 {
     assert(nIn < txTo.vin.size());
 
-    if (sigversion == SIGVERSION_WITNESS_V0)
+    if (sigversion == SIGVERSION_WITNESS_V0 || sigversion == SIGVERSION_WITNESS_V2_PQ)
     {
         uint256 hashPrevouts;
         uint256 hashSequence;
@@ -1347,12 +1348,10 @@ uint256 SignatureHash(const CScript &scriptCode, const CTransaction &txTo, unsig
             hashSequence = cacheready ? cache->hashSequence : GetSequenceHash(txTo);
         }
 
-
-        if ((nHashType & 0x1f) != SIGHASH_SINGLE && (nHashType & 0x1f) != SIGHASH_NONE)
+       if ((nHashType & 0x1f) != SIGHASH_SINGLE && (nHashType & 0x1f) != SIGHASH_NONE)
         {
             hashOutputs = cacheready ? cache->hashOutputs : GetOutputsHash(txTo);
         }
-        
         else if ((nHashType & 0x1f) == SIGHASH_SINGLE && nIn < txTo.vout.size())
         {
             CHashWriter ss(SER_GETHASH, 0);
@@ -1411,6 +1410,25 @@ bool TransactionSignatureChecker::VerifySignature(const std::vector<unsigned cha
 
 bool TransactionSignatureChecker::CheckSig(const std::vector<unsigned char> &vchSigIn, const std::vector<unsigned char> &vchPubKey, const CScript &scriptCode, SigVersion sigversion) const
 {
+    // RIP-25: ML-DSA-44 signature verification for witness v2
+    if (sigversion == SIGVERSION_WITNESS_V2_PQ)
+    {
+        // For PQ verification, vchSigIn is the ML-DSA signature (2420 bytes, no sighash byte)
+        // vchPubKey is the ML-DSA public key (1312 bytes)
+        if (vchSigIn.size() != mldsa::SIGNATURE_BYTES)
+            return false;
+        if (vchPubKey.size() != mldsa::PUBLICKEY_BYTES)
+            return false;
+
+        // Compute sighash using SIGHASH_ALL and witness v2 PQ hashing
+        uint256 sighash = SignatureHash(scriptCode, *txTo, nIn, SIGHASH_ALL, amount, SIGVERSION_WITNESS_V2_PQ, this->txdata);
+
+        // Verify ML-DSA-44 signature
+        return mldsa::Verify(vchSigIn.data(), vchSigIn.size(),
+                             sighash.begin(), 32,
+                             vchPubKey.data());
+    }
+
     CPubKey pubkey(vchPubKey);
     if (!pubkey.IsValid())
         return false;
@@ -1548,6 +1566,62 @@ static bool VerifyWitnessProgram(const CScriptWitness &witness, int witversion, 
             return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_WRONG_LENGTH);
         }
     }
+    else if (witversion == 2 && (flags & SCRIPT_VERIFY_PQ_HYBRID))
+    {
+        // RIP-25: Witness version 2 — Post-Quantum ML-DSA-44 Only
+        // Program: SHA256(mldsa_pk) = 32 bytes
+        // Witness stack: [mldsa_sig (2420 bytes), mldsa_pk (1312 bytes)]
+        // No ECDSA — ML-DSA-44 provides quantum-resistant signatures.
+        // Old ECDSA addresses (witness v0) continue to work.
+        if (program.size() != 32)
+        {
+            return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_WRONG_LENGTH);
+        }
+
+        // Witness stack: exactly 2 elements
+        if (witness.stack.size() != 2)
+        {
+            return set_error(serror, SCRIPT_ERR_WITNESS_PROGRAM_MISMATCH);
+        }
+
+        const std::vector<unsigned char>& mldsa_sig = witness.stack[0];
+        const std::vector<unsigned char>& mldsa_pk  = witness.stack[1];
+
+        // Validate sizes
+        if (mldsa_pk.size() != mldsa::PUBLICKEY_BYTES)
+            return set_error(serror, SCRIPT_ERR_PQ_PUBKEY_SIZE);
+        if (mldsa_sig.size() != mldsa::SIGNATURE_BYTES)
+            return set_error(serror, SCRIPT_ERR_PQ_SIGNATURE_SIZE);
+
+        // Check PQ witness element sizes
+        for (unsigned int i = 0; i < witness.stack.size(); i++)
+        {
+            if (witness.stack[i].size() > MAX_PQ_WITNESS_ELEMENT_SIZE)
+                return set_error(serror, SCRIPT_ERR_PUSH_SIZE);
+        }
+
+        // Step 1: Verify public key binding — SHA256(mldsa_pk) == program
+        uint256 expected_program;
+        {
+            CSHA256 hasher;
+            hasher.Write(mldsa_pk.data(), mldsa_pk.size());
+            hasher.Finalize(expected_program.begin());
+        }
+        if (memcmp(expected_program.begin(), program.data(), 32) != 0)
+        {
+            return set_error(serror, SCRIPT_ERR_PQ_WITNESS_PROGRAM_MISMATCH);
+        }
+
+        // Step 2: Verify ML-DSA-44 signature via the checker
+        // The checker computes the sighash and calls mldsa::Verify
+        CScript pqScriptCode; // sighash is computed from tx data in CheckSig
+        if (!checker.CheckSig(mldsa_sig, mldsa_pk, pqScriptCode, SIGVERSION_WITNESS_V2_PQ))
+        {
+            return set_error(serror, SCRIPT_ERR_PQ_SIGNATURE_VERIFY_FAILED);
+        }
+
+        return set_success(serror);
+    }
     else if (flags & SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM)
     {
         return set_error(serror, SCRIPT_ERR_DISCOURAGE_UPGRADABLE_WITNESS_PROGRAM);
@@ -1595,7 +1669,7 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, const C
     }
 
     set_error(serror, SCRIPT_ERR_UNKNOWN_ERROR);
-  
+
     if ((flags & SCRIPT_VERIFY_SIGPUSHONLY) != 0 && !scriptSig.IsPushOnly())
     {
         return set_error(serror, SCRIPT_ERR_SIG_PUSHONLY);
@@ -1736,6 +1810,11 @@ size_t static WitnessSigOps(int witversion, const std::vector<unsigned char> &wi
             CScript subscript(witness.stack.back().begin(), witness.stack.back().end());
             return subscript.GetSigOpCount(true);
         }
+    }
+
+    if (witversion == 2 && witprogram.size() == 32)
+    {
+        return 1;
     }
 
     // Future flags may be implemented here.
