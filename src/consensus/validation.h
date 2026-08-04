@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_CONSENSUS_VALIDATION_H
 #define SOTERIA_CONSENSUS_VALIDATION_H
@@ -109,13 +107,31 @@ public:
 // using only serialization with and without witness data. As witness_size
 // is equal to total_size - stripped_size, this formula is identical to:
 // weight = (stripped_size * 3) + total_size.
+//
+// RIP-25: PQ witness v2 data receives an additional discount.
+// Standard segwit witness: 1 WU per byte (4x discount vs non-witness).
+// PQ witness v2: WITNESS_SCALE_FACTOR/PQ_WITNESS_SCALE_FACTOR = 0.5 WU per byte (8x discount).
+// Discount per PQ witness byte = 1 - 4/8 = 0.5 WU.
 static inline int64_t GetTransactionWeight(const CTransaction& tx)
 {
-    return ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * (WITNESS_SCALE_FACTOR - 1) + ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
+    int64_t weight = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * (WITNESS_SCALE_FACTOR - 1) + ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
+
+    // RIP-25: Apply extra PQ witness discount (8x vs 4x for standard segwit)
+    for (const auto& txin : tx.vin) {
+        const auto& stack = txin.scriptWitness.stack;
+        // PQ witness v2: exactly 2 stack items — ML-DSA-44 sig (2420B) + pk (1312B)
+        if (stack.size() == 2 && stack[0].size() == 2420 && stack[1].size() == 1312) {
+            int64_t pqBytes = (int64_t)stack[0].size() + (int64_t)stack[1].size();
+            // Reduce weight: each PQ byte goes from 1 WU to 0.5 WU
+            weight -= pqBytes * (PQ_WITNESS_SCALE_FACTOR - WITNESS_SCALE_FACTOR) / PQ_WITNESS_SCALE_FACTOR;
+        }
+    }
+
+    return weight;
 }
 static inline int64_t GetBlockWeight(const CBlock& block)
 {
     return ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION | SERIALIZE_TRANSACTION_NO_WITNESS) * (WITNESS_SCALE_FACTOR - 1) + ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION);
 }
 
-#endif // SOTERIA_CONSENSUS_VALIDATION_H
+#endif
