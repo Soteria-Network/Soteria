@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_SCRIPT_INTERPRETER_H
 #define SOTERIA_SCRIPT_INTERPRETER_H
@@ -112,10 +110,18 @@ enum
     // Public keys in segregated witness scripts must be compressed
     //
             SCRIPT_VERIFY_WITNESS_PUBKEYTYPE = (1U << 15),
-            
+
+    // RIP-25: Verify post-quantum hybrid signatures (witness v2)
+    //
+            SCRIPT_VERIFY_PQ_HYBRID = (1U << 16),
+
+    // RIP-25: Making v2+ witness programs non-standard (without PQ activation)
+    //
+            SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_WITNESS_V2 = (1U << 17),
+
     // Do we accept signature using SIGHASH_FORKID
     //
-    SCRIPT_ENABLE_SIGHASH_FORKID = (1U << 16),
+    SCRIPT_ENABLE_SIGHASH_FORKID = (1U << 18),
 };
 
 bool CheckSignatureEncoding(const std::vector<unsigned char> &vchSig, unsigned int flags, ScriptError *serror);
@@ -132,6 +138,7 @@ enum SigVersion
 {
     SIGVERSION_BASE = 0,
     SIGVERSION_WITNESS_V0 = 1,
+    SIGVERSION_WITNESS_V2_PQ = 2, // RIP-25: Post-quantum hybrid signatures
 };
 
 uint256 SignatureHash(const CScript &scriptCode, const CTransaction &txTo, unsigned int nIn, int nHashType, const CAmount &amount, SigVersion sigversion, const PrecomputedTransactionData *cache = nullptr);
@@ -195,4 +202,4 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, const C
 
 size_t CountWitnessSigOps(const CScript &scriptSig, const CScript &scriptPubKey, const CScriptWitness *witness, unsigned int flags);
 
-#endif // SOTERIA_SCRIPT_INTERPRETER_H
+#endif
