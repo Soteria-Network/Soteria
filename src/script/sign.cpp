@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "script/sign.h"
 #include <vector>
@@ -11,6 +9,8 @@
 #include "keystore.h"
 #include "policy/policy.h"
 #include "primitives/transaction.h"
+#include "pqkey.h"
+#include "crypto/mldsa.h"
 #include "script/standard.h"
 #include "uint256.h"
 #include <set>
@@ -158,6 +158,11 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
         }
         return false;
 
+    case TX_WITNESS_V2_PQ_KEYHASH:
+        // RIP-25: Return the witness program hash; actual signing happens in ProduceSignature
+        ret.push_back(vSolutions[0]);
+        return true;
+
     default:
         return false;
     }
@@ -214,6 +219,48 @@ bool ProduceSignature(const BaseSignatureCreator& creator, const CScript& fromPu
         solved = solved && SignStep(creator, witnessscript, result, subType, SIGVERSION_WITNESS_V0) && subType != TX_SCRIPTHASH && subType != TX_WITNESS_V0_SCRIPTHASH && subType != TX_WITNESS_V0_KEYHASH;
         result.push_back(std::vector<unsigned char>(witnessscript.begin(), witnessscript.end()));
         sigdata.scriptWitness.stack = result;
+        result.clear();
+    }
+    else if (solved && whichType == TX_WITNESS_V2_PQ_KEYHASH)
+    {
+        // RIP-25: Witness v2 ML-DSA-44 signing
+        // result[0] = 32-byte witness program (SHA256 of ML-DSA pubkey)
+        uint256 witnessProgram;
+        if (result[0].size() == 32) {
+            memcpy(witnessProgram.begin(), result[0].data(), 32);
+        }
+
+        CPQKey pqKey;
+        CPQPubKey pqPubKey;
+        if (creator.KeyStore().HavePQKey(witnessProgram) &&
+            creator.KeyStore().GetPQKey(witnessProgram, pqKey) &&
+            creator.KeyStore().GetPQPubKey(witnessProgram, pqPubKey))
+        {
+            // Compute sighash for witness v2
+            const TransactionSignatureCreator* txCreator =
+                dynamic_cast<const TransactionSignatureCreator*>(&creator);
+            if (txCreator) {
+                CScript pqScriptCode; // empty for witness v2
+                uint256 sighash = SignatureHash(pqScriptCode, *txCreator->GetTransaction(),
+                    txCreator->GetInput(), txCreator->GetHashType(),
+                    txCreator->GetAmount(), SIGVERSION_WITNESS_V2_PQ);
+
+                std::vector<unsigned char> mldsa_sig;
+                if (pqKey.Sign(sighash, mldsa_sig)) {
+                    sigdata.scriptWitness.stack.clear();
+                    sigdata.scriptWitness.stack.push_back(mldsa_sig);
+                    sigdata.scriptWitness.stack.push_back(pqPubKey.GetVch());
+                } else {
+                    solved = false;
+                }
+            } else {
+                // Non-transaction creator (e.g. DummySignatureCreator) — cannot sign.
+                // Fee estimation handles this in DummySignTx with correctly-sized dummy witness.
+                solved = false;
+            }
+        } else {
+            solved = false;
+        }
         result.clear();
     }
 
@@ -433,6 +480,11 @@ static Stacks CombineSignatures(const CScript& scriptPubKey, const BaseSignature
     case TX_REISSUE_ASSET:
         // Signatures are bigger than placeholders or empty scripts:
         if (sigs1.script.empty() || sigs1.script[0].empty())
+            return sigs2;
+        return sigs1;
+    case TX_WITNESS_V2_PQ_KEYHASH:
+        // RIP-25: PQ ML-DSA-44 — prefer the more complete witness
+        if (sigs1.witness.empty() || sigs1.witness[0].empty())
             return sigs2;
         return sigs1;
 
