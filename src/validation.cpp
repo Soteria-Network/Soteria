@@ -2446,6 +2446,10 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
 
+    // RIP-25: Start enforcing post-quantum hybrid signature rules
+    if (consensusparams.nPQHybridEnabled) {
+        flags |= SCRIPT_VERIFY_PQ_HYBRID;
+    }
     return flags;
 }
 
@@ -6028,6 +6032,19 @@ bool IsDGWActive(unsigned int nBlockNumber)
 CAssetsCache* GetCurrentAssetCache()
 {
     return passets;
+}
+
+/** RIP-25: Post-Quantum Hybrid Signatures deployment check */
+bool IsPQHybridDeployed()
+{
+    if (fPQHybridIsActive)
+        return true;
+
+    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_PQ_HYBRID);
+    if (thresholdState == THRESHOLD_ACTIVE)
+        fPQHybridIsActive = true;
+
+    return fPQHybridIsActive;
 }
 /** SOTER END */
 
