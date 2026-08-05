@@ -1,8 +1,6 @@
 # Copyright (c) 2011-2016 The Bitcoin Core developers
 # Copyright (c) 2017-2019 The Raven Core developers
 # Copyright (c) 2025 The Soteria Core developers
-# Distributed under the MIT software license, see the accompanying
-# file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 DIST_SUBDIRS = secp256k1 univalue
 
@@ -194,6 +192,7 @@ SOTERIA_CORE_H = \
   netbase.h \
   netmessagemaker.h \
   noui.h \
+  pqkey.h \
   policy/feerate.h \
   policy/fees.h \
   policy/policy.h \
@@ -422,11 +421,13 @@ libsoteria_wallet_a_SOURCES = \
   $(SOTERIA_CORE_H)
 
 # crypto primitives library
-crypto_libsoteria_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libsoteria_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(LIBOQS_CFLAGS)
 crypto_libsoteria_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libsoteria_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
+  crypto/mldsa.cpp \
+  crypto/mldsa.h \
   crypto/chacha20.h \
   crypto/chacha20.cpp \
   crypto/common.h \
@@ -519,8 +520,10 @@ libsoteria_common_a_CPPFLAGS = $(AM_CPPFLAGS) $(SOTERIA_INCLUDES)
 libsoteria_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libsoteria_common_a_SOURCES = \
   base58.cpp \
+  bech32.cpp \
   founder_payment.cpp \
   chainparams.cpp \
+  pqkey.cpp \
   coins.cpp \
   compressor.cpp \
   core_read.cpp \
@@ -599,7 +602,7 @@ soteriad_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-soteriad_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+soteriad_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS) $(LIBOQS_LIBS)
 
 # soteria-cli binary #
 soteria_cli_SOURCES = soteria-cli.cpp
@@ -617,7 +620,7 @@ soteria_cli_LDADD = \
   $(LIBSOTERIA_UTIL) \
   $(LIBSOTERIA_CRYPTO)
 
-soteria_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+soteria_cli_LDADD += $(BOOST_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS) $(LIBOQS_LIBS)
 #
 
 # soteria-tx binary #
@@ -638,7 +641,7 @@ soteria_tx_LDADD = \
   $(LIBSOTERIA_CRYPTO) \
   $(LIBSECP256K1)
 
-soteria_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+soteria_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(LIBOQS_LIBS)
 #
 
 # soteriaconsensus library #
