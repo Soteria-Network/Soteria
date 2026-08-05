@@ -1960,6 +1960,11 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 12: import blocks
 
+    // RIP-25: Advertise post-quantum support
+    if(chainparams.GetConsensus().nPQHybridEnabled) {
+        nLocalServices = ServiceFlags(nLocalServices | NODE_PQ_HYBRID);
+    }
+
     if (!CheckDiskSpace())
         return false;
 
