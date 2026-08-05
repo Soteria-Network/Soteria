@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <algorithm>
 #include <wallet/walletdb.h>
@@ -89,6 +87,27 @@ bool CWalletDB::WriteCryptedKey(const CPubKey& vchPubKey,
     }
     EraseIC(std::make_pair(std::string("key"), vchPubKey));
     EraseIC(std::make_pair(std::string("wkey"), vchPubKey));
+    return true;
+}
+
+bool CWalletDB::WritePQKey(const uint256& witnessProgram, const CPQPubKey& pqPubKey, const std::vector<unsigned char>& pqKeyData)
+{
+    // hash pubkey/keydata to accelerate wallet load
+    std::vector<unsigned char> vchKey;
+    vchKey.reserve(pqPubKey.size() + pqKeyData.size());
+    vchKey.insert(vchKey.end(), pqPubKey.begin(), pqPubKey.end());
+    vchKey.insert(vchKey.end(), pqKeyData.begin(), pqKeyData.end());
+
+    return WriteIC(std::make_pair(std::string("pqkey"), witnessProgram),
+                   std::make_pair(std::make_pair(pqPubKey, pqKeyData), Hash(vchKey.begin(), vchKey.end())), false);
+}
+
+bool CWalletDB::WriteCryptedPQKey(const uint256& witnessProgram, const CPQPubKey& pqPubKey, const std::vector<unsigned char>& vchCryptedSecret)
+{
+    if (!WriteIC(std::make_pair(std::string("cpqkey"), witnessProgram), std::make_pair(pqPubKey, vchCryptedSecret), false)) {
+        return false;
+    }
+    EraseIC(std::make_pair(std::string("pqkey"), witnessProgram));
     return true;
 }
 
@@ -434,6 +453,71 @@ static bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssVa
             }
             wss.fIsEncrypted = true;
         }
+        else if (strType == "pqkey")
+        {
+            uint256 witnessProgram;
+            ssKey >> witnessProgram;
+
+            CPQPubKey pqPubKey;
+            std::vector<unsigned char> pqKeyData;
+            uint256 hash;
+            ssValue >> pqPubKey;
+            ssValue >> pqKeyData;
+            ssValue >> hash;
+
+            if (!pqPubKey.IsValid())
+            {
+                strErr = "Error reading wallet database: CPQPubKey corrupt";
+                return false;
+            }
+
+            // verify hash
+            std::vector<unsigned char> vchKey;
+            vchKey.reserve(pqPubKey.size() + pqKeyData.size());
+            vchKey.insert(vchKey.end(), pqPubKey.begin(), pqPubKey.end());
+            vchKey.insert(vchKey.end(), pqKeyData.begin(), pqKeyData.end());
+            if (Hash(vchKey.begin(), vchKey.end()) != hash)
+            {
+                strErr = "Error reading wallet database: CPQPubKey/CPQKey corrupt";
+                return false;
+            }
+
+            CPQKey pqKey;
+            if (!pqKey.SetKeyData(pqKeyData))
+            {
+                strErr = "Error reading wallet database: CPQKey SetKeyData failed";
+                return false;
+            }
+            if (!pwallet->LoadPQKey(pqKey, pqPubKey))
+            {
+                strErr = "Error reading wallet database: LoadPQKey failed";
+                return false;
+            }
+            wss.nKeys++;
+        }
+        else if (strType == "cpqkey")
+        {
+            uint256 witnessProgram;
+            ssKey >> witnessProgram;
+
+            CPQPubKey pqPubKey;
+            std::vector<unsigned char> vchCryptedSecret;
+            ssValue >> pqPubKey;
+            ssValue >> vchCryptedSecret;
+
+            if (!pqPubKey.IsValid())
+            {
+                strErr = "Error reading wallet database: CPQPubKey corrupt";
+                return false;
+            }
+            if (!pwallet->LoadCryptedPQKey(pqPubKey, vchCryptedSecret))
+            {
+                strErr = "Error reading wallet database: LoadCryptedPQKey failed";
+                return false;
+            }
+            wss.nCKeys++;
+            wss.fIsEncrypted = true;
+        }
         else if (strType == "keymeta" || strType == "watchmeta")
         {
             CTxDestination keyID;
@@ -596,7 +680,8 @@ static bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssVa
 bool CWalletDB::IsKeyType(const std::string& strType)
 {
     return (strType== "key" || strType == "wkey" ||
-            strType == "mkey" || strType == "ckey");
+            strType == "mkey" || strType == "ckey" ||
+            strType == "pqkey" || strType == "cpqkey");
 }
 
 DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
