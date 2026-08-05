@@ -1,9 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "base58.h"
 #include <vector>
@@ -123,6 +121,11 @@ BOOST_FIXTURE_TEST_SUITE(base58_tests, BasicTestingSetup)
         {
             return (exp_addrType == "none");
         }
+
+        bool operator()(const WitnessV2PQDestination &dest) const
+        {
+            return (exp_addrType == "witness_v2_pq_keyhash");
+        }
     };
 
     // Visitor to check address payload
@@ -149,6 +152,11 @@ BOOST_FIXTURE_TEST_SUITE(base58_tests, BasicTestingSetup)
         bool operator()(const CNoDestination &no) const
         {
             return exp_payload.size() == 0;
+        }
+
+        bool operator()(const WitnessV2PQDestination &dest) const
+        {
+            return false;
         }
     };
 
