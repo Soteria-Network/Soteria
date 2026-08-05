@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_WALLET_WALLETDB_H
 #define SOTERIA_WALLET_WALLETDB_H
@@ -12,6 +10,7 @@
 #include <primitives/transaction.h>
 #include <wallet/db.h>
 #include <key.h>
+#include "pqkey.h"
 #include "wallet/bip39.h"
 
 #include <list>
@@ -212,6 +211,10 @@ public:
 
     bool WriteKey(const CPubKey& vchPubKey, const CPrivKey& vchPrivKey, const CKeyMetadata &keyMeta);
     bool WriteCryptedKey(const CPubKey& vchPubKey, const std::vector<unsigned char>& vchCryptedSecret, const CKeyMetadata &keyMeta);
+
+    bool WritePQKey(const uint256& witnessProgram, const CPQPubKey& pqPubKey, const std::vector<unsigned char>& pqKeyData);
+    bool WriteCryptedPQKey(const uint256& witnessProgram, const CPQPubKey& pqPubKey, const std::vector<unsigned char>& vchCryptedSecret);
+
     bool WriteMasterKey(unsigned int nID, const CMasterKey& kMasterKey);
 
     bool WriteCScript(const uint160& hash, const CScript& redeemScript);
@@ -292,4 +295,4 @@ private:
 //! Compacts BDB state so that wallet.dat is self-contained (if there are changes)
 void MaybeCompactWalletDB();
 
-#endif // SOTERIA_WALLET_WALLETDB_H
+#endif
