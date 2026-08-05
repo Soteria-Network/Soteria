@@ -62,9 +62,8 @@ case $host in
      lt_cv_deplibs_check_method="pass_all"
   ;;
 esac
-
-dnl Require C++14 compiler (no GNU extensions)
-AX_CXX_COMPILE_STDCXX([14], [noext], [mandatory])
+dnl Require C++17 compiler (no GNU extensions)
+AX_CXX_COMPILE_STDCXX([17], [noext], [mandatory], [nodefault])
 dnl Check if -latomic is required for <std::atomic>
 CHECK_ATOMIC
 
@@ -212,6 +211,12 @@ AC_ARG_ENABLE([zmq],
   [disable ZMQ notifications])],
   [use_zmq=$enableval],
   [use_zmq=yes])
+
+AC_ARG_WITH([liboqs],
+  [AS_HELP_STRING([--with-liboqs],
+  [enable post-quantum signatures via liboqs (default is yes)])],
+  [use_liboqs=$withval],
+  [use_liboqs=yes])
 
 AC_ARG_ENABLE([experimental],
   [AS_HELP_STRING([--enable-experimental],
@@ -1071,6 +1076,22 @@ if test x$use_pkgconfig = xyes; then
       else
           AC_DEFINE_UNQUOTED([ENABLE_ZMQ],[0],[Define to 1 to enable ZMQ functions])
       fi
+
+      dnl RIP-25: liboqs for ML-DSA-44 post-quantum signatures
+      if test "x$use_liboqs" = "xyes"; then
+        PKG_CHECK_MODULES([LIBOQS], [liboqs >= 0.9.0],
+          [AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
+          [
+            dnl Fallback: check for header and library directly
+            AC_CHECK_HEADER([oqs/oqs.h],
+              [AC_CHECK_LIB([oqs], [OQS_SIG_new],
+                [LIBOQS_LIBS=-loqs; AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
+                [AC_MSG_ERROR([liboqs library not found. Install liboqs or use --without-liboqs])])],
+              [AC_MSG_ERROR([liboqs headers not found. Install liboqs-dev or use --without-liboqs])])
+          ])
+        AC_SUBST(LIBOQS_LIBS)
+        AC_SUBST(LIBOQS_CFLAGS)
+      fi
     ]
   )
 else
@@ -1109,6 +1130,17 @@ else
         ZMQ_CFLAGS="$ZMQ_CFLAGS -DZMQ_STATIC"
       ;;
     esac
+  fi
+
+  dnl RIP-25: liboqs fallback check (non-pkg-config path)
+  if test "x$use_liboqs" = "xyes"; then
+    AC_CHECK_HEADER([oqs/oqs.h],
+      [AC_CHECK_LIB([oqs], [OQS_SIG_new],
+        [LIBOQS_LIBS=-loqs; AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
+        [AC_MSG_ERROR([liboqs library not found. Install liboqs or use --without-liboqs])])],
+      [AC_MSG_ERROR([liboqs headers not found. Install liboqs-dev or use --without-liboqs])])
+    AC_SUBST(LIBOQS_LIBS)
+    AC_SUBST(LIBOQS_CFLAGS)
   fi
 
   SOTERIA_QT_CHECK(AC_CHECK_LIB([protobuf] ,[main],[PROTOBUF_LIBS=-lprotobuf], SOTERIA_QT_FAIL(libprotobuf not found)))
