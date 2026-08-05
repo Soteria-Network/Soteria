@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_CHAINPARAMS_H
 #define SOTERIA_CHAINPARAMS_H
@@ -19,7 +19,7 @@
 struct CDNSSeedData {
     std::string host;
     bool supportsServiceBitsFiltering;
-    CDNSSeedData(const std::string& strHost, bool supportsServiceBitsFilteringIn) : host(strHost), supportsServiceBitsFiltering(supportsServiceBitsFilteringIn) {}
+    CDNSSeedData(const std::string &strHost, bool supportsServiceBitsFilteringIn) : host(strHost), supportsServiceBitsFiltering(supportsServiceBitsFilteringIn) {}
 };
 
 struct SeedSpec6 {
@@ -61,7 +61,7 @@ public:
     const Consensus::ConsensusParams& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
     constexpr int GetDefaultPort() const { return nDefaultPort; }
-    bool MiningRequiresPeers() const { return fMiningRequiresPeers; }
+    bool MiningRequiresPeers() const {return fMiningRequiresPeers; }
     const CBlock& GenesisBlock() const { return genesis; }
     /** Default value for -checkmempool and -checkblockindex argument */
     bool DefaultConsistencyChecks() const { return fDefaultConsistencyChecks; }
@@ -74,6 +74,7 @@ public:
     std::string NetworkIDString() const { return strNetworkID; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
+    const std::string& Bech32PQHrp() const { return strBech32PQHrp; }
     constexpr int ExtCoinType() const { return nExtCoinType; }
     const std::vector<SeedSpec6>& FixedSeeds() const { return vFixedSeeds; }
     const CCheckpointData& Checkpoints() const { return checkpointData; }
@@ -103,7 +104,7 @@ public:
     // Funds
     const CAmount& MiningFund() const { return nMiningFund; }
     const CAmount& NodeOperatorsFund() const { return nNodeOperatorsFund; }
-//  const CAmount& AmbassadorFund() const { return nAmbassadorFund; }
+//    const CAmount& AmbassadorFund() const { return nAmbassadorFund; }
     const CAmount& StakingPool() const { return nStakingPool; }
     const CAmount& ExchangeLiquidityFund() const { return nExchangeLiquidityFund; }
     const CAmount& BackersFund() const { return nBackersFund; }
@@ -132,7 +133,7 @@ public:
     const std::string& GlobalBurnAddress() const { return strGlobalBurnAddress; }
     const std::string& MiningAddress() const { return strMiningAddress; }
     const std::string& NodeOperatorsAddress() const { return strNodeOperatorsAddress; }
-//  const std::string& AmbassadorAddress() const { return strAmbassadorAddress; }
+//    const std::string& AmbassadorAddress() const { return strAmbassadorAddress; }
     const std::string& StakingPoolAddress() const { return strStakingPoolAddress; }
     const std::string& ExchangeLiquidityAddress() const { return strExchangeLiquidityAddress; }
     const std::string& BackersAddress() const { return strBackersAddress; }
@@ -146,7 +147,7 @@ public:
     const std::string& ContributorsAddress() const { return strContributorsAddress; }
     
     /**  Indicates whether or not the provided address is a burn address, some devs keep insert dev address in the IsBurnAddress() function which is potentially dangerous. */
-    bool IsBurnAddress(const std::string& p_address) const
+    bool IsBurnAddress(const std::string & p_address) const
     {
         if (
             p_address == strIssueAssetBurnAddress
@@ -183,6 +184,7 @@ protected:
     uint64_t nPruneAfterHeight;
     std::vector<CDNSSeedData> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
+    std::string strBech32PQHrp; // RIP-25: Bech32m HRP for PQ witness v2 addresses
     int nExtCoinType;
     std::string strNetworkID;
     CBlock genesis;
@@ -210,7 +212,7 @@ protected:
     // Tokenomics Funds
     CAmount nMiningFund;
     CAmount nNodeOperatorsFund;
-//  CAmount nAmbassadorFund;
+//    CAmount nAmbassadorFund;
     CAmount nStakingPool;
     CAmount nExchangeLiquidityFund;
     CAmount nBackersFund;
@@ -238,10 +240,10 @@ protected:
     // Global Burn Address
     std::string strGlobalBurnAddress;
 	
-    // Tokenomics Addresses  
+	// Tokenomics Addresses  
     std::string strMiningAddress;
     std::string strNodeOperatorsAddress;
-//  std::string strAmbassadorAddress;
+//    std::string strAmbassadorAddress;
     std::string strStakingPoolAddress;
     std::string strExchangeLiquidityAddress;
     std::string strBackersAddress;
@@ -275,7 +277,7 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string& chain);
  * Return the currently selected parameters. This won't change after app
  * startup, except for unit tests.
  */
-const CChainParams& Params();
+const CChainParams &Params();
 
 /**
  * Sets the params returned by Params() to those for the given BIP70 chain name.
@@ -298,4 +300,4 @@ void TurnOffBIP66();
 
 void TurnOffCSV();
 
-#endif // SOTERIA_CHAINPARAMS_H
+#endif
