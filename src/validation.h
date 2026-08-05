@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTER_VALIDATION_H
 #define SOTER_VALIDATION_H
@@ -12,20 +10,19 @@
 #include "config/soteria-config.h"
 #endif
 
-#include "addressindex.h"
 #include "amount.h"
 #include "chain.h"
 #include "coins.h"
 #include "fs.h"
-#include "policy/feerate.h"
 #include "policy/policy.h" // For RECOMMENDED_MIN_TX_FEE
 #include "protocol.h" // For CMessageHeader::MessageStartChars
+#include "policy/feerate.h"
 #include "script/script_error.h"
-#include "spentindex.h"
 #include "sync.h"
-#include "timestampindex.h"
 #include "versionbits.h"
-
+#include "spentindex.h"
+#include "addressindex.h"
+#include "timestampindex.h"
 #include <txdb.h>
 #include <txmempool.h>  // For CTxMemPool::cs
 #include <algorithm>
@@ -252,7 +249,7 @@ extern uint256 hashAssumeValid;
 extern arith_uint256 nMinimumChainWork;
 
 /** Best header we've seen so far (used for getheaders queries' starting points). */
-extern CBlockIndex* pindexBestHeader;
+extern CBlockIndex *pindexBestHeader;
 
 /** Minimum disk space required - used in CheckDiskSpace() */
 static constexpr uint64_t nMinDiskSpace = 52428800;
@@ -292,7 +289,7 @@ extern uint64_t nMaxReorgLength;
  *
  * Note that we guarantee that either the proof-of-work is valid on pblock, or
  * (and possibly also) BlockChecked will have been called.
- *
+ * 
  * Call without cs_main held.
  *
  * @param[in]   pblock  The block we want to process.
@@ -313,16 +310,16 @@ bool ProcessNewBlock(const CChainParams& chainparams, const std::shared_ptr<cons
  * @param[out] ppindex If set, the pointer will be set to point to the last new block index object for the given headers
  * @param[out] first_invalid First header that fails validation, if one exists
  */
-bool ProcessNewBlockHeaders(const std::vector<CBlockHeader>& block, CValidationState& state, const CChainParams& chainparams, const CBlockIndex** ppindex = nullptr, CBlockHeader* first_invalid = nullptr) LOCKS_EXCLUDED(cs_main);
+bool ProcessNewBlockHeaders(const std::vector<CBlockHeader>& block, CValidationState& state, const CChainParams& chainparams, const CBlockIndex** ppindex=nullptr, CBlockHeader *first_invalid = nullptr) LOCKS_EXCLUDED(cs_main);
 
 /** Check whether enough disk space is available for an incoming block */
 bool CheckDiskSpace(uint64_t nAdditionalBytes = 0);
 /** Open a block file (blk?????.dat) */
-FILE* OpenBlockFile(const CDiskBlockPos& pos, bool fReadOnly = false);
+FILE* OpenBlockFile(const CDiskBlockPos &pos, bool fReadOnly = false);
 /** Translation to a filesystem path */
-fs::path GetBlockPosFilename(const CDiskBlockPos& pos, const char* prefix);
+fs::path GetBlockPosFilename(const CDiskBlockPos &pos, const char *prefix);
 /** Import blocks from an external file */
-bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskBlockPos* dbp = nullptr);
+bool LoadExternalBlockFile(const CChainParams& chainparams, FILE* fileIn, CDiskBlockPos *dbp = nullptr);
 /** Ensures we have a genesis block in the block tree, possibly writing one to disk. */
 bool LoadGenesisBlock(const CChainParams& chainparams);
 /** Load the block tree and coins database from disk,
@@ -338,7 +335,7 @@ void ThreadScriptCheck();
 bool IsInitialBlockDownload();
 bool IsInitialSyncSpeedUp();
 /** Retrieve a transaction (from memory pool, or from disk, if possible) */
-bool GetTransaction(const uint256& hash, CTransactionRef& tx, const Consensus::ConsensusParams& params, uint256& hashBlock, bool fAllowSlow = false);
+bool GetTransaction(const uint256 &hash, CTransactionRef &tx, const Consensus::ConsensusParams& params, uint256 &hashBlock, bool fAllowSlow = false);
 /** Find the best known block, and make it the tip of the block chain */
 bool ActivateBestChain(CValidationState& state, const CChainParams& chainparams, std::shared_ptr<const CBlock> pblock = std::shared_ptr<const CBlock>());
 CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensusParams);
@@ -360,7 +357,7 @@ void PruneOneBlockFile(const int fileNumber) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 void UnlinkPrunedFiles(const std::set<int>& setFilesToPrune);
 
 /** Create a new block index entry for a given block hash */
-CBlockIndex* InsertBlockIndex(uint256 hash);
+CBlockIndex * InsertBlockIndex(uint256 hash);
 /** Flush all state, indexes and buffers to disk. */
 void FlushStateToDisk();
 /** Prune block files and flush state to disk. */
@@ -369,17 +366,17 @@ void PruneAndFlush();
 void PruneBlockFilesManual(int nManualPruneHeight);
 
 /** Check is UAHF has activated.*/
-bool IsUAHFenabled(const CBlockIndex* pindexPrev);
-bool IsUAHFenabledForCurrentBlock();
+ bool IsUAHFenabled(const CBlockIndex *pindexPrev);
+ bool IsUAHFenabledForCurrentBlock();
 
 /** (try to) add transaction to memory pool
  * plTxnReplaced will be appended to with all transactions replaced from mempool **/
-bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransactionRef& tx,
+bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransactionRef &tx,
                         bool* pfMissingInputs, std::list<CTransactionRef>* plTxnReplaced,
-                        bool bypass_limits, const CAmount nAbsurdFee, bool test_accept = false) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+                        bool bypass_limits, const CAmount nAbsurdFee, bool test_accept=false) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Convert CValidationState to a human-readable message for logging */
-std::string FormatStateMessage(const CValidationState& state);
+std::string FormatStateMessage(const CValidationState &state);
 
 /** Get the BIP9 state for a given deployment at the current tip. */
 ThresholdState VersionBitsTipState(const Consensus::ConsensusParams& params, Consensus::DeploymentPos pos);
@@ -405,7 +402,7 @@ void UpdateCoins(const CTransaction& tx, CCoinsViewCache& inputs, CTxUndo& txund
  *
  * See consensus/consensus.h for flag definitions.
  */
-bool CheckFinalTx(const CTransaction& tx, int flags = -1) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+bool CheckFinalTx(const CTransaction &tx, int flags = -1) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /**
  * Test whether the LockPoints height and time are still valid on the current chain
@@ -423,7 +420,7 @@ bool TestLockPointValidity(const LockPoints* lp) EXCLUSIVE_LOCKS_REQUIRED(cs_mai
  *
  * See consensus/consensus.h for flag definitions.
  */
-bool CheckSequenceLocks(const CTransaction& tx, int flags, LockPoints* lp = nullptr, bool useExistingLockPoints = false) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+bool CheckSequenceLocks(const CTransaction &tx, int flags, LockPoints* lp = nullptr, bool useExistingLockPoints = false) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /**
  * Closure representing one script verification
@@ -433,22 +430,21 @@ class CScriptCheck
 {
 private:
     CTxOut m_tx_out;
-    const CTransaction* ptxTo;
+    const CTransaction *ptxTo;
     unsigned int nIn;
     unsigned int nFlags;
     bool cacheStore;
     ScriptError error;
-    PrecomputedTransactionData* txdata;
+    PrecomputedTransactionData *txdata;
 
 public:
     CScriptCheck(): ptxTo(nullptr), nIn(0), nFlags(0), cacheStore(false), error(SCRIPT_ERR_UNKNOWN_ERROR) {}
     CScriptCheck(const CTxOut& outIn, const CTransaction& txToIn, unsigned int nInIn, unsigned int nFlagsIn, bool cacheIn, PrecomputedTransactionData* txdataIn) :
- m_tx_out(outIn), ptxTo(&txToIn), nIn(nInIn), nFlags(nFlagsIn), cacheStore(cacheIn), error(SCRIPT_ERR_UNKNOWN_ERROR), txdata(txdataIn) {}
+        m_tx_out(outIn), ptxTo(&txToIn), nIn(nInIn), nFlags(nFlagsIn), cacheStore(cacheIn), error(SCRIPT_ERR_UNKNOWN_ERROR), txdata(txdataIn) { }
 
     bool operator()();
 
-    void swap(CScriptCheck& check)
-    {
+    void swap(CScriptCheck &check) {
         std::swap(ptxTo, check.ptxTo);
         std::swap(m_tx_out, check.m_tx_out);
         std::swap(nIn, check.nIn);
@@ -464,19 +460,19 @@ public:
 /** Initializes the script-execution cache */
 void InitScriptExecutionCache();
 
-bool GetTimestampIndex(const unsigned int& high, const unsigned int& low, const bool fActiveOnly, std::vector<std::pair<uint256, unsigned int>>& hashes);
-bool GetSpentIndex(CSpentIndexKey& key, CSpentIndexValue& value);
-bool HashOnchainActive(const uint256& hash);
+bool GetTimestampIndex(const unsigned int &high, const unsigned int &low, const bool fActiveOnly, std::vector<std::pair<uint256, unsigned int> > &hashes);
+bool GetSpentIndex(CSpentIndexKey &key, CSpentIndexValue &value);
+bool HashOnchainActive(const uint256 &hash);
 bool GetAddressIndex(uint160 addressHash, int type, std::string assetName,
- 		std::vector<std::pair<CAddressIndexKey, CAmount>>& addressIndex,
- 		int start = 0, int end = 0);
+                     std::vector<std::pair<CAddressIndexKey, CAmount> > &addressIndex,
+                     int start = 0, int end = 0);
 bool GetAddressIndex(uint160 addressHash, int type,
-                     std::vector<std::pair<CAddressIndexKey, CAmount>>& addressIndex,
+                     std::vector<std::pair<CAddressIndexKey, CAmount> > &addressIndex,
                      int start = 0, int end = 0);
 bool GetAddressUnspent(uint160 addressHash, int type, std::string assetName,
-                       std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>& unspentOutputs);
+                       std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > &unspentOutputs);
 bool GetAddressUnspent(uint160 addressHash, int type,
-                       std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>& unspentOutputs);
+                       std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > &unspentOutputs);
 
 /** Functions for disk access for blocks */
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus::ConsensusParams& consensusParams);
@@ -504,12 +500,11 @@ void UpdateUncommittedBlockStructures(CBlock& block, const CBlockIndex* pindexPr
 std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& consensusParams);
 
 /** RAII wrapper for VerifyDB: Verify consistency of the block and coin databases */
-class CVerifyDB
-{
+class CVerifyDB {
 public:
     CVerifyDB();
     ~CVerifyDB();
-    bool VerifyDB(const CChainParams& chainparams, CCoinsView* coinsview, int nCheckLevel, int nCheckDepth);
+    bool VerifyDB(const CChainParams& chainparams, CCoinsView *coinsview, int nCheckLevel, int nCheckDepth);
 };
 
 /** Replay blocks that aren't fully applied to the database. */
@@ -519,76 +514,76 @@ bool ReplayBlocks(const CChainParams& params, CCoinsView* view);
 CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& locator) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Mark a block as precious and reorganize. */
-bool PreciousBlock(CValidationState& state, const CChainParams& params, CBlockIndex* pindex) LOCKS_EXCLUDED(cs_main);
+bool PreciousBlock(CValidationState& state, const CChainParams& params, CBlockIndex *pindex) LOCKS_EXCLUDED(cs_main);
 
 /** Mark a block as invalid. */
-bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, CBlockIndex* pindex) LOCKS_EXCLUDED(cs_main);
+bool InvalidateBlock(CValidationState& state, const CChainParams& chainparams, CBlockIndex *pindex) LOCKS_EXCLUDED(cs_main);
 
 /** Remove invalidity status from a block and its descendants. */
-bool ResetBlockFailureFlags(CBlockIndex* pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+bool ResetBlockFailureFlags(CBlockIndex *pindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** The currently-connected chain of blocks (protected by cs_main). */
 extern CChain chainActive;
 
 /** Global variable that points to the coins database (protected by cs_main) */
-extern CCoinsViewDB* pcoinsdbview;
+extern CCoinsViewDB *pcoinsdbview;
 
 /** Global variable that points to the active CCoinsView (protected by cs_main) */
-extern CCoinsViewCache* pcoinsTip;
+extern CCoinsViewCache *pcoinsTip;
 
 /** Global variable that points to the active block tree (protected by cs_main) */
-extern CBlockTreeDB* pblocktree;
+extern CBlockTreeDB *pblocktree;
 
 /** SOTER START */
 /** Global variable that point to the active assets database (protected by cs_main) */
-extern CAssetsDB* passetsdb;
+extern CAssetsDB *passetsdb;
 
 /** Global variable that point to the active assets (protected by cs_main) */
-extern CAssetsCache* passets;
+extern CAssetsCache *passets;
 
 /** Global variable that point to the assets metadata LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, CDatabasedAssetData>* passetsCache;
+extern CLRUCache<std::string, CDatabasedAssetData> *passetsCache;
 
 /** Global variable that points to the subscribed channel LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, CMessage>* pMessagesCache;
+extern CLRUCache<std::string, CMessage> *pMessagesCache;
 
 /** Global variable that points to the subscribed channel LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int>* pMessageSubscribedChannelsCache;
+extern CLRUCache<std::string, int> *pMessageSubscribedChannelsCache;
 
 /** Global variable that points to the address seen LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int>* pMessagesSeenAddressCache;
+extern CLRUCache<std::string, int> *pMessagesSeenAddressCache;
 
 /** Global variable that points to the messages database (protected by cs_main) */
-extern CMessageDB* pmessagedb;
+extern CMessageDB *pmessagedb;
 
 /** Global variable that points to the message channel database (protected by cs_main) */
-extern CMessageChannelDB* pmessagechanneldb;
+extern CMessageChannelDB *pmessagechanneldb;
 
 /** Global variable that points to my wallets restricted database (protected by cs_main) */
-extern CMyRestrictedDB* pmyrestricteddb;
+extern CMyRestrictedDB *pmyrestricteddb;
 
 /** Global variable that points to the active restricted asset database (protected by cs_main) */
-extern CRestrictedDB* prestricteddb;
+extern CRestrictedDB *prestricteddb;
 
 /** Global variable that points to the asset verifier LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, CNullAssetTxVerifierString>* passetsVerifierCache;
+extern CLRUCache<std::string, CNullAssetTxVerifierString> *passetsVerifierCache;
 
 /** Global variable that points to the asset address qualifier LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t>* passetsQualifierCache; // hash(address,qualifier_name) ->int8_t
+extern CLRUCache<std::string, int8_t> *passetsQualifierCache; // hash(address,qualifier_name) ->int8_t
 
 /** Global variable that points to the asset address restriction LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t>* passetsRestrictionCache; // hash(address,qualifier_name) ->int8_t
+extern CLRUCache<std::string, int8_t> *passetsRestrictionCache; // hash(address,qualifier_name) ->int8_t
 
 /** Global variable that points to the global asset restriction LRU Cache (protected by cs_main) */
-extern CLRUCache<std::string, int8_t>* passetsGlobalRestrictionCache;
+extern CLRUCache<std::string, int8_t> *passetsGlobalRestrictionCache;
 
 /** Global variable that point to the active Snapshot Request database (protected by cs_main) */
-extern CSnapshotRequestDB* pSnapshotRequestDb;
+extern CSnapshotRequestDB *pSnapshotRequestDb;
 
 /** Global variable that point to the active asset snapshot database (protected by cs_main) */
-extern CAssetSnapshotDB* pAssetSnapshotDb;
+extern CAssetSnapshotDB *pAssetSnapshotDb;
 
-extern CDistributeSnapshotRequestDB* pDistributeSnapshotDb;
+extern CDistributeSnapshotRequestDB *pDistributeSnapshotDb;
 /** SOTER END */
 
 /**
@@ -645,5 +640,6 @@ bool IsDGWActive(unsigned int nBlockNumber);
 
 CAssetsCache* GetCurrentAssetCache();
 /** SOTER END */
-
-#endif // SOTERIA_VALIDATION_H
+/** RIP-25: Check if Post-Quantum Hybrid Signatures are deployed */
+bool IsPQHybridDeployed();
+#endif
