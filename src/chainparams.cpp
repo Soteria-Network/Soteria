@@ -129,6 +129,14 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1760971167;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1761230367;
 
+        // RIP-25: Post-Quantum Hybrid Signatures (ECDSA + ML-DSA-44)
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1988139600; // UTC: ~6 years after software release (placeholder)
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; // UTC: ~2 years after start (placeholder)
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 170;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 180;
+        consensus.nPQHybridEnabled = false; // Will be set true on activation
+		
         // Soteria network upgrades (hardforks)
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759415968;
@@ -166,9 +174,9 @@ public:
         consensus.diffRetargetEndHeight1   = 47000000;
 		consensus.diffRetargetStartHeight2 = 47000000; 
 		consensus.diffRetargetEndHeight2   = 49000000;
-		consensus.diffRetargetStartHeight5  = 1400000;
+		consensus.diffRetargetStartHeight5  = 1400000; // weight 2/1
 		consensus.diffRetargetEndHeight5    = 2500000;
-		consensus.diffRetargetStartHeight6  = 2500000;
+		consensus.diffRetargetStartHeight6  = 2500000; // weight 3/2 - better DAA
 		consensus.diffRetargetEndHeight6    = 40000000;
 		
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
@@ -179,8 +187,8 @@ public:
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); // TODO UPDATE
-        consensus.defaultAssumeValid = uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8"); 
+        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); // update in v1.1.2
+        consensus.defaultAssumeValid = uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8"); // update in v1.1.2
 
         pchMessageStart[0] = 0x53; 
         pchMessageStart[1] = 0x4F; 
@@ -201,7 +209,7 @@ public:
         vSeeds.emplace_back("soteria-demon.favoritcoin.ru", false);
         vSeeds.emplace_back("soter.hashborn.space", false);
 
-        // DNS seeders hardcoded will be added in the next release. TODO
+        // DNS seeders hardcoded will be added in the next release. TODO, add dns for better propagation either in v1.1.2 or in v1.1.3 
 //      vSeeds.emplace_back("dnsseed.us.soteria-network.online", true);
 //      vSeeds.emplace_back("dnsseed.eu.soteria-network.online", true);
 //      vSeeds.emplace_back("dnsseed.ap.soteria-network.online", true);
@@ -240,7 +248,7 @@ public:
               { 1000000, uint256S("00000000b7c5b7cfaa0bff5f2d5711cf3431f1e9658b43bda3be727d6e938f29")},
               { 1050000, uint256S("00000000ba4f0c8cace65d8bde602c19ee67a6f2e83aa7de3c716de8db47b8ac")},
               { 1100000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}
-//            { 1150000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}, // To add v1.1.2
+//            { 1150000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}, // To add new heights in v1.1.2 against the attacks
 //            { 1200000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
 //            { 1250000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
 //            { 1300000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
@@ -250,7 +258,7 @@ public:
             }
         };
 
-        chainTxData = ChainTxData{
+        chainTxData = ChainTxData{ // Todo new values in v1.1.2
             1777648875, 
             1131085,    
             0.08139744759179966           
@@ -347,7 +355,15 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 4294967295;
-
+       
+		// RIP-25: Post-Quantum Hybrid Signatures — testnet activates immediately for testing
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1759419050;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; 
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 135;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 180;
+        consensus.nPQHybridEnabled = true; // Active on testnet
+		
         // Soteria network upgrades (hardforks)
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759419050;
@@ -390,8 +406,11 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,79);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
-
-        // Soteria BIP44 cointype in testnet
+      
+		// RIP-25: Bech32m HRP for PQ witness v2 addresses (testnet)
+        strBech32PQHrp = "tsoter";
+       
+		// Soteria BIP44 cointype in testnet
         static constexpr int nExtCoinType = 1;
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
@@ -480,8 +499,15 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;
-
-        // Soteria network
+    
+		consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 0;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 65;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 90;
+        consensus.nPQHybridEnabled = true;
+       
+		// Soteria network
         constexpr uint32_t MAX_TIMESTAMP = 2147483647;
         consensus.vUpgrades[Consensus::SOTERG_SWITCH].nTimestamp = 1759421432; 
 		consensus.vUpgrades[Consensus::SOTERHASH_SWITCH].nTimestamp = 1790811000; // v1.1.2
@@ -538,7 +564,10 @@ public:
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
-
+     
+		// RIP-25: Bech32m HRP for PQ witness v2 addresses (regtest)
+        strBech32PQHrp = "rsoter";
+		
         // Soteria BIP44 cointype in testnet
         static constexpr int nExtCoinType = 1;
 
