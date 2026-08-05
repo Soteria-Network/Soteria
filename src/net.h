@@ -62,12 +62,12 @@ static constexpr unsigned int MAX_LOCATOR_SZ = 101;
 static constexpr unsigned int MAX_ASSET_INV_SZ = 1024;
 /** The maximum number of new addresses to accumulate before announcing. */
 static constexpr unsigned int MAX_ADDR_TO_SEND = 1000;
-/** Maximum length of incoming protocol messages (no message over 4 MB is currently acceptable in RVN). With our 3 MiB blocks, a raw block message (headers + txs) can exceed 4 MiB once we add envelope headers, varints, padding, or future block‐format extensions. Recommendation, we should raise to at least 5 MiB w/o sc or 6 MiB w sc. 6 MiB safely covers current blocks and leaves headroom for spikes (e.g., “getdata” replies, packed headers, larger sc scripts).*/
-static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 6 * 1024 * 1024;
+/** Maximum length of incoming protocol messages. With our 3 MiB blocks, a raw block message (headers + txs) can exceed 4 MiB once we add envelope headers, varints, padding, or future block‐format extensions. Recommendation, we should raise to at least 5 MiB w/o sc or 6 MiB w sc. 6 MiB safely covers current blocks and leaves headroom for spikes (e.g., “getdata” replies, packed headers, larger sc scripts).*/
+static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 10 * 1024 * 1024; // increased for RIP-25 PQ signatures
 /** Maximum length of strSubVer in `version` message */
 static constexpr unsigned int MAX_SUBVERSION_LENGTH = 256;
 /** Maximum number of automatic outgoing nodes over which we'll relay everything (blocks, tx, addrs, etc), 32 to reduce latency before 90% of peers see a new block */
-static constexpr int MAX_OUTBOUND_CONNECTIONS = 32; // 12R, 16nD, 32nV
+static constexpr int MAX_OUTBOUND_CONNECTIONS = 32;
 /** Maximum number of addnode outgoing nodes */
 static constexpr int MAX_ADDNODE_CONNECTIONS = 24;
 /** -listen default */
@@ -76,7 +76,7 @@ static constexpr bool DEFAULT_LISTEN = true;
 #ifdef USE_UPNP
 static constexpr bool DEFAULT_UPNP = USE_UPNP;
 #else
-static constexpr bool DEFAULT_UPNP = false;
+static constexpr bool DEFAULT_UPNP = true;
 #endif
 /** The maximum number of entries in mapAskFor */
 static constexpr size_t MAPASKFOR_MAX_SZ = MAX_INV_SZ;
