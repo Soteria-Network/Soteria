@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #include <algorithm>
 #include <set>
@@ -10,6 +10,7 @@
 #include <list>
 #include "amount.h"
 #include "base58.h"
+#include "bech32.h"
 #include "chain.h"
 #include "consensus/validation.h"
 #include "core_io.h"
@@ -25,6 +26,7 @@
 #include "rpc/mining.h"
 #include "rpc/safemode.h"
 #include "rpc/server.h"
+#include "pqkey.h"
 #include "script/sign.h"
 #include <stdexcept>
 #include <stdint.h>
@@ -222,6 +224,54 @@ UniValue getnewaddress(const JSONRPCRequest& request)
     return EncodeDestination(keyID);
 }
 
+UniValue getnewpqaddress(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            "getnewpqaddress ( \"account\" )\n"
+            "\nReturns a new post-quantum Raven address (witness v2, ML-DSA-44) for receiving payments.\n"
+            "These addresses are quantum-resistant and use Bech32m encoding.\n"
+            "\nArguments:\n"
+            "1. \"account\"        (string, optional) . The account name for the address to be linked to.\n"
+            "\nResult:\n"
+            "\"address\"    (string) The new post-quantum raven address (bech32m encoded)\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getnewpqaddress", "")
+            + HelpExampleRpc("getnewpqaddress", "")
+        );
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    // Parse the account first so we don't generate a key if there's an error
+    std::string strAccount;
+    if (!request.params[0].isNull())
+        strAccount = AccountFromValue(request.params[0]);
+
+    // Generate a new ML-DSA-44 keypair
+    CPQKey pqKey;
+    pqKey.MakeNewKey();
+    if (!pqKey.IsValid()) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to generate ML-DSA-44 keypair");
+    }
+
+    CPQPubKey pqPubKey = pqKey.GetPubKey();
+    uint256 witnessProgram = pqPubKey.GetWitnessProgram();
+
+    // Add to keystore
+    if (!pwallet->AddPQKeyPubKey(pqKey, pqPubKey)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to add PQ key to wallet");
+    }
+
+    // Create destination and set address book
+    WitnessV2PQDestination dest(witnessProgram);
+    pwallet->SetAddressBook(dest, strAccount, "receive");
+
+    return EncodeDestination(dest);
+}
 
 CTxDestination GetAccountAddress(CWallet* const pwallet, std::string strAccount, bool bForceNew = false)
 {
@@ -243,7 +293,7 @@ UniValue getaccountaddress(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getaccountaddress \"account\"\n"
-            "\nDEPRECATED. Returns the current Soteria address for receiving payments to this account.\n"
+            "\n. Returns the current Soteria address for receiving payments to this account.\n"
             "\nArguments:\n"
             "1. \"account\"       (string, required) The account name for the address. It can also be set to the empty string \"\" to represent the default account. The account does not need to exist, it will be created and a new address created  if there is no account by the given name.\n"
             "\nResult:\n"
@@ -1325,6 +1375,8 @@ public:
         }
         return false;
     }
+
+    bool operator()(const WitnessV2PQDestination &dest) const { return false; }
 };
 
 UniValue addwitnessaddress(const JSONRPCRequest& request)
@@ -2113,7 +2165,7 @@ UniValue listaccounts(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 2)
         throw std::runtime_error(
             "listaccounts ( minconf include_watchonly)\n"
-            "\nDEPRECATED. Returns Object that has account names as keys, account balances as values.\n"
+            "\n. Returns Object that has account names as keys, account balances as values.\n"
             "\nArguments:\n"
             "1. minconf             (numeric, optional, default=1) Only include transactions with at least this many confirmations\n"
             "2. include_watchonly   (bool, optional, default=false) Include balances in watch-only addresses (see 'importaddress')\n"
@@ -4123,6 +4175,7 @@ static const CRPCCommand commands[] =
         {"wallet", "getmasterkeyinfo", &getmasterkeyinfo, {}},
         {"wallet", "getmywords", &getmywords, {}},
         {"wallet", "getnewaddress", &getnewaddress, {"account"}},
+        {"wallet", "getnewpqaddress", &getnewpqaddress, {"account"}},
         {"wallet", "getrawchangeaddress", &getrawchangeaddress, {}},
         {"wallet", "getreceivedbyaccount", &getreceivedbyaccount, {"account", "minconf"}},
         {"wallet", "getreceivedbyaddress", &getreceivedbyaddress, {"address", "minconf"}},
