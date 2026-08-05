@@ -1,8 +1,6 @@
 # Copyright (c) 2011-2016 The Bitcoin Core developers
 # Copyright (c) 2017-2019 The Raven Core developers
-# Copyright (c) 2025 The Soteria Core developers
-# Distributed under the MIT software license, see the accompanying
-# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+# Copyright (c) 2025-2026 The Soteria Core developer
 
 TESTS += test/test_soteria
 bin_PROGRAMS += test/test_soteria
@@ -62,6 +60,7 @@ SOTERIA_TESTS =\
   test/net_tests.cpp \
   test/netbase_tests.cpp \
   test/pmt_tests.cpp \
+  test/pqkey_tests.cpp \
   test/policyestimator_tests.cpp \
   test/pow_tests.cpp \
   test/prevector_tests.cpp \
@@ -112,7 +111,7 @@ test_test_soteria_LDADD += $(LIBSOTERIA_SERVER) $(LIBSOTERIA_CLI) $(LIBSOTERIA_C
   $(LIBLEVELDB) $(LIBLEVELDB_SSE42) $(LIBMEMENV) $(BOOST_LIBS) $(BOOST_UNIT_TEST_FRAMEWORK_LIB) $(LIBSECP256K1) $(EVENT_LIBS) $(EVENT_PTHREADS_LIBS)
 test_test_soteria_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
-test_test_soteria_LDADD += $(LIBSOTERIA_CONSENSUS) $(LIBSOTERIA_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS)
+test_test_soteria_LDADD += $(LIBSOTERIA_CONSENSUS) $(LIBSOTERIA_CRYPTO) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(LIBOQS_LIBS)
 test_test_soteria_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
 
 if ENABLE_ZMQ
