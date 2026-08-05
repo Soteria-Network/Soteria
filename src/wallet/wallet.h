@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_WALLET_WALLET_H
 #define SOTERIA_WALLET_WALLET_H
@@ -51,18 +51,18 @@ extern std::string my_words;
 extern std::string my_passphrase;
 // BTC Default for -keypool=1000
 static constexpr unsigned int DEFAULT_KEYPOOL_SIZE = 250;
-//! -paytxfee default// SOTER/kb, moderate value between 0.001 and 0.1, ISO 0.01/kb
+//! -paytxfee default
 static constexpr CAmount DEFAULT_TRANSACTION_FEE = 0;
 /** -fallbackfee default=0, fallbackfee as a safety mechanism is needed, otherwise the fee estimation fails for transactions in case of blockchain congestion, "Fee estimation failed. Fallbackfee is disabled" error. */
-static constexpr CAmount DEFAULT_FALLBACK_FEE = 100000; 
+static constexpr CAmount DEFAULT_FALLBACK_FEE = 100000; // 500000; 10x less block reward & 5x less .def=1025000 // def1=102500
 //! -m_discard_rate default
-static constexpr CAmount DEFAULT_DISCARD_FEE = 10000;
+static constexpr CAmount DEFAULT_DISCARD_FEE = 10000; // 50000;
 //! -mintxfee default=1M
-static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 80000;
-//! minimum recommended increment for BIP 125 replacement txs
-static constexpr CAmount WALLET_INCREMENTAL_RELAY_FEE = 1000;
-//! target minimum change amount
-static constexpr CAmount MIN_CHANGE = CENT/5;
+static constexpr CAmount DEFAULT_TRANSACTION_MINFEE = 80000; // 400000; def=1000000
+//! minimum recommended increment for BIP 125 replacement txs, default=5000
+static constexpr CAmount WALLET_INCREMENTAL_RELAY_FEE = 1000; // 5000;
+//! target minimum change amount, COIN / 100
+static constexpr CAmount MIN_CHANGE = CENT/5; // CENT
 //! final minimum change amount after paying for fees, MIN_CHANGE/10
 static constexpr CAmount MIN_FINAL_CHANGE = MIN_CHANGE/2;
 //! Default for -spendzeroconfchange, Prevent accidental double‐spends by waiting for at least 1 confirmation on change outputs.
@@ -920,6 +920,10 @@ public:
     bool AddKeyPubKeyWithDB(CWalletDB &walletdb,const CKey& key, const CPubKey &pubkey);
     //! Adds a key to the store, without saving it to disk (used by LoadWallet)
     bool LoadKey(const CKey& key, const CPubKey &pubkey) { return CCryptoKeyStore::AddKeyPubKey(key, pubkey); }
+    //! Adds a PQ key to the store, and saves it to disk.
+    bool AddPQKeyPubKey(const CPQKey &key, const CPQPubKey &pubkey) override;
+    //! Adds a PQ key to the store, without saving it to disk (used by LoadWallet)
+    bool LoadPQKey(const CPQKey& key, const CPQPubKey &pubkey) { return CCryptoKeyStore::AddPQKeyPubKey(key, pubkey); }
     //! Load metadata (used by LoadWallet)
     bool LoadKeyMetadata(const CTxDestination& pubKey, const CKeyMetadata &metadata);
 
@@ -928,8 +932,12 @@ public:
 
     //! Adds an encrypted key to the store, and saves it to disk.
     bool AddCryptedKey(const CPubKey &vchPubKey, const std::vector<unsigned char> &vchCryptedSecret) override;
+    //! Adds an encrypted PQ key to the store, and saves it to disk.
+    bool AddCryptedPQKey(const CPQPubKey &pqPubKey, const std::vector<unsigned char> &vchCryptedSecret) override;
     //! Adds an encrypted key to the store, without saving it to disk (used by LoadWallet)
     bool LoadCryptedKey(const CPubKey &vchPubKey, const std::vector<unsigned char> &vchCryptedSecret);
+    //! Adds an encrypted PQ key to the store, without saving it to disk (used by LoadWallet)
+    bool LoadCryptedPQKey(const CPQPubKey &pqPubKey, const std::vector<unsigned char> &vchCryptedSecret);
     bool LoadCryptedWords(const uint256& hash, const std::vector<unsigned char> &vchCryptedWords);
     bool LoadCryptedPassphrase(const std::vector<unsigned char> &vchCryptedPassphrase);
     bool LoadCryptedVchSeed(const std::vector<unsigned char> &vchCryptedVchSeed);
@@ -1290,11 +1298,24 @@ bool CWallet::DummySignTx(CMutableTransaction &txNew, const ContainerType &coins
 
         if (!ProduceSignature(DummySignatureCreator(this), scriptPubKey, sigdata))
         {
-            // just add dummy 256 bytes as sigdata if this fails (can't necessarily sign for all inputs)
-            CScript dummyScript = CScript(cstrZeros, cstrZeros + 256);
-            SignatureData dummyData = SignatureData(dummyScript);
-            UpdateTransaction(txNew, nIn, dummyData);
-            allSigned = false;
+            // RIP-25: For PQ witness v2 outputs, ProduceSignature fails because
+            // VerifyScript can't verify dummy ML-DSA data. Set correctly-sized
+            // dummy witness so fee estimation accounts for PQ witness bytes.
+            int witnessversion = 0;
+            std::vector<unsigned char> witnessprogram;
+            if (scriptPubKey.IsWitnessProgram(witnessversion, witnessprogram) &&
+                witnessversion == 2 && witnessprogram.size() == 32) {
+                SignatureData pqDummy;
+                pqDummy.scriptWitness.stack.push_back(std::vector<unsigned char>(2420, 0)); // ML-DSA-44 sig
+                pqDummy.scriptWitness.stack.push_back(std::vector<unsigned char>(1312, 0)); // ML-DSA-44 pk
+                UpdateTransaction(txNew, nIn, pqDummy);
+            } else {
+                // just add dummy 256 bytes as sigdata if this fails (can't necessarily sign for all inputs)
+                CScript dummyScript = CScript(cstrZeros, cstrZeros + 256);
+                SignatureData dummyData = SignatureData(dummyScript);
+                UpdateTransaction(txNew, nIn, dummyData);
+                allSigned = false;
+            }
         } else {
             UpdateTransaction(txNew, nIn, sigdata);
         }
