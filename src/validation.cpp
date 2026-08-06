@@ -47,6 +47,7 @@
 #include <set>
 #include <atomic>
 #include <functional>
+#include <future>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -3702,7 +3703,7 @@ static bool ActivateBestChainStep(CValidationState& state, const CChainParams& c
     return true;
 }
 
-static void NotifyHeaderTip()
+static bool NotifyHeaderTip()
 {
     bool fNotify = false;
     bool fInitialBlockDownload = false;
@@ -3722,6 +3723,7 @@ static void NotifyHeaderTip()
     if (fNotify) {
         uiInterface.NotifyHeaderTip(fInitialBlockDownload, pindexHeader);
     }
+    return fNotify;
 }
 
 /**
@@ -4530,7 +4532,12 @@ bool ProcessNewBlockHeaders(const std::vector<CBlockHeader>& headers, CValidatio
             }
         }
     }
-    NotifyHeaderTip();
+    if (NotifyHeaderTip()) {
+        LOCK(cs_main);
+        if (IsInitialBlockDownload() && ppindex && *ppindex) {
+            LogPrintf("sync headers, height: %d (~%.2f%%)\n", (*ppindex)->nHeight, 100.0/((*ppindex)->nHeight+(GetAdjustedTime() - (*ppindex)->GetBlockTime()) / Params().GetConsensus().nPowTargetSpacing) * (*ppindex)->nHeight);
+        }
+    }
     return true;
 }
 
