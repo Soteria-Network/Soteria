@@ -80,7 +80,7 @@ static constexpr int64_t NONPREF_PEER_TX_DELAY = 2 * 1000000; // 2 seconds
 /** How many microseconds to delay requesting transactions from overloaded peers */
 static constexpr int64_t OVERLOADED_PEER_TX_DELAY = 4 * 1000000;
 /** How long to wait (in microseconds) before downloading a transaction from an additional peer */
-static constexpr int64_t GETDATA_TX_INTERVAL = 30 * 1000000; // 30 seconds
+static constexpr int64_t GETDATA_TX_INTERVAL = 24 * 1000000;
 /** Limit to avoid sending big packets. Not used in processing incoming GETDATA for compatibility */
 static const unsigned int MAX_GETDATA_SZ = 2000;
 
