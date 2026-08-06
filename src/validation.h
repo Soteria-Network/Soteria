@@ -181,7 +181,7 @@ static constexpr unsigned int DEFAULT_BANSCORE_THRESHOLD = 100;
 /** Default for -persistmempool */
 static constexpr bool DEFAULT_PERSIST_MEMPOOL = true;
 /** Default for -mempoolreplacement */
-static constexpr bool DEFAULT_ENABLE_REPLACEMENT = true;
+static constexpr bool DEFAULT_ENABLE_REPLACEMENT = false;
 /** Default for using fee filter */
 static constexpr bool DEFAULT_FEEFILTER = true;
 
