@@ -264,19 +264,19 @@ extern uint64_t nPruneTarget;
 /** Block files containing a block-height within MIN_BLOCKS_TO_KEEP of chainActive.Tip() will not be pruned. Default 288 was tuned for Bitcoin’s 10 min blocks (~2 days of history). */
 static constexpr unsigned int MIN_BLOCKS_TO_KEEP = 11520;
 /** Default 6 covers one 1 hr window on Bitcoin (10 min × 6). On startup, how many blocks from the tip to re-verify for corruption/consensus. For 15 s blocks, 6 blocks is only 90 s—probably too shallow. */
-static constexpr signed int DEFAULT_CHECKBLOCKS = 240;
+static constexpr signed int DEFAULT_CHECKBLOCKS = 360;
 /** The intensity of the disk integrity check (0–4). A qualitative setting (how thoroughly to scan files) and rarely needs changing. */
 static constexpr unsigned int DEFAULT_CHECKLEVEL = 3;
 
 // Require that user allocate at least 1417.5MB for block & undo files (blk???.dat and rev???.dat)
-// At 4MB per block, 288 blocks = 864MB.
+// At 3MB per block, 288 blocks = 864MB.
 // Add 15% for Undo data = 993MB
 // Add 20% for Orphan block rate = 1191MB
 // We want the low water mark after pruning to be at least 1191 MB and since we prune in
 // full block file chunks, we need the high water mark which triggers the prune to be
 // one 128MB block file + added 15% undo data = 147MB greater for a total of 1377MB
 // Setting the target to > than 1418MB will make it likely we can respect the target.
-static constexpr uint64_t MIN_DISK_SPACE_FOR_BLOCK_FILES = 2200ULL * 1024 * 1024 * 1024;
+static constexpr uint64_t MIN_DISK_SPACE_FOR_BLOCK_FILES = 10ULL * 1024 * 1024 * 1024;
 extern uint64_t nMaxReorgLength;
 /** 
  * Process an incoming block. This only returns after the best known valid
