@@ -105,7 +105,7 @@ static constexpr int MAX_SCRIPTCHECK_THREADS = 16;
 /** -par default (number of script-checking threads, 0 = auto) */
 static constexpr int DEFAULT_SCRIPTCHECK_THREADS = 0;
 /** Number of blocks that can be requested at any given time from a single peer. ~32×0.32s ≃ 10s */
-static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 256; // 16nR, 32oD, 128nD, 256nV. 32 in-smart = 32 × 4MB = 128MB RAM
+static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 384; // 16nR, 32oD, 128nD, 256nV.
 /** Timeout in seconds during which a peer must stall block download progress before being disconnected. */
 /** A 2 second timeout is only 13 percent of a 15 second block interval. At 4 seconds it becomes 27 percent, giving peers more breathing room to finish sending large blocks before we drop them */
 static constexpr unsigned int BLOCK_STALLING_TIMEOUT = 4; /** 4R increase with no.peers to avoid false positives and give a litle more headroom than def=2 for slow peers */
