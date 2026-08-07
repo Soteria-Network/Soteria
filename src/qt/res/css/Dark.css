@@ -1,8 +1,6 @@
 /**********************************************************************
  * Copyright (c) 2021-2021 The Firo Core developers
- * Copyright (c) 2025 The Soteria Core developers
- * Distributed under the MIT software license, see the accompanying
- * file COPYING or http://www.opensource.org/licenses/mit-license.php.
+ * Copyright (c) 2025-2026 The Soteria Core developer
  **********************************************************************/
 
 /* Basic */
@@ -1722,6 +1720,15 @@ QWidget#ReceiveCoinsDialog .QFrame#frame .QLabel#label_6 {
 
 ReceiveCoinsDialog#label_6 {
     font-weight: bold;
+}
+
+/* Ensure all labels in the receive dialog are readable (white on dark grey) */
+QDialog#ReceiveCoinsDialog QLabel {
+    color: #fcf7f7;
+}
+
+QDialog#ReceiveCoinsDialog QTextEdit {
+    color: #fcf7f7;
 }
 
 /* ReceiveRequestDialog */
