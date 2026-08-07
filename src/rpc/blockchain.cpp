@@ -162,6 +162,7 @@ UniValue blockToDeltasJSON(const CBlock& block, const CBlockIndex* blockindex)
         UniValue inputs(UniValue::VARR);
 
         if (!tx.IsCoinBase()) {
+
             for (size_t j = 0; j < tx.vin.size(); j++) {
                 const CTxIn input = tx.vin[j];
 
@@ -228,8 +229,6 @@ UniValue blockToDeltasJSON(const CBlock& block, const CBlockIndex* blockindex)
     if (IsDualAlgoEnabled(blockindex, Params().GetConsensus())) {
         result.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         result.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
-        result.push_back(Pair("difficulty_soterhash", GetDifficulty(POW_TYPE_SOTERHASH)));
-        result.push_back(Pair("difficulty_X8S", GetDifficulty(POW_TYPE_X8S)));        
     }
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
 
@@ -278,8 +277,6 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     if (IsDualAlgoEnabled(blockindex, Params().GetConsensus())) {
         result.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         result.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
-        result.push_back(Pair("difficulty_soterhash", GetDifficulty(POW_TYPE_SOTERHASH)));
-        result.push_back(Pair("difficulty_X8S", GetDifficulty(POW_TYPE_X8S)));
     }
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
 
@@ -1230,7 +1227,7 @@ static UniValue getblockheader(const JSONRPCRequest& request)
             "\nResult (for verbose = true):\n"
             "{\n"
             "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
-            "  \"powtype\" : \"soterg\"|\"soterc\"|\"soterhash\"|\"X8S\"|\"unrecognised\", (string) Indicates the pow mining type of the block\n" 
+            "  \"powtype\" : \"soterg\"|\"soterc\"|\"unrecognised\", (string) Indicates the pow mining type of the block\n" 
             "  \"confirmations\" : n,   (numeric) The number of confirmations, or -1 if the block is not on the main chain\n"
             "  \"height\" : n,          (numeric) The block height or index\n"
             "  \"version\" : n,         (numeric) The block version\n"
@@ -1293,7 +1290,7 @@ static UniValue getblock(const JSONRPCRequest& request)
             "\nResult (for verbosity = 1):\n"
             "{\n"
             "  \"hash\" : \"hash\",     (string) the block hash (same as provided)\n"
-            "  \"powtype\" : \"soterg\"|\"soterc\"|\"soterhash\"|\"X8S\"|\"unrecognised\", (string) Indicates the pow mining type of the block\n" 
+            "  \"powtype\" : \"soterg\"|\"soterc\"|\"unrecognised\", (string) Indicates the pow mining type of the block\n" 
             "  \"confirmations\" : n,   (numeric) The number of confirmations, or -1 if the block is not on the main chain\n"
             "  \"size\" : n,            (numeric) The block size\n"
             "  \"strippedsize\" : n,    (numeric) The block size excluding witness data\n"
@@ -1682,8 +1679,8 @@ static UniValue BIP9SoftForkDesc(const Consensus::ConsensusParams& consensusPara
     if (THRESHOLD_STARTED == thresholdState) {
         rv.push_back(Pair("bit", consensusParams.vDeployments[id].bit));
     }
-    rv.push_back(Pair("startTime", consensusParams.vDeployments[id].nStartTime));
-    rv.push_back(Pair("timeout", consensusParams.vDeployments[id].nTimeout));
+    rv.push_back(Pair("startTime", (int64_t)consensusParams.vDeployments[id].nStartTime));
+    rv.push_back(Pair("timeout",   (int64_t)consensusParams.vDeployments[id].nTimeout));
     rv.push_back(Pair("since", VersionBitsTipStateSinceHeight(consensusParams, id)));
     if (THRESHOLD_STARTED == thresholdState) {
         UniValue statsUV(UniValue::VOBJ);
@@ -1772,8 +1769,6 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     if (IsDualAlgoEnabled(chainActive.Tip(), Params().GetConsensus())){
         obj.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         obj.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
-        obj.push_back(Pair("difficulty_soterhash", GetDifficulty(POW_TYPE_SOTERHASH)));
-        obj.push_back(Pair("difficulty_X8S", GetDifficulty(POW_TYPE_X8S)));
         obj.push_back(Pair("difficulty_algorithm", "LWMA-EMA v3"));
     } else {
         obj.push_back(Pair("difficulty_algorithm", "DGW-360"));
