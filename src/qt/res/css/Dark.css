@@ -1736,6 +1736,11 @@ QDialog#ReceiveCoinsDialog QTextEdit {
 ReceiveRequestDialog#outUri {
     margin-top: 20px;
     font-weight: bold;
+    color: #00ffff;   /* cyan, or use your chosen color like #05f7bb */
+}
+
+ReceiveRequestDialog #outUri a {
+    color: #00ffff;
 }
 
 /* Recover */
