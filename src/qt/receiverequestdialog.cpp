@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "receiverequestdialog.h"
 #include "ui_receiverequestdialog.h"
@@ -120,9 +118,12 @@ ReceiveRequestDialog::~ReceiveRequestDialog()
 void ReceiveRequestDialog::setModel(OptionsModel *_model)
 {
     this->model = _model;
-
+    QString uriColor = _model->getDarkModeEnabled()
+                       ? "color: #00ffff"
+                       : "color: #0000ff";
+    ui->outUri->setStyleSheet(uriColor); 
     if (_model)
-        connect(_model, SIGNAL(displayUnitChanged(int)), this, SLOT(update()));
+    connect(_model, SIGNAL(displayUnitChanged(int)), this, SLOT(update()));
 
     // update the display unit if necessary
     update();
