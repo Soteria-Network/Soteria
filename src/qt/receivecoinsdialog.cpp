@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "receivecoinsdialog.h"
 #include "ui_receivecoinsdialog.h"
@@ -72,6 +70,25 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(const PlatformStyle *_platformStyle, QWid
     setupHistoryFrame(platformStyle);
 }
 
+void ReceiveCoinsDialog::updateLabelColors()
+{
+    if (!model || !model->getOptionsModel())
+        return;
+
+    QString labelColor = model->getOptionsModel()->getDarkModeEnabled()
+                         ? STRING_LABEL_COLOR_WHITE
+                         : STRING_LABEL_COLOR;
+
+    ui->label_5->setStyleSheet(labelColor);
+    ui->label_2->setStyleSheet(labelColor);
+    ui->label->setStyleSheet(labelColor);
+    ui->label_3->setStyleSheet(labelColor);
+    ui->label_4->setStyleSheet(labelColor);
+    ui->label_7->setStyleSheet(labelColor);
+    ui->reuseAddress->setStyleSheet(QString(".QCheckBox{ %1; }").arg(labelColor));
+    ui->label_6->setStyleSheet(labelColor);
+}
+
 void ReceiveCoinsDialog::setModel(WalletModel *_model)
 {
     this->model = _model;
@@ -102,6 +119,7 @@ void ReceiveCoinsDialog::setModel(WalletModel *_model)
 
         tableView->show();
     }
+    updateLabelColors();
 }
 
 ReceiveCoinsDialog::~ReceiveCoinsDialog()
