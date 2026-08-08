@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_CONSENSUS_PARAMS_H
 #define SOTERIA_CONSENSUS_PARAMS_H
@@ -14,22 +14,14 @@
 #include <string>
 namespace Consensus {
 
-/**
- * BIP9 deployments
- */
 enum DeploymentPos
 {
     DEPLOYMENT_TESTDUMMY,
-    // DEPLOYMENT_CSV, // Deployment of BIP68, BIP112, and BIP113.
-    // DEPLOYMENT_SEGWIT, // Deployment of BIP141, BIP143, and BIP147.
     // NOTE: Also add new deployments to VersionBitsDeploymentInfo in versionbits.cpp,
    DEPLOYMENT_PQ_HYBRID, // Deployment of RIP-25: Post-Quantum Hybrid Signatures (ML-DSA-44)
    MAX_VERSION_BITS_DEPLOYMENTS
 };
 
-/**
- * Soteria network upgrades using timestamps
- */
 enum UpgradeIndex {
     SOTERG_SWITCH,
     SOTERC_SWITCH,
@@ -39,9 +31,6 @@ enum UpgradeIndex {
     MAX_NETWORK_UPGRADES
 };
 
-/**
- * Struct for each individual consensus rule change using BIP9.
- */
 struct BIP9Deployment {
     /** Bit position to select the particular bit in nVersion. */
     int bit;
@@ -49,28 +38,12 @@ struct BIP9Deployment {
     int64_t nStartTime;
     /** Timeout/expiry MedianTime for the deployment attempt. */
     int64_t nTimeout;
-};
-/** Need it for testing purposes
-    /** Constant for nTimeout very far in the future. 
-    static constexpr int64_t NO_TIMEOUT = std::numeric_limits<int64_t>::max();
-
-    /** Special value for nStartTime indicating that the deployment is always active.
-     *  This is useful for testing, as it means tests don't need to deal with the activation
-     *  process (which takes at least 3 BIP9 intervals). Only tests that specifically test the
-     *  behaviour during activation cannot use this. 
-    static constexpr int64_t ALWAYS_ACTIVE = -1; 
-*/
-
-/**
-    // Use to override the confirmation window on a specific BIP 
+    /** Use to override the confirmation window on a specific BIP */
     uint32_t nOverrideMinerConfirmationWindow;
-    // Use to override the the activation threshold on a specific BIP 
+    /** Use to override the the activation threshold on a specific BIP */
     uint32_t nOverrideRuleChangeActivationThreshold;
-*/
-/**
- * Struct for each network upgrade using timestamp.
- */
-// Consider narrowing nTimestamp to uint32_t if possible (sufficient until 2106)
+};
+
 struct NetworkUpgrade {
     uint32_t nTimestamp;
 };
@@ -90,11 +63,7 @@ struct ConsensusParams {
     // int BIP65Height;
     /** Block height at which BIP66 becomes active */
     // int BIP66Height;
-    /**
-     * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
-     * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.
-     * Examples: 1916 for 95%, 1512 for testchains.
-     */
+
     uint32_t nRuleChangeActivationThreshold;
     uint32_t nMinerConfirmationWindow;
 
@@ -151,4 +120,4 @@ struct ConsensusParams {
 };
 } // namespace Consensus
 
-#endif // SOTERIA_CONSENSUS_PARAMS_H
+#endif
