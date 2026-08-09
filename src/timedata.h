@@ -15,7 +15,7 @@
 #include "chain.h"
 
 /* Maximum allowed deviation – 180 s is 25 % of the whole window 60blocks*12s=720s, 60*11=660*25%=165, 60*10=600*25%=150 */
-static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 165; // increase security 
+static constexpr int64_t DEFAULT_MAX_TIME_ADJUSTMENT = 120; // increase security 
 /* Formula
 
 MaxAdjustment=α×(RetargetInterval×TargetBlockTime)
