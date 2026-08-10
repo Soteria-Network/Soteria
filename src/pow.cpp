@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <algorithm>
 #include <vector>
@@ -559,7 +557,7 @@ unsigned int GetNextWorkRequiredLWMA7(
     const POW_TYPE powType)
 {
     // ===== Parameters =====
-    const int64_t T = 12;             // target block time (seconds)
+    const int64_t T = 10;             // target block time (seconds)
     const int64_t N = 60;             // LWMA window
 
     const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
@@ -646,14 +644,14 @@ unsigned int GetNextWorkRequiredLWMA7(
     arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
 
     // ===== Per-block ratio clamp =====
-    arith_uint256 downBound = (lastTarget * 69) / 100;   // −31%
-    arith_uint256 upBound   = (lastTarget * 137) / 100;  // +37%
+    arith_uint256 downBound = (lastTarget * 70) / 100;   // −30%
+    arith_uint256 upBound   = (lastTarget * 135) / 100;  // +35%
 
     if (nextTarget < downBound) nextTarget = downBound;
     if (nextTarget > upBound)   nextTarget = upBound;
 
-    // ===== EWMA smoothing (1/2 sluggish react, future test 2/3 weighting, 3/4) =====
-    constexpr uint64_t EWMA_NUM = 3, EWMA_DEN = 5;
+    // ===== EWMA smoothing (future test 2/3 weighting, 3/4) =====
+    constexpr uint64_t EWMA_NUM = 2, EWMA_DEN = 3;
     arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
 
     // Final safety clamps
@@ -746,12 +744,15 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Consens
 
 bool CheckProofOfWork(const CBlockHeader& blockheader, const Consensus::ConsensusParams& params, bool cache)
 {
-	if (blockheader.GetBlockTime() > params.lwma1Timestamp) {
-		if(cache) return CheckProofOfWorkSoterC(blockheader.GetHash(), blockheader.nBits, params, blockheader.GetPoWType());
-		else if(!cache) return CheckProofOfWorkSoterC(blockheader.GetHash(false), blockheader.nBits, params, blockheader.GetPoWType());
-    }
-	else {
-        if (cache) return CheckProofOfWork(blockheader.GetHash(), blockheader.nBits, params);
-        else if(!cache) return CheckProofOfWork(blockheader.GetHash(false), blockheader.nBits, params);
+    if (blockheader.GetBlockTime() > params.lwma1Timestamp) {
+        if (cache)
+            return CheckProofOfWorkSoterC(blockheader.GetHash(), blockheader.nBits, params, blockheader.GetPoWType());
+        else
+            return CheckProofOfWorkSoterC(blockheader.GetHash(false), blockheader.nBits, params, blockheader.GetPoWType());
+    } else {
+        if (cache)
+            return CheckProofOfWork(blockheader.GetHash(), blockheader.nBits, params);
+        else
+            return CheckProofOfWork(blockheader.GetHash(false), blockheader.nBits, params);
     }
 }
