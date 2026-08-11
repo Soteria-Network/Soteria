@@ -137,7 +137,7 @@ arith_uint256 nMinimumChainWork;
 
 CFeeRate minRelayTxFee = CFeeRate(DEFAULT_MIN_RELAY_TX_FEE);
 CAmount maxTxFee = DEFAULT_TRANSACTION_MAXFEE;
-uint64_t nMaxReorgLength = DEFAULT_MAX_REORG_LENGTH;
+
 CBlockPolicyEstimator feeEstimator;
 CTxMemPool mempool(&feeEstimator);
 
@@ -1372,29 +1372,13 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensus
     {
         nSubsidy = 6 * COIN / 1000; // 15.5
     }
-    else if (nHeight < 2700000) // 600K
+    else if (nHeight < 200000000) // 1.2M+100K=1.3M
     {
-        nSubsidy = 5 * COIN / 1000; // 12.96
+        nSubsidy = 6 * COIN / 1000; // 12.96
     }
-    else if (nHeight < 3300000)
+     else
     {
-        nSubsidy = 4 * COIN / 1000; // 10.368
-    } 
-    else if (nHeight < 3900000)
-    {
-        nSubsidy = 3 * COIN / 1000;  // 7.76
-    }
-    else if (nHeight < 4500000)
-    {
-        nSubsidy = 2 * COIN / 1000;  // 5.184
-    }
-    else if (nHeight < 5000000)
-    {
-        nSubsidy = 1 * COIN / 1000;  // 2.592
-    }                 
-    else
-    {
-        nSubsidy = 5 * COIN / 10000;  // 1.296, tail emission until the end
+        nSubsidy = 1 * COIN / 1000;  // 1.296, tail emission until the end
     }
 
     return nSubsidy;
@@ -3530,12 +3514,6 @@ bool static ConnectTip(CValidationState& state, const CChainParams& chainparams,
 
     return true;
 }
-// reorg check
-static bool CheckMaxReorgLength(const CBlockIndex* pindexOldTip, const CBlockIndex* pindexNew) {
-    const CBlockIndex *pindexFork = chainActive.FindFork(pindexNew);
-    auto reorgLength = pindexOldTip ? pindexOldTip->nHeight - (pindexFork ? pindexFork->nHeight : -1) : 0;
-    return reorgLength <= nMaxReorgLength;
-}
 
 /**
  * Return the tip of the chain with the most work in it, that isn't
@@ -3618,15 +3596,7 @@ static bool ActivateBestChainStep(CValidationState& state, const CChainParams& c
     AssertLockHeld(cs_main);
     const CBlockIndex* pindexOldTip = chainActive.Tip();
     const CBlockIndex* pindexFork = chainActive.FindFork(pindexMostWork);
-
-    // Reject fork if reorg is too long.
-/*  auto reorgLength = pindexOldTip ? pindexOldTip->nHeight - (pindexFork ? pindexFork->nHeight : -1) : 0;
-    if (reorgLength > nMaxReorgLength) {
-      LogPrintf("Rejecting reorg of length %d\n", reorgLength);
-      return false;
-    } */
-    assert(CheckMaxReorgLength(pindexOldTip, pindexFork));
-    
+  
     // Disconnect active blocks which are no longer in the best chain.
     bool fBlocksDisconnected = false;
     DisconnectedBlockTransactions disconnectpool;
@@ -4251,7 +4221,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     assert(pindexPrev != nullptr);
     const int nHeight = pindexPrev->nHeight + 1;
 
-    // If this is a reorg, check that it is not too deep, use 100 as a max for security
+    // If this is a reorg, check that it is not too deep, use 120 as a max for security
     int nMaxReorgDepth = gArgs.GetArg("-maxreorg", Params().MaxReorganizationDepth());
     int nMinReorgPeers = gArgs.GetArg("-minreorgpeers", Params().MinReorganizationPeers());
     int nMinReorgAge = gArgs.GetArg("-minreorgage", Params().MinReorganizationAge());
@@ -4486,8 +4456,6 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
         if (!ContextualCheckBlockHeader(block, state, chainparams, pindexPrev, GetAdjustedTime()))
             return error("%s: Consensus::ContextualCheckBlockHeader: %s, %s", __func__, hash.ToString(), FormatStateMessage(state));
 
-        if (!CheckMaxReorgLength(chainActive.Tip(), pindexPrev))
-           return state.DoS(100, error("%s: prev chain violates max reorg length", __func__), 0, "bad-prevblk-reorg");
 
         if (!pindexPrev->IsValid(BLOCK_VALID_SCRIPTS)) {
             for (const CBlockIndex* failedit : g_failed_blocks) {
@@ -6047,7 +6015,7 @@ bool IsPQHybridDeployed()
     if (fPQHybridIsActive)
         return true;
 
-    const ThresholdState thresholdState = VersionBitsTipState(GetParams().GetConsensus(), Consensus::DEPLOYMENT_PQ_HYBRID);
+    const ThresholdState thresholdState = VersionBitsTipState(Params().GetConsensus(), Consensus::DEPLOYMENT_PQ_HYBRID);
     if (thresholdState == THRESHOLD_ACTIVE)
         fPQHybridIsActive = true;
 
