@@ -542,7 +542,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-sysperms", _("Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)"));
 #endif
     strUsage += HelpMessageOpt("-txindex", strprintf(_("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)"), DEFAULT_TXINDEX));
-    strUsage += HelpMessageOpt("-maxreorglength", strprintf(_("Sets the maximum length after which reorgs are ignored (default: %u)"), DEFAULT_MAX_REORG_LENGTH));
+
     strUsage += HelpMessageOpt("-assetindex", _("Keep an index of assets, used by the requestsnapshot rpc call. Requires a -reindex."));
 
     strUsage += HelpMessageOpt("-addressindex", strprintf(_("Maintain a full address index, used to query for the balance, txids and unspent outputs for addresses (default: %u)"), DEFAULT_ADDRESSINDEX));
@@ -1952,6 +1952,11 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         nLocalServices = ServiceFlags(nLocalServices | NODE_WITNESS);
     }
 
+    // RIP-25: Advertise post-quantum support
+    if (chainparams.GetConsensus().nPQHybridEnabled) {
+        nLocalServices = ServiceFlags(nLocalServices | NODE_PQ_HYBRID);
+    }
+
     // ********************************************************* Step 11: Schedule PoW cache flush
 
     // Periodic flush of PoW Cache if cache has grown enough
@@ -1960,10 +1965,6 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 12: import blocks
 
-    // RIP-25: Advertise post-quantum support
-    if(chainparams.GetConsensus().nPQHybridEnabled) {
-        nLocalServices = ServiceFlags(nLocalServices | NODE_PQ_HYBRID);
-    }
 
     if (!CheckDiskSpace())
         return false;
