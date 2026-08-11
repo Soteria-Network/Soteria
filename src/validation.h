@@ -194,8 +194,6 @@ static constexpr int MAX_UNCONNECTING_HEADERS = 20;
 
 static constexpr bool DEFAULT_PEERBLOOMFILTERS = true;
 
-static constexpr uint64_t DEFAULT_MAX_REORG_LENGTH = 100;
-
 /** Default for -stopatheight */
 static constexpr int DEFAULT_STOPATHEIGHT = 0;
 
