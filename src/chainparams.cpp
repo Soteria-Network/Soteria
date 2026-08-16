@@ -1,7 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #include <iostream>
 #include "chainparams.h"
@@ -187,8 +187,8 @@ public:
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000195d05a106d762"); // update in v1.1.2
-        consensus.defaultAssumeValid = uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8"); // update in v1.1.2
+        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000001dabb2acce470b"); // update in v1.1.2
+        consensus.defaultAssumeValid = uint256S("0000000309787c34f60095f7cce7888c04d36f8444482abe55a5059e3d2a371f"); // update in v1.1.2
 
         pchMessageStart[0] = 0x53; 
         pchMessageStart[1] = 0x4F; 
@@ -248,20 +248,26 @@ public:
               { 1000000, uint256S("00000000b7c5b7cfaa0bff5f2d5711cf3431f1e9658b43bda3be727d6e938f29")},
               { 1050000, uint256S("00000000ba4f0c8cace65d8bde602c19ee67a6f2e83aa7de3c716de8db47b8ac")},
               { 1100000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}
-//            { 1150000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}, // To add new heights in v1.1.2 against the attacks
-//            { 1200000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
-//            { 1250000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
-//            { 1300000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
-//            { 1350000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")},
-//            { 1400000, uint256S("000000003dfb9ac3086ddac45db06bb908d62e1251605f8e748bef3735c2ede8")}			
+              { 1150000, uint256S("000000000aa43b08c34bb645f26c64330159db2b6f35eb1388e7d64d7994a0b1")},
+              { 1200000, uint256S("0000000092a8818dbf0d1d569bfee3d2a37a54a992b7902c175585b632bf7500")},
+              { 1250000, uint256S("000000019aa239619db33950e547e4703c880a183fc59ca4878f639989d8c63d")},
+              { 1300000, uint256S("00000000dba2abe46df5f4085057b1d9d4561a91aea195a9e24bfb291b02880c")},
+              { 1350000, uint256S("00000004a490137be5d8fb6061dc9049272f89fb885029362530ede3daf2988a")},
+              { 1400000, uint256S("00000002c31e43e7a7ffb2f16cf9fcab8a9dbdb52876f9757b47150010054a53")},
+              { 1450000, uint256S("0000000173472ba24381b5f5646de01b45abb287525c80e46b279c6aa8a84413")},
+              { 1500000, uint256S("0000000112b5cde944be214186de32b1e711c3c69f2fc4aa4abf390f670c8011")},
+              { 1550000, uint256S("000000033332f49c56677905875ead98fd3387213593da5e9fa62dfdd4818b1a")},
+              { 1600000, uint256S("00000000b65320b71593c2019fe987dd9d55e7122492315acbc1ccdc33efae7a")},
+              { 1650000, uint256S("00000003e6605ad924b82a1ffaa246bc2aed2c634bb7d39bb3efad78fbf3485e")},
+              { 1700000, uint256S("0000000309787c34f60095f7cce7888c04d36f8444482abe55a5059e3d2a371f")}			
                 
             }
         };
 
         chainTxData = ChainTxData{ // Todo new values in v1.1.2
-            1777648875, 
-            1131085,    
-            0.08139744759179966           
+            1786862175, 
+            1765250,    
+            0.06549690211852688           
         };
 
       // Amounts & Addresses of the Tokenomics
