@@ -323,7 +323,7 @@ public:
         // Mainnet chain Reorg Settings
         nMaxReorganizationDepth = 120;
         nMinReorganizationPeers = 8;
-        nMinReorganizationAge = 15000; // s
+        nMinReorganizationAge = 21600;
         
         nAssetActivationHeight = 1; // Asset activated block height
         /** SOTER End **/
