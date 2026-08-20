@@ -359,7 +359,7 @@ std::string EncodeDestination(const CTxDestination& dest)
         std::vector<uint8_t> data5;
         data5.push_back(2); // witness version 2
         ConvertBits<8, 5, true>(data5, data8);
-        return bech32::Encode(bech32::BECH32M, GetParams().Bech32PQHrp(), data5);
+        return bech32::Encode(bech32::BECH32M, Params().Bech32PQHrp(), data5);
     }
 
     CSoteriaAddress addr(dest);
@@ -373,7 +373,7 @@ CTxDestination DecodeDestination(const std::string& str)
     bech32::DecodeResult bech = bech32::Decode(str);
     if (bech.encoding == bech32::BECH32M && !bech.data.empty()) {
         // Check HRP matches current network
-        if (bech.hrp == GetParams().Bech32PQHrp()) {
+        if (bech.hrp == Params().Bech32PQHrp()) {
             int version = bech.data[0]; // witness version
             if (version == 2) {
                 std::vector<uint8_t> data5(bech.data.begin() + 1, bech.data.end());
@@ -407,5 +407,5 @@ bool IsValidDestinationString(const std::string& str, const CChainParams& params
 
 bool IsValidDestinationString(const std::string& str)
 {
-    return CSoteriaAddress(str).IsValid();
+    return IsValidDestinationString(str, Params());
 }
