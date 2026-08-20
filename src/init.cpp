@@ -1649,6 +1649,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
     LogPrintf("* Using %.1fMiB for in-memory UTXO set (plus up to %.1fMiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
 
     bool fLoaded = false;
+    bool fRetryWithChainStateRebuild = false;
     while (!fLoaded && !fRequestShutdown) {
         bool fReset = fReindex;
         std::string strLoadError;
@@ -1695,7 +1696,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                     delete pDistributeSnapshotDb;
 
                     // Basic assets
-                    passetsdb = new CAssetsDB(nBlockTreeDBCache, false, fReset);
+                    passetsdb = new CAssetsDB(nBlockTreeDBCache, false, fReset || fReindexChainState);
                     passets = new CAssetsCache();
                     passetsCache = new CLRUCache<std::string, CDatabasedAssetData>(MAX_CACHE_ASSETS_SIZE);
 
@@ -1710,7 +1711,7 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                     pmyrestricteddb = new CMyRestrictedDB(nBlockTreeDBCache, false, false);
 
                     // Restricted assets
-                    prestricteddb = new CRestrictedDB(nBlockTreeDBCache, false, fReset);
+                    prestricteddb = new CRestrictedDB(nBlockTreeDBCache, false, fReset || fReindexChainState);
                     passetsVerifierCache = new CLRUCache<std::string, CNullAssetTxVerifierString>(
                         MAX_CACHE_ASSETS_SIZE);
                     passetsQualifierCache = new CLRUCache<std::string, int8_t>(MAX_CACHE_ASSETS_SIZE);
@@ -1838,6 +1839,15 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (!is_coinsview_empty) {
                     // LoadChainTip sets chainActive based on pcoinsTip's best block
                     if (!LoadChainTip(chainparams)) {
+                        bool fCoinsAheadOfIndex;
+                        {
+                            LOCK(cs_main);
+                            fCoinsAheadOfIndex = !mapBlockIndex.count(pcoinsTip->GetBestBlock());
+                        }
+                        if (fCoinsAheadOfIndex) {
+                            LogPrintf("Coins database is ahead of the block index, rebuilding chainstate\n");
+                            fRetryWithChainStateRebuild = true;
+                        }
                         strLoadError = _("Error initializing block database");
                         break;
                     }
@@ -1890,6 +1900,11 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         } while (false);
 
         if (!fLoaded && !fRequestShutdown) {
+            if (fRetryWithChainStateRebuild) {
+                fRetryWithChainStateRebuild = false;
+                fReindexChainState = true;
+                continue;
+            }
             // first suggest a reindex
             if (!fReset) {
                 bool fRet = uiInterface.ThreadSafeQuestion(
