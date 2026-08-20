@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "crypter.h"
 #include "crypto/aes.h"
@@ -193,7 +193,9 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
             if (fDecryptionThoroughlyChecked)
                 break;
         }
-        if (!keyPass && !keyFail) {
+        // A successful AES decrypt alone is not sufficient: the persisted ML-DSA
+        // secret must cryptographically match the public key/witness program.
+        if (!keyFail) {
             CryptedPQKeyMap::const_iterator pqi = mapCryptedPQKeys.begin();
             for (; pqi != mapCryptedPQKeys.end(); ++pqi)
             {
@@ -201,6 +203,13 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
                 const std::vector<unsigned char> &vchCryptedSecret = (*pqi).second.second;
                 CKeyingMaterial vchSecret;
                 if (!DecryptSecret(vMasterKeyIn, vchCryptedSecret, pqPubKey.GetWitnessProgram(), vchSecret))
+                {
+                    keyFail = true;
+                    break;
+                }
+                std::vector<unsigned char> keyData(vchSecret.begin(), vchSecret.end());
+                CPQKey pqKey;
+                if (!pqKey.SetKeyData(keyData, pqPubKey))
                 {
                     keyFail = true;
                     break;
@@ -268,6 +277,9 @@ bool CCryptoKeyStore::AddPQKeyPubKey(const CPQKey &key, const CPQPubKey &pubkey)
 {
     {
         LOCK(cs_KeyStore);
+        if (!key.IsValid() || !pubkey.IsValid() || !key.MatchesPubKey(pubkey))
+            return false;
+
         if (!IsCrypted())
             return CBasicKeyStore::AddPQKeyPubKey(key, pubkey);
 
@@ -290,7 +302,7 @@ bool CCryptoKeyStore::AddCryptedPQKey(const CPQPubKey &pqPubKey, const std::vect
 {
     {
         LOCK(cs_KeyStore);
-        if (!SetCrypted())
+        if (!pqPubKey.IsValid() || !SetCrypted())
             return false;
 
         mapCryptedPQKeys[pqPubKey.GetWitnessProgram()] = make_pair(pqPubKey, vchCryptedSecret);
@@ -302,9 +314,8 @@ bool CCryptoKeyStore::GetPQKey(const uint256 &witnessProgram, CPQKey &keyOut) co
 {
     {
         LOCK(cs_KeyStore);
-        if (!IsCrypted()) {
+        if (!IsCrypted())
             return CBasicKeyStore::GetPQKey(witnessProgram, keyOut);
-        }
 
         CryptedPQKeyMap::const_iterator mi = mapCryptedPQKeys.find(witnessProgram);
         if (mi != mapCryptedPQKeys.end())
@@ -315,7 +326,7 @@ bool CCryptoKeyStore::GetPQKey(const uint256 &witnessProgram, CPQKey &keyOut) co
             if (!DecryptSecret(vMasterKey, vchCryptedSecret, pqPubKey.GetWitnessProgram(), vchSecret))
                 return false;
             std::vector<unsigned char> keyData(vchSecret.begin(), vchSecret.end());
-            return keyOut.SetKeyData(keyData);
+            return keyOut.SetKeyData(keyData, pqPubKey);
         }
     }
     return false;
@@ -402,6 +413,8 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
         {
             const CPQKey &key = mKey.second;
             CPQPubKey pqPubKey = key.GetPubKey();
+            if (!key.IsValid() || !pqPubKey.IsValid() || !key.MatchesPubKey(pqPubKey))
+                return false;
             CKeyingMaterial vchSecret(key.GetKeyData().begin(), key.GetKeyData().end());
             std::vector<unsigned char> vchCryptedSecret;
             if (!EncryptSecret(vMasterKeyIn, vchSecret, pqPubKey.GetWitnessProgram(), vchCryptedSecret))
