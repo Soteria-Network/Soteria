@@ -72,7 +72,7 @@ static constexpr bool DEFAULT_WALLET_REJECT_LONG_CHAINS = true;
 //! -txconfirmtarget default=6, X minutes / (block_interval in minutes), A very low target pushes toward higher fees.
 static constexpr unsigned int DEFAULT_TX_CONFIRM_TARGET = 60;
 //! -walletrbf default
-static constexpr bool DEFAULT_WALLET_RBF = true;
+static constexpr bool DEFAULT_WALLET_RBF = false;
 static constexpr bool DEFAULT_WALLETBROADCAST = true;
 static constexpr bool DEFAULT_DISABLE_WALLET = false;
 
@@ -197,7 +197,7 @@ struct CAssetOutputEntry
     txnouttype type;
     std::string assetName;
     CTxDestination destination;
-    CAmount nAmount;
+    CAmount nAmount = 0;
     std::string message;
     int64_t expireTime;
     int vout;
@@ -1325,4 +1325,4 @@ bool CWallet::DummySignTx(CMutableTransaction &txNew, const ContainerType &coins
     return allSigned;
 }
 
-#endif // SOTERIA_WALLET_WALLET_H
+#endif
