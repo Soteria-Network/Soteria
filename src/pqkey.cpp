@@ -115,7 +115,7 @@ bool CPQKey::MatchesPubKey(const CPQPubKey& pubkeyIn) const
     // Fixed non-secret challenge: possession of the secret key is proven by
     // producing a valid ML-DSA signature that verifies under pubkeyIn.
     uint256 challenge;
-    std::memset(challenge.begin(), 0x52, 32); // 'R' for Ravencoin
+    std::memset(challenge.begin(), 0x53, 32);
 
     std::vector<unsigned char> sig;
     if (!Sign(challenge, sig))
