@@ -119,8 +119,16 @@ public:
     bool AddPQKeyPubKey(const CPQKey &key, const CPQPubKey &pubkey) override
     {
         LOCK(cs_KeyStore);
+        if (!key.IsValid() || !pubkey.IsValid())
+            return false;
+
+        std::vector<unsigned char> keyData(key.GetKeyData().begin(), key.GetKeyData().end());
+        CPQKey validatedKey;
+        if (!validatedKey.SetKeyData(keyData, pubkey))
+            return false;
+
         uint256 wp = pubkey.GetWitnessProgram();
-        mapPQKeys[wp] = key;
+        mapPQKeys[wp] = validatedKey;
         mapPQPubKeys[wp] = pubkey;
         return true;
     }
