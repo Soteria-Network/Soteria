@@ -1364,21 +1364,21 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::ConsensusParams& consensus
     { 
         nSubsidy = 80 * COIN / 1000;
     }
-    else if (nHeight < 1380000) // 115K, 1150000-1250000
+    else if (nHeight < 1380000) 
     {
         nSubsidy = 60 * COIN / 1000;
     }
-     else if (nHeight < 2100000) // 650K
+     else if (nHeight < 2100000) 
     {
-        nSubsidy = 6 * COIN / 1000; // 15.5
+        nSubsidy = 6 * COIN / 1000; 
     }
-    else if (nHeight < 200000000) // 1.2M+100K=1.3M
+    else if (nHeight < 200000000) 
     {
-        nSubsidy = 6 * COIN / 1000; // 12.96
+        nSubsidy = 6 * COIN / 1000; 
     }
      else
     {
-        nSubsidy = 1 * COIN / 1000;  // 1.296, tail emission until the end
+        nSubsidy = 1 * COIN / 1000;  // ~1 tail emission until the end
     }
 
     return nSubsidy;
@@ -2605,6 +2605,7 @@ static bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockInd
         if (!tx.IsCoinBase()) {
             CAmount txfee = 0;
             if (!Consensus::CheckTxInputs(tx, state, view, pindex->nHeight, txfee)) {
+                state.SetFailedTransaction(tx.GetHash());
                 return error("%s: Consensus::CheckTxInputs: %s, %s", __func__, tx.GetHash().ToString(), FormatStateMessage(state));
             }
             nFees += txfee;
@@ -4129,10 +4130,12 @@ bool CheckBlock(const CBlock& block, CValidationState& state, const Consensus::C
         // We want to make sure when nodes shutdown and restart that they still
         // verify the blocks in the database correctly even if Enforce Value BIP is active
         fCheckBlock = CHECK_BLOCK_TRANSACTION_TRUE;
-        if (!CheckTransaction(*tx, state, fCheckDuplicates, fCheckMempool, fCheckBlock))
+        if (!CheckTransaction(*tx, state, fCheckDuplicates, fCheckMempool, fCheckBlock)) {
+            state.SetFailedTransaction(tx->GetHash());
             return state.Invalid(false, state.GetRejectCode(), state.GetRejectReason(),
                                  strprintf("Transaction check failed (tx hash %s) %s %s", tx->GetHash().ToString(),
                                            state.GetDebugMessage(), state.GetRejectReason()));
+        }
     }
 
     unsigned int nSigOps = 0;
