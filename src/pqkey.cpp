@@ -44,6 +44,7 @@ void CPQKey::MakeNewKey()
 
     if (!mldsa::KeyGenRandom(pk, keydata.data())) {
         fValid = false;
+        pubkey = CPQPubKey();
         return;
     }
 
@@ -60,6 +61,7 @@ bool CPQKey::SetSeed(const unsigned char* seed)
 
     if (!mldsa::KeyGen(pk, keydata.data(), seed)) {
         fValid = false;
+        pubkey = CPQPubKey();
         return false;
     }
 
@@ -78,11 +80,15 @@ bool CPQKey::Sign(const uint256& hash, std::vector<unsigned char>& sigOut) const
 
     if (!mldsa::Sign(sigOut.data(), &siglen,
                      hash.begin(), 32,
-                     keydata.data()))
+                     keydata.data())) {
+        sigOut.clear();
         return false;
+    }
 
-    if (siglen != mldsa::SIGNATURE_BYTES)
+    if (siglen != mldsa::SIGNATURE_BYTES) {
+        sigOut.clear();
         return false;
+    }
 
     return true;
 }
@@ -91,18 +97,45 @@ bool CPQKey::SetKeyData(const std::vector<unsigned char>& data)
 {
     if (data.size() != mldsa::SECRETKEY_BYTES) {
         fValid = false;
+        pubkey = CPQPubKey();
         return false;
     }
 
-    memcpy(keydata.data(), data.data(), mldsa::SECRETKEY_BYTES);
-
-    // Recompute public key from secret key by signing and verifying
-    // The public key must be derived from the secret key.
-    // For liboqs ML-DSA-44, the secret key contains enough info to
-    // reconstruct the public key. We re-derive it via a test sign/verify cycle.
-    // In practice, the wallet stores both sk and pk together.
-    //
-    // For now, mark valid — the wallet layer will pair this with the stored pubkey.
+    std::memcpy(keydata.data(), data.data(), mldsa::SECRETKEY_BYTES);
+    pubkey = CPQPubKey();
     fValid = true;
+    return true;
+}
+
+bool CPQKey::MatchesPubKey(const CPQPubKey& pubkeyIn) const
+{
+    if (!fValid || !pubkeyIn.IsValid())
+        return false;
+
+    // Fixed non-secret challenge: possession of the secret key is proven by
+    // producing a valid ML-DSA signature that verifies under pubkeyIn.
+    uint256 challenge;
+    std::memset(challenge.begin(), 0x52, 32); // 'R' for Ravencoin
+
+    std::vector<unsigned char> sig;
+    if (!Sign(challenge, sig))
+        return false;
+
+    return pubkeyIn.Verify(challenge, sig);
+}
+
+bool CPQKey::SetKeyData(const std::vector<unsigned char>& data, const CPQPubKey& pubkeyIn)
+{
+    if (!SetKeyData(data))
+        return false;
+
+    if (!MatchesPubKey(pubkeyIn)) {
+        memory_cleanse(keydata.data(), keydata.size());
+        pubkey = CPQPubKey();
+        fValid = false;
+        return false;
+    }
+
+    pubkey = pubkeyIn;
     return true;
 }
