@@ -1,8 +1,6 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <httpserver.h>
 #include <chainparamsbase.h>
@@ -494,19 +492,10 @@ void StopHTTPServer()
             thread.join();
         }
         g_thread_http_workers.clear();
-        delete workQueue;
-        workQueue = nullptr;
     }
     if (eventBase) {
         LogPrint(BCLog::HTTP, "Waiting for HTTP event thread to exit\n");
-        // Exit the event loop as soon as there are no active events.
         event_base_loopexit(eventBase, nullptr);
-        // Give event loop a few seconds to exit (to send back last RPC responses), then break it
-        // Before this was solved with event_base_loopexit, but that didn't work as expected in
-        // at least libevent 2.0.21 and always introduced a delay. In libevent
-        // master that appears to be solved, so in the future that solution
-        // could be used again (if desirable).
-        // (see discussion in https://github.com/bitcoin/bitcoin/pull/6990)
         if (threadResult.valid() && threadResult.wait_for(std::chrono::milliseconds(2000)) == std::future_status::timeout) {
             LogPrintf("HTTP event loop did not exit within allotted time, sending loopbreak\n");
             event_base_loopbreak(eventBase);
@@ -520,6 +509,10 @@ void StopHTTPServer()
     if (eventBase) {
         event_base_free(eventBase);
         eventBase = nullptr;
+    }
+    if (workQueue) {
+        delete workQueue;
+        workQueue = nullptr;
     }
     LogPrint(BCLog::HTTP, "Stopped HTTP server\n");
 }
