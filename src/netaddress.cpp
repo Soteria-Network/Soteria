@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifdef HAVE_CONFIG_H
 #include <config/soteria-config.h>
@@ -25,7 +23,6 @@ static constexpr unsigned char g_internal_prefix[] = { 0xFD, 0x53, 0x4F, 0x54, 0
 void CNetAddr::Init()
 {
     memset(ip, 0, sizeof(ip));
-    scopeId = 0; // Explicitly initializes IPv6 scope ID(fe80::/10)
 }
 
 void CNetAddr::SetIP(const CNetAddr& ipIn)
