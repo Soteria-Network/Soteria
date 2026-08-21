@@ -103,6 +103,12 @@ public:
 
     /** Set key from raw data (for wallet deserialization), recomputes pubkey */
     bool SetKeyData(const std::vector<unsigned char>& data);
+
+    /** Load raw secret-key bytes and cryptographically validate/bind pubkey. */
+    bool SetKeyData(const std::vector<unsigned char>& data, const CPQPubKey& pubkeyIn);
+
+    /** Verify that pubkeyIn is the public key corresponding to this secret key. */
+    bool MatchesPubKey(const CPQPubKey& pubkeyIn) const;
 };
 
 #endif 
