@@ -9,9 +9,6 @@
 
 #include <cstring>
 
-// For random keygen
-extern void GetStrongRandBytes(unsigned char* buf, int num);
-
 // --- CPQPubKey ---
 
 uint256 CPQPubKey::GetWitnessProgram() const
