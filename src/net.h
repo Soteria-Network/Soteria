@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_NET_H
 #define SOTERIA_NET_H
@@ -63,7 +61,7 @@ static constexpr unsigned int MAX_ASSET_INV_SZ = 1024;
 /** The maximum number of new addresses to accumulate before announcing. */
 static constexpr unsigned int MAX_ADDR_TO_SEND = 1000;
 /** Maximum length of incoming protocol messages. With our 3 MiB blocks, a raw block message (headers + txs) can exceed 4 MiB once we add envelope headers, varints, padding, or future block‐format extensions. Recommendation, we should raise to at least 5 MiB w/o sc or 6 MiB w sc. 6 MiB safely covers current blocks and leaves headroom for spikes (e.g., “getdata” replies, packed headers, larger sc scripts).*/
-static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 10 * 1024 * 1024; // increased for RIP-25 PQ signatures
+static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 12 * 1024 * 1024; // increased for RIP-25 PQ signatures
 /** Maximum length of strSubVer in `version` message */
 static constexpr unsigned int MAX_SUBVERSION_LENGTH = 256;
 /** Maximum number of automatic outgoing nodes over which we'll relay everything (blocks, tx, addrs, etc), 32 to reduce latency before 90% of peers see a new block */
