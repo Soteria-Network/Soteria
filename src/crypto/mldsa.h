@@ -1,6 +1,6 @@
+// Copyright (c) 2017-2019 The Raven Core developers
 // Copyright (c) 2026 ALENOC (https://github.com/ALENOC)
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 // RIP-25: ML-DSA-44 (FIPS 204) Post-Quantum Digital Signature Wrapper
 // Uses liboqs (Open Quantum Safe) for the underlying implementation.
@@ -23,7 +23,9 @@ static const size_t SEED_BYTES       = 32;
 /**
  * Generate an ML-DSA-44 keypair from a 32-byte seed.
  * Deterministic: same seed always produces the same keypair.
- * Uses OQS_SIG_ml_dsa_44_keypair_from_seed() internally.
+ * liboqs 0.12.0 has no public seeded-signature keypair API, so the wrapper
+ * temporarily supplies the seed through liboqs' public custom-randombytes API
+ * while serializing all Soter operations that can consume OQS randomness.
  *
  * @param[out] pk   Public key buffer (must be PUBLICKEY_BYTES)
  * @param[out] sk   Secret key buffer (must be SECRETKEY_BYTES)
@@ -34,7 +36,7 @@ bool KeyGen(unsigned char* pk, unsigned char* sk, const unsigned char* seed);
 
 /**
  * Generate an ML-DSA-44 keypair from random entropy.
- * Uses OQS_SIG_ml_dsa_44_keypair() internally.
+ * Uses OQS_SIG_keypair() internally.
  *
  * @param[out] pk  Public key buffer (must be PUBLICKEY_BYTES)
  * @param[out] sk  Secret key buffer (must be SECRETKEY_BYTES)
@@ -44,7 +46,7 @@ bool KeyGenRandom(unsigned char* pk, unsigned char* sk);
 
 /**
  * Sign a message using ML-DSA-44.
- * Uses OQS_SIG_ml_dsa_44_sign() internally.
+ * Uses OQS_SIG_sign() internally.
  *
  * @param[out] sig     Signature buffer (must be SIGNATURE_BYTES)
  * @param[out] siglen  Actual signature length (always SIGNATURE_BYTES for ML-DSA-44)
@@ -59,7 +61,7 @@ bool Sign(unsigned char* sig, size_t* siglen,
 
 /**
  * Verify an ML-DSA-44 signature.
- * Uses OQS_SIG_ml_dsa_44_verify() internally.
+ * Uses OQS_SIG_verify() internally.
  *
  * @param[in] sig     Signature (SIGNATURE_BYTES)
  * @param[in] siglen  Signature length
