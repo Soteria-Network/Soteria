@@ -4,6 +4,7 @@
 // Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "consensus.h"
+#include <versionbits.h>
 
 unsigned int GetMaxBlockWeight()
 {
@@ -17,9 +18,8 @@ unsigned int GetMaxBlockSerializedSize()
 
 bool IsPQWitnessDiscountActive(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& consensusParams)
 {
-    // If we later use VersionBitsState, we will replace this with that call.
-    // For now, we will trust the nPQHybridEnabled flag from chainparams.
-    return consensusParams.nPQHybridEnabled;
+    static VersionBitsCache cache;
+    return VersionBitsState(pindexPrev, consensusParams, Consensus::DEPLOYMENT_PQ_HYBRID, cache) == THRESHOLD_ACTIVE;
 }
 
 unsigned int GetMaxBlockWeightForPrev(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& consensusParams)
