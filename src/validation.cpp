@@ -2431,6 +2431,10 @@ static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consens
         flags |= SCRIPT_VERIFY_NULLDUMMY;
     }
 
+    if (IsPQWitnessDiscountActive(pindex->pprev, consensusparams)) {
+        flags |= SCRIPT_VERIFY_PQ_HYBRID;
+    }
+
     return flags;
 }
 
