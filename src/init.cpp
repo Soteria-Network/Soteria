@@ -1967,8 +1967,8 @@ bool AppInitMain(boost::thread_group& threadGroup, CScheduler& scheduler)
         nLocalServices = ServiceFlags(nLocalServices | NODE_WITNESS);
     }
 
-    // RIP-25: Advertise post-quantum support
-    if (chainparams.GetConsensus().nPQHybridEnabled) {
+    // RIP-25: Advertise post-quantum support only when the soft fork is active
+    if (IsPQWitnessDiscountActive(chainActive.Tip(), chainparams.GetConsensus())) {
         nLocalServices = ServiceFlags(nLocalServices | NODE_PQ_HYBRID);
     }
 
