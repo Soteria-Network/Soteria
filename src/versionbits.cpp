@@ -16,10 +16,6 @@ const struct VBDeploymentInfo VersionBitsDeploymentInfo[Consensus::MAX_VERSION_B
             /*.name =*/ "pq_hybrid",
             /*.gbt_force =*/ true,
     }
-//	{
-//		/*.name =*/ "segwit",
-//		/*.gbt_force =*/ true,
-//	}
 };
 
 ThresholdState AbstractThresholdConditionChecker::GetStateFor(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params, ThresholdConditionCache& cache) const
@@ -178,13 +174,18 @@ private:
 protected:
     int64_t BeginTime(const Consensus::ConsensusParams& params) const override { return params.vDeployments[id].nStartTime; }
     int64_t EndTime(const Consensus::ConsensusParams& params) const override { return params.vDeployments[id].nTimeout; }
-    int Period(const Consensus::ConsensusParams& params) const override { return params.nMinerConfirmationWindow; }
-    int Threshold(const Consensus::ConsensusParams& params) const override { return params.nRuleChangeActivationThreshold; }
-
+    int Period(const Consensus::ConsensusParams& params) const override {
+    const auto& dep = params.vDeployments[id];
+    return dep.nOverrideMinerConfirmationWindow != 0
+               ? static_cast<int>(dep.nOverrideMinerConfirmationWindow)
+               : params.nMinerConfirmationWindow;}
+    int Threshold(const Consensus::ConsensusParams& params) const override {
+    const auto& dep = params.vDeployments[id];
+    return dep.nOverrideRuleChangeActivationThreshold != 0
+               ? static_cast<int>(dep.nOverrideRuleChangeActivationThreshold)
+               : params.nRuleChangeActivationThreshold;}
     bool Condition(const CBlockIndex* pindex, const Consensus::ConsensusParams& params) const override
     {
-        // Dual algo: Versionbits always active since powforktime and high bits repurposed at soterC UASF activation;
-        // So, don't use VERSIONBITS_TOP_MASK any time past powforktime
         if (pindex->nTime > params.lwmaTimestamp)
             return (pindex->nVersion & Mask(params)) != 0;
         else
@@ -196,8 +197,7 @@ public:
     uint32_t Mask(const Consensus::ConsensusParams& params) const { return ((uint32_t)1) << params.vDeployments[id].bit; }
 };
 
-} // namespace
-
+} 
 ThresholdState VersionBitsState(const CBlockIndex* pindexPrev, const Consensus::ConsensusParams& params, Consensus::DeploymentPos pos, VersionBitsCache& cache)
 {
     return VersionBitsConditionChecker(pos).GetStateFor(pindexPrev, params, cache.caches[pos]);
