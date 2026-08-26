@@ -133,8 +133,8 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1988139600; // UTC: ~6 years after software release (placeholder)
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; // UTC: ~2 years after start (placeholder)
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 170;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 180;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 950000;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 1000000;
         consensus.nPQHybridEnabled = false; // Will be set true on activation
 		
         // Soteria network upgrades (hardforks)
@@ -362,12 +362,12 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 4294967295;
        
-		// RIP-25: Post-Quantum Hybrid Signatures — testnet activates immediately for testing
+        // RIP-25: Post-Quantum Hybrid Signatures — testnet activates immediately for testing
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1759419050;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; 
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 135;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 180;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1199145601; // always active for testnet
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; // Far future
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 5250;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 7000;
         consensus.nPQHybridEnabled = true; // Active on testnet
 		
         // Soteria network upgrades (hardforks)
@@ -506,11 +506,11 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;
     
-		consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 999999999999ULL;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 65;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 90;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2147483647;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 280;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 432;
         consensus.nPQHybridEnabled = true;
        
 		// Soteria network
