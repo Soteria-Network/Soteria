@@ -19,6 +19,7 @@ enum DeploymentPos
     DEPLOYMENT_TESTDUMMY,
     // NOTE: Also add new deployments to VersionBitsDeploymentInfo in versionbits.cpp,
    DEPLOYMENT_PQ_HYBRID, // Deployment of RIP-25: Post-Quantum Hybrid Signatures (ML-DSA-44)
+   DEPLOYMENT_TRANSFER_OVERFLOW,
    MAX_VERSION_BITS_DEPLOYMENTS
 };
 
