@@ -51,6 +51,7 @@ UNUSED_VAR static bool fSmartContractsIsActive = false;
 UNUSED_VAR static bool fRip5IsActive = false;
 UNUSED_VAR static bool fSoteriaNameSystemIsActive = false;
 UNUSED_VAR static bool fTransferScriptIsActive = false;
+UNUSED_VAR static bool fCheckTransferOverflowIsActive = false;
 /** Enable missing activation flags. */
 UNUSED_VAR static bool fEnforcedValuesIsActive = true; // Always return true for enforced values.
 UNUSED_VAR static bool fCheckCoinbaseAssetsIsActive = true; // Always return true for coinbase asset checks.
