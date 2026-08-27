@@ -227,7 +227,6 @@ UniValue blockToDeltasJSON(const CBlock& block, const CBlockIndex* blockindex)
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     if (IsDualAlgoEnabled(blockindex, Params().GetConsensus())) {
-        result.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         result.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
     }
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
@@ -275,7 +274,6 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("bits", strprintf("%08x", block.nBits)));
     result.push_back(Pair("difficulty", GetDifficulty(blockindex)));
     if (IsDualAlgoEnabled(blockindex, Params().GetConsensus())) {
-        result.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         result.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
     }
     result.push_back(Pair("chainwork", blockindex->nChainWork.GetHex()));
@@ -1767,7 +1765,6 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     obj.push_back(Pair("bestblockhash", chainActive.Tip()->GetBlockHash().GetHex()));
     obj.push_back(Pair("difficulty", (double)GetDifficulty(chainActive.Tip())));
     if (IsDualAlgoEnabled(chainActive.Tip(), Params().GetConsensus())){
-        obj.push_back(Pair("difficulty_soterc", GetDifficulty(POW_TYPE_SOTERC)));
         obj.push_back(Pair("difficulty_soterg", GetDifficulty(POW_TYPE_SOTERG)));
         obj.push_back(Pair("difficulty_algorithm", "LWMA-EMA v3"));
     } else {
@@ -1807,6 +1804,7 @@ UniValue getblockchaininfo(const JSONRPCRequest& request)
     // BIP9SoftForkDescPushBack(bip9_softforks, "csv", consensusParams, Consensus::DEPLOYMENT_CSV);
     // BIP9SoftForkDescPushBack(bip9_softforks, "segwit", consensusParams, Consensus::DEPLOYMENT_SEGWIT);
     // BIP9SoftForkDescPushBack(bip9_softforks, "assets", consensusParams, Consensus::DEPLOYMENT_ASSETS);
+    BIP9SoftForkDescPushBack(bip9_softforks, "transfer_overflow", consensusParams, Consensus::DEPLOYMENT_TRANSFER_OVERFLOW);
     obj.push_back(Pair("softforks", softforks));
     obj.push_back(Pair("bip9_softforks", bip9_softforks));
 
