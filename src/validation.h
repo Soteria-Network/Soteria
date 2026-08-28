@@ -105,7 +105,7 @@ static constexpr int MAX_SCRIPTCHECK_THREADS = 16;
 /** -par default (number of script-checking threads, 0 = auto) */
 static constexpr int DEFAULT_SCRIPTCHECK_THREADS = 0;
 /** Number of blocks that can be requested at any given time from a single peer. ~32×0.32s ≃ 10s */
-static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 384; // 16nR, 32oD, 128nD, 256nV.
+static constexpr int MAX_BLOCKS_IN_TRANSIT_PER_PEER = 384; // 16nR, 32oD, 128nD, 256nV. 32 in-smart = 32 × 4MB = 128MB RAM
 /** Timeout in seconds during which a peer must stall block download progress before being disconnected. */
 /** A 2 second timeout is only 13 percent of a 15 second block interval. At 4 seconds it becomes 27 percent, giving peers more breathing room to finish sending large blocks before we drop them */
 static constexpr unsigned int BLOCK_STALLING_TIMEOUT = 4; /** 4R increase with no.peers to avoid false positives and give a litle more headroom than def=2 for slow peers */
@@ -266,15 +266,30 @@ static constexpr signed int DEFAULT_CHECKBLOCKS = 360;
 /** The intensity of the disk integrity check (0–4). A qualitative setting (how thoroughly to scan files) and rarely needs changing. */
 static constexpr unsigned int DEFAULT_CHECKLEVEL = 3;
 
-// Require that user allocate at least 1417.5MB for block & undo files (blk???.dat and rev???.dat)
-// At 3MB per block, 288 blocks = 864MB.
-// Add 15% for Undo data = 993MB
-// Add 20% for Orphan block rate = 1191MB
+// Raw block data: 288 blocks * 3 MB = 864 MB.~2 days of history
+// Add 15% undo data: 864 * 1.15 = 993.6 MB.
+// Add 20% orphan rate: 993.6 * 1.20 = 1192.32 MB.
+// High-water mark (one block file 128 MB + 15% undo = 147.2 MB): total = 1192.32 + 147.2 = 1339.52 MB.
+// That's about 1.31 GB. Round up for safety maybe 1.5 GB.
 // We want the low water mark after pruning to be at least 1191 MB and since we prune in
 // full block file chunks, we need the high water mark which triggers the prune to be
 // one 128MB block file + added 15% undo data = 147MB greater for a total of 1377MB
 // Setting the target to > than 1418MB will make it likely we can respect the target.
+/*    Raw block data
+    11520 blocks × 3 MB/block = 34,560 MB (33.75 GiB)
+
+    Add 15% for undo data
+    33.75 GiB × 1.15 = 38.81 GiB
+
+    Add 20% for orphan block margin
+    38.81 GiB × 1.20 = 46.57 GiB
+
+    Add high‑water mark (one 128 MB block file + 15% undo)
+    128 MB + 19.2 MB = 147.2 MB ≈ 0.14 GiB
+T
+Total theoretical minimum free space = 46.71 GiB*/
 static constexpr uint64_t MIN_DISK_SPACE_FOR_BLOCK_FILES = 10ULL * 1024 * 1024 * 1024;
+
 /** 
  * Process an incoming block. This only returns after the best known valid
  * block is made active. Note that it does not, however, guarantee that the
@@ -627,16 +642,18 @@ bool AreEnforcedValuesDeployed();
 
 bool AreCoinbaseCheckAssetsDeployed();
 
+bool IsTransferOverflowCheckDeployed();
+
 bool IsSoteriaNameSystemDeployed();
 
 // Only used by test framework
 void SetEnforcedValues(bool value);
 void SetEnforcedCoinbase(bool value);
+void SetTransferOverflow(bool value);
 
 bool IsDGWActive(unsigned int nBlockNumber);
 
 CAssetsCache* GetCurrentAssetCache();
 /** SOTER END */
-/** RIP-25: Check if Post-Quantum Hybrid Signatures are deployed */
-bool IsPQHybridDeployed();
+
 #endif
