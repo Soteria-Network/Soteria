@@ -5935,9 +5935,15 @@ void SetEnforcedValues(bool value)
     fEnforcedValuesIsActive = value;
 }
 
+// Only used by test framework
 void SetEnforcedCoinbase(bool value)
 {
     fCheckCoinbaseAssetsIsActive = value;
+}
+
+// Only used by test framework
+void SetTransferOverflow(bool value) {
+    fCheckTransferOverflowIsActive = value;
 }
 
 bool AreEnforcedValuesDeployed()
@@ -6019,6 +6025,18 @@ bool IsSoteriaNameSystemDeployed()
 bool IsDGWActive(unsigned int nBlockNumber)
 {
     return nBlockNumber >= Params().DGWActivationBlock();
+}
+
+bool IsTransferOverflowCheckDeployed()
+{
+    if (fCheckTransferOverflowIsActive)
+        return true;
+
+    const ThresholdState thresholdState = VersionBitsTipState(Params().GetConsensus(), Consensus::DEPLOYMENT_TRANSFER_OVERFLOW);
+    if (thresholdState == THRESHOLD_ACTIVE)
+        fCheckTransferOverflowIsActive = true;
+
+    return fCheckTransferOverflowIsActive;
 }
 
 CAssetsCache* GetCurrentAssetCache()
