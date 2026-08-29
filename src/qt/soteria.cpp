@@ -43,6 +43,7 @@
 #include <functional>
 #include <QApplication>
 #include <QDebug>
+#include <QEventLoop>
 #include <QDir>
 #include <QFontDatabase>
 #include <QLibraryInfo>
@@ -400,7 +401,10 @@ SoteriaApplication::~SoteriaApplication()
         coreThread->wait();
         qDebug() << __func__ << ": Stopped thread";
     }
-
+    if (window) {
+        window->hide();
+        processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
     delete window;
     window = 0;
 #ifdef ENABLE_WALLET
