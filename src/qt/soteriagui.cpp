@@ -299,6 +299,10 @@ SoteriaGUI::SoteriaGUI(const PlatformStyle* _platformStyle, const NetworkStyle* 
     }
 #endif
 
+#ifdef Q_OS_MAC
+    m_app_nap_inhibitor = new CAppNapInhibitor;
+#endif
+
     initializationTimer = new QTimer(this);
     connect(initializationTimer, SIGNAL(timeout()), this, SLOT(performDeferredInitialization()));
     initializationTimer->setSingleShot(true);
@@ -309,13 +313,25 @@ SoteriaGUI::~SoteriaGUI()
 {
     // Unsubscribe from notifications from core
     unsubscribeFromCoreSignals();
-
+    if (modalOverlay) {
+        modalOverlay->disconnect();
+    }
+    hide();
+    setEnabled(false);
     GUIUtil::saveWindowGeometry("MainWindowGeometry", this);
 
     if (trayIcon) // Hide tray icon, as deleting will let it linger until quit (on Ubuntu)
         trayIcon->hide();
 #ifdef Q_OS_MAC
-    delete appMenuBar;
+    delete m_app_nap_inhibitor;
+    m_app_nap_inhibitor = nullptr;
+    // Detach menu bar actions before delete; deleting while still key triggers
+    // the same QAction::setEnabled crash path via resignKeyWindow.
+    if (appMenuBar) {
+        appMenuBar->clear();
+        delete appMenuBar;
+        appMenuBar = nullptr;
+    }
     MacDockIconHandler::cleanup();
 #endif
 
@@ -936,7 +952,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         labelBtcSOTER->setAlignment(Qt::AlignVCenter);
         labelBtcSOTER->setObjectName("labelBtcSOTER");
 
-        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Available, Hurry up!</a>");
+        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Already Available, Hurry up!</a>");
         labelVersionUpdate->setTextFormat(Qt::RichText);
         labelVersionUpdate->setTextInteractionFlags(Qt::TextBrowserInteraction);
         labelVersionUpdate->setOpenExternalLinks(true);
@@ -1001,14 +1017,15 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
 
                 // Get current price
                 double num = soteriaNetwork.value("usd").toDouble();
-                labelCurrentPrice->setText(QString("%1").arg(QString().setNum(num, 'f', 8)));
-                labelCurrentPrice->setToolTip(tr("Brought to you by coingecko.com"));
+                labelCurrentPrice->setText(QString("$%1").arg(QString().setNum(num, 'f', 8)));
+                labelCurrentPrice->setToolTip(tr("Brought to you by livecoinwatch.com"));
             });
 
         // Create the timer
         connect(pricingTimer, SIGNAL(timeout()), this, SLOT(getPriceInfo()));
         pricingTimer->start(600000);
-        getPriceInfo();
+        // getPriceInfo will be called after GUI initialization to avoid blocking splash screen
+        // getPriceInfo();
         /** SOTER END */
 
         // Get the latest Soteria release and let the user know if they are using the latest version
@@ -1103,7 +1120,8 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
                     }
                 }
             });
-        getLatestVersion();
+        // getLatestVersion will be called after GUI initialization to avoid blocking splash screen
+        // getLatestVersion();
     }
 }
 
@@ -1459,7 +1477,7 @@ void SoteriaGUI::updateNetworkState()
     tooltip = QString("<nobr>") + tooltip + QString("</nobr>");
     connectionsControl->setToolTip(tooltip);
 
-    connectionsControl->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+    connectionsControl->setPixmap(platformStyle->SingleColorIcon(icon).pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 }
 
 void SoteriaGUI::setNumConnections(int count)
@@ -2014,19 +2032,24 @@ void UnitDisplayStatusBarControl::onMenuSelection(QAction* action)
         optionsModel->setDisplayUnit(action->data());
     }
 }
-
+void SoteriaGUI::performDeferredInitialization()
+{
+    getPriceInfo();
+    getLatestVersion();
+}
 void SoteriaGUI::getPriceInfo()
 {
-    QString url;
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=soteria-network&vs_currencies=usd";
-//  url = "https://www.exbitron.com/api/v2/peatio/public/markets/soterusdt/tickers";
-
-    QSslConfiguration sslConfiguration = request->sslConfiguration();
-    sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
-    sslConfiguration.setPeerVerifyMode(QSslSocket::QueryPeer);
-    request->setSslConfiguration(sslConfiguration);
-    request->setUrl(QUrl(url));
-    networkManager->get(*request);
+    QtConcurrent::run([this]() { // TODO: LCW
+        QString url = "https://api.livecoinwatch.com/api/v3/simple/price?ids=soteria-network&vs_currencies=usd";
+        QMetaObject::invokeMethod(this, [this, url]() {
+            QNetworkRequest request;
+            QSslConfiguration sslConfiguration;
+            sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
+            sslConfiguration.setPeerVerifyMode(QSslSocket::QueryPeer);
+            request.setSslConfiguration(sslConfiguration);
+            request.setUrl(QUrl(url));
+            networkManager->get(request); }, Qt::QueuedConnection);
+    });
 }
 
 void SoteriaGUI::mnemonic()
@@ -2034,15 +2057,18 @@ void SoteriaGUI::mnemonic()
     MnemonicDialog dlg(this);
     dlg.exec();
 }
-
 void SoteriaGUI::getLatestVersion()
 {
-    QSslConfiguration sslConfiguration = versionRequest->sslConfiguration();
-    sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
-    sslConfiguration.setPeerVerifyMode(QSslSocket::QueryPeer);
-    versionRequest->setSslConfiguration(sslConfiguration);
-    versionRequest->setUrl(QUrl("https://api.github.com/repos/soteria-network/soteria/releases"));
-    networkVersionManager->get(*versionRequest);
+    QtConcurrent::run([this]() {
+        QMetaObject::invokeMethod(this, [this]() {
+            QNetworkRequest request;
+            QSslConfiguration sslConfiguration;
+            sslConfiguration.setProtocol(QSsl::TlsV1_2OrLater);
+            sslConfiguration.setPeerVerifyMode(QSslSocket::QueryPeer);
+            request.setSslConfiguration(sslConfiguration);
+            request.setUrl(QUrl("https://api.github.com/repos/soteria-network/soteria/releases"));
+            networkVersionManager->get(request); }, Qt::QueuedConnection);
+    });
 }
 
 /** Soteria opening slots */
