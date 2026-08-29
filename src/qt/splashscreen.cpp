@@ -1,6 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
@@ -23,6 +23,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopWidget>
+#include <QEventLoop>
 #include <QPainter>
 #include <QLinearGradient>
 #include <QRadialGradient>
@@ -260,6 +261,23 @@ void SplashScreen::slotFinish(QWidget* mainWin)
     /* Make sure we de-minimize the splashscreen window before hiding */
     if (isMinimized())
         showNormal();
+
+#ifdef Q_OS_MAC
+    clearFocus();
+    setAttribute(Qt::WA_ShowWithoutActivating, true);
+    if (QApplication::activeWindow() == this || QApplication::focusWidget() == this) {
+        QWidget* handoff = new QWidget(nullptr, Qt::Tool | Qt::FramelessWindowHint);
+        handoff->setAttribute(Qt::WA_DontShowOnScreen, true);
+        handoff->setAttribute(Qt::WA_DeleteOnClose, true);
+        handoff->resize(1, 1);
+        handoff->show();
+        handoff->raise();
+        handoff->activateWindow();
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+        handoff->close();
+    }
+#endif
+
     hide();
     deleteLater(); // No more need for this
 }
