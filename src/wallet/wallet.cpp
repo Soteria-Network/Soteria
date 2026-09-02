@@ -304,6 +304,11 @@ bool CWallet::AddPQKeyPubKey(const CPQKey &key, const CPQPubKey &pubkey)
     if (!CCryptoKeyStore::AddPQKeyPubKey(key, pubkey))
         return false;
 
+    // The encrypted keystore path has already persisted an encrypted cpqkey
+    // record through AddCryptedPQKey(). Never recreate a plaintext pqkey.
+    if (IsCrypted())
+        return true;
+
     uint256 witnessProgram = pubkey.GetWitnessProgram();
     std::vector<unsigned char> keyData(key.GetKeyData().begin(), key.GetKeyData().end());
     return CWalletDB(*dbw).WritePQKey(witnessProgram, pubkey, keyData);
@@ -2843,6 +2848,80 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
     return res;
 }
 
+bool CWallet::SelectCoinsPQ(const std::vector<COutput>& vAvailableCoins, const CMutableTransaction& txNew, const CAmount& nTargetValue, std::set<CInputCoin>& setCoinsRet, CAmount& nValueRet, const CCoinControl* coinControl) const
+{
+    // Copy and sort descending by value
+    std::vector<COutput> vCoins = vAvailableCoins;
+    std::sort(vCoins.begin(), vCoins.end(),
+              [](const COutput& a, const COutput& b) {
+                  return a.tx->tx->vout[a.i].nValue > b.tx->tx->vout[b.i].nValue;
+              });
+
+    setCoinsRet.clear();
+    nValueRet = 0;
+
+    CMutableTransaction txEstimate = txNew;
+
+    auto addCoin = [&](const COutput& out) {
+        CInputCoin coin(out.tx, out.i);
+        setCoinsRet.insert(coin);
+        nValueRet += out.tx->tx->vout[out.i].nValue;
+        txEstimate.vin.push_back(CTxIn(coin.outpoint));
+    };
+
+    if (coinControl && coinControl->HasSelected() && !coinControl->fAllowOtherInputs) {
+        for (const COutput& out : vCoins) {
+            COutPoint op(out.tx->GetHash(), out.i);
+            if (out.fSpendable && coinControl->IsSelected(op)) {
+                addCoin(out);
+            }
+        }
+        return (nValueRet >= nTargetValue);
+    }
+
+    // Include preselected inputs (if any).
+    if (coinControl && coinControl->HasSelected()) {
+        std::vector<COutPoint> vPresetInputs;
+        coinControl->ListSelected(vPresetInputs);
+        for (const COutPoint& preset : vPresetInputs) {
+            for (const COutput& out : vCoins) {
+                COutPoint op(out.tx->GetHash(), out.i);
+                if (op == preset) {
+                    addCoin(out);
+                    break;
+                }
+            }
+        }
+    }
+
+    // Add largest coins first.
+    for (const COutput& out : vCoins) {
+        // Skip if already selected
+        CInputCoin coin(out.tx, out.i);
+        if (setCoinsRet.count(coin) != 0)
+            continue;
+
+        if (!out.fSpendable)
+            continue;
+
+        CMutableTransaction txCandidate = txEstimate;
+        txCandidate.vin.push_back(CTxIn(coin.outpoint));
+
+        int64_t weight = GetTransactionWeight(CTransaction(txCandidate));
+        if (weight > MAX_STANDARD_TX_WEIGHT)
+            break;
+
+        txEstimate = txCandidate;
+        setCoinsRet.insert(coin);
+        nValueRet += out.tx->tx->vout[out.i].nValue;
+
+        if (nValueRet >= nTargetValue)
+            break;
+    }
+
+    return (nValueRet >= nTargetValue);
+}
+
 /** SOTER START */
 bool CWallet::CreateNewChangeAddress(CReserveKey& reservekey, CKeyID& keyID, std::string& strFailReason)
 {
@@ -3434,11 +3513,18 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 if (pick_new_inputs) {
                     nValueIn = 0;
                     setCoins.clear();
-                    if (!SelectCoins(vAvailableCoins, nValueToSelect, setCoins, nValueIn, &coin_control)) {
-                        strFailReason = _("Insufficient funds");
-                        return false;
-                    }
-
+				bool fPQActive = IsPQWitnessDiscountActive(chainActive.Tip(), Params().GetConsensus());
+				if (fPQActive) {
+    				if (!SelectCoinsPQ(vAvailableCoins, txNew, nValueToSelect, setCoins, nValueIn, &coin_control)) {
+        				strFailReason = _("Insufficient funds or transaction too large");
+        				return false;
+    				}
+				} else {
+    				if (!SelectCoins(vAvailableCoins, nValueToSelect, setCoins, nValueIn, &coin_control)) {
+        				strFailReason = _("Insufficient funds");
+        				return false;
+    				}
+				}
                     /** SOTER START */
                     if (AreAssetsDeployed()) {
                         setAssets.clear();
