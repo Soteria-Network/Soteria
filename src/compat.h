@@ -1,35 +1,57 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_COMPAT_H
 #define SOTERIA_COMPAT_H
+
+// ============================================================================
+// This matters because the Win32 SDK also declares a global
+// `typedef unsigned char byte`. Without a rename, any translation unit that
+// sees both ends up with an ambiguity when `using namespace std;` is in
+// effect (which several headers use).
+// ============================================================================
+#include <cstddef>
+#include <type_traits>
 
 #if defined(HAVE_CONFIG_H)
 #include <config/soteria-config.h>
 #endif
 
-#include <type_traits>
-
+// ============================================================================
+// Platform-specific setup
+// ============================================================================
 #ifdef WIN32
+
+// Prevent windows.h from defining min/max macros.
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifdef FD_SETSIZE
-#undef FD_SETSIZE // prevent redefinition compiler warning
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
 #endif
-#define FD_SETSIZE 1024 // max number of fds in fd_set
 
-#include <winsock2.h>     // Must be included before mswsock.h and windows.h
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
+#endif
 
-#include <mswsock.h>
+// Rename Win32 `byte` -> `win_byte` for the duration of the Windows headers.
+// push_macro / pop_macro ensures the rename is scoped and cannot leak.
+#pragma push_macro("byte")
+#define byte win_byte
+
+#include <winsock2.h>
 #include <windows.h>
+#include <mswsock.h>
 #include <ws2tcpip.h>
 #include <stdint.h>
-#else
+
+#pragma pop_macro("byte")
+
+#else // not WIN32
+
 #include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/select.h>
@@ -43,8 +65,12 @@
 #include <limits.h>
 #include <netdb.h>
 #include <unistd.h>
-#endif
 
+#endif // WIN32
+
+// ============================================================================
+// Socket abstractions
+// ============================================================================
 #ifndef WIN32
 typedef unsigned int SOCKET;
 #include <errno.h>
@@ -61,6 +87,9 @@ typedef unsigned int SOCKET;
 #define SOCKET_ERROR        -1
 #endif
 
+// ============================================================================
+// Common defines
+// ============================================================================
 #ifndef PRIO_MAX
 #define PRIO_MAX 20
 #endif
@@ -85,6 +114,7 @@ typedef unsigned int SOCKET;
 #else
 #define MAX_PATH            1024
 #endif
+
 #ifdef _MSC_VER
 #if !defined(ssize_t)
 #ifdef _WIN64
@@ -97,7 +127,7 @@ typedef int32_t ssize_t;
 
 #if HAVE_DECL_STRNLEN == 0
 size_t strnlen( const char *start, size_t max_len);
-#endif // HAVE_DECL_STRNLEN
+#endif
 
 #ifndef WIN32
 typedef void* sockopt_arg_type;
