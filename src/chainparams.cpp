@@ -163,7 +163,7 @@ public:
         consensus.nBurstFactorTenths = 1;
         consensus.lwmaAveragingWindow = 60;
         consensus.lwmaHeight = 1;
-
+        consensus.nAssetTransferOverflowFixHeight = 2250000;
 		consensus.diffRetargetStartHeight3  = 1; 
 		consensus.diffRetargetEndHeight3    = 175000;
 		consensus.diffRetargetStartHeight4  = 175000; 
@@ -175,8 +175,8 @@ public:
 		consensus.diffRetargetStartHeight2 = 47000000; 
 		consensus.diffRetargetEndHeight2   = 49000000;
 		consensus.diffRetargetStartHeight5  = 1400000; // weight 2/1
-		consensus.diffRetargetEndHeight5    = 2500000;
-		consensus.diffRetargetStartHeight6  = 2500000; // weight 3/2 - better DAA
+		consensus.diffRetargetEndHeight5    = 2200000;
+		consensus.diffRetargetStartHeight6  = 2200000; // weight 3/2 - better DAA
 		consensus.diffRetargetEndHeight6    = 40000000;
 		
 		// decrease the values use f when the block reward will reach 0, to support mining with any CPU so the transactions will keep going at a rate of 9-14s
@@ -187,8 +187,8 @@ public:
         // 4 for N, 3 or 2 for L - TEST
         consensus.BIP34LockedIn = 1;
 
-        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000001dabb2acce470b"); // update in v1.1.2
-        consensus.defaultAssumeValid = uint256S("0000000309787c34f60095f7cce7888c04d36f8444482abe55a5059e3d2a371f"); // update in v1.1.2
+        consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000001e20323690b1d7");
+        consensus.defaultAssumeValid = uint256S("00000002579c5a67e7d865d440c5ad85899bc712f790a77a3d721b2e403c5b9f");
 
         pchMessageStart[0] = 0x53; 
         pchMessageStart[1] = 0x4F; 
@@ -204,7 +204,7 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("1ecd95dfb20581f98c3b1a867566fb6318af76de5607f56ae853cccfb01c06f5"));
 
         // Main seeders
-        vSeeds.emplace_back("seed.soteria-network.online", false);
+        vSeeds.emplace_back("seed.soterianetwork.online", false);
         vSeeds.emplace_back("soterianode.vpnopg.ru", false);
         vSeeds.emplace_back("soteria-demon.favoritcoin.ru", false);
         vSeeds.emplace_back("soter.hashborn.space", false);
@@ -259,15 +259,17 @@ public:
               { 1550000, uint256S("000000033332f49c56677905875ead98fd3387213593da5e9fa62dfdd4818b1a")},
               { 1600000, uint256S("00000000b65320b71593c2019fe987dd9d55e7122492315acbc1ccdc33efae7a")},
               { 1650000, uint256S("00000003e6605ad924b82a1ffaa246bc2aed2c634bb7d39bb3efad78fbf3485e")},
-              { 1700000, uint256S("0000000309787c34f60095f7cce7888c04d36f8444482abe55a5059e3d2a371f")}			
-                
+              { 1700000, uint256S("0000000309787c34f60095f7cce7888c04d36f8444482abe55a5059e3d2a371f")},			
+              { 1750000, uint256S("000000049efc26adfc20e285acbbdf43ed3b30a8b00ac99c252d861e1a4ebaeb")}, 
+              { 1800000, uint256S("00000002ffc75aa0cb82e66b0938c748368bce697b94ee5d1a18d0ea1fa6558e")},                                                                    
+              { 1845000, uint256S("00000002579c5a67e7d865d440c5ad85899bc712f790a77a3d721b2e403c5b9f")}                
             }
         };
 
         chainTxData = ChainTxData{ // Todo new values in v1.1.2
-            1786862175, 
-            1765250,    
-            0.06549690211852688           
+            1788635353, 
+            1868678,    
+            0.0610890892847015           
         };
 
       // Amounts & Addresses of the Tokenomics
@@ -360,11 +362,11 @@ public:
         // BIP9 deployments
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 4294967295;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 2147483647;
        
         // RIP-25: Post-Quantum Hybrid Signatures — testnet activates immediately for testing
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1199145601; // always active for testnet
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 1759419050; // always active for testnet
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2051211600; // Far future
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 5250;
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 7000;
@@ -384,6 +386,7 @@ public:
 		consensus.lwmaHeight = 1;
         consensus.lwmaTimestamp = 1759419050;
         consensus.lwmaAveragingWindow = 60;
+		consensus.nAssetTransferOverflowFixHeight = 100;
 		consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
         consensus.powTypeLimits.emplace_back(uint256S("00000004ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));
@@ -504,13 +507,13 @@ public:
         // BIP9 deployments
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;
-        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 999999999999ULL;
+        consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 2147483647;
     
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].bit = 11;
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nStartTime = 0;
         consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nTimeout = 2147483647;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 280;
-        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 432;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideRuleChangeActivationThreshold = 2400;
+        consensus.vDeployments[Consensus::DEPLOYMENT_PQ_HYBRID].nOverrideMinerConfirmationWindow = 3000;
         consensus.nPQHybridEnabled = true;
        
 		// Soteria network
@@ -525,7 +528,7 @@ public:
 
         consensus.lwmaTimestamp = 1759421432;        
         consensus.lwmaAveragingWindow = 180; 
-		
+        consensus.nAssetTransferOverflowFixHeight = 100;		
 		consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); // soterhash
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"));  
         consensus.powTypeLimits.emplace_back(uint256S("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")); 
