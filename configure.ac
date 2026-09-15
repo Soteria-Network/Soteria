@@ -1,15 +1,15 @@
-dnl require autoconf 2.69 (AS_ECHO/AS_ECHO_N)
-AC_PREREQ([2.69])
+dnl require autoconf 2.71 (AS_ECHO/AS_ECHO_N)
+AC_PREREQ([2.71])
 define(_CLIENT_VERSION_MAJOR, 1)
 define(_CLIENT_VERSION_MINOR, 1)
 define(_CLIENT_VERSION_REVISION, 2)
 define(_CLIENT_VERSION_BUILD, 0)
 define(_CLIENT_VERSION_RC, 0)
-define(_CLIENT_VERSION_IS_RELEASE, false)
+define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2026)
-define(_COPYRIGHT_HOLDERS,[The %s developers])
+define(_COPYRIGHT_HOLDERS,[The %s developer])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[Soteria Core]])
-AC_INIT([Soteria Core],[m4_join(., _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, 0, , _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, 0, , test_CLIENT_VERSION_RC)],[https://github.com/Soteria-Network/Soteria/issues],[soteria],[https://soteria-network.online/])
+AC_INIT([Soteria Core],[m4_join(., _CLIENT_VERSION_MAJOR, _CLIENT_VERSION_MINOR, _CLIENT_VERSION_REVISION, m4_if(_CLIENT_VERSION_BUILD, 0, , _CLIENT_VERSION_BUILD))m4_if(_CLIENT_VERSION_RC, 0, , test_CLIENT_VERSION_RC)],[https://github.com/Soteria-Network/Soteria/issues],[soteria],[https://soterianetwork.online/])
 
 AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/soteria-config.h])
@@ -214,9 +214,13 @@ AC_ARG_ENABLE([zmq],
 
 AC_ARG_WITH([liboqs],
   [AS_HELP_STRING([--with-liboqs],
-  [enable post-quantum signatures via liboqs (default is yes)])],
+  [RIP-25 requires liboqs >= 0.16.0 (required; disabling is unsupported)])],
   [use_liboqs=$withval],
   [use_liboqs=yes])
+
+if test "x$use_liboqs" != "xyes"; then
+  AC_MSG_ERROR([RIP-25 requires liboqs >= 0.16.0; --without-liboqs is not supported])
+fi
 
 AC_ARG_ENABLE([experimental],
   [AS_HELP_STRING([--enable-experimental],
@@ -513,15 +517,20 @@ case $host in
      ;;
 esac
 
-if test x$use_pkgconfig = xyes; then
-  m4_ifndef([PKG_PROG_PKG_CONFIG], [AC_MSG_ERROR(PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.)])
-  m4_ifdef([PKG_PROG_PKG_CONFIG], [
-  PKG_PROG_PKG_CONFIG
-  if test x"$PKG_CONFIG" = "x"; then
-    AC_MSG_ERROR(pkg-config not found.)
-  fi
-  ])
+m4_ifndef([PKG_PROG_PKG_CONFIG], [m4_fatal([PKG_PROG_PKG_CONFIG macro not found. Please install pkg-config and re-run autogen.sh.])])
+m4_ifndef([PKG_CHECK_MODULES], [m4_fatal([PKG_CHECK_MODULES macro not found. Please install pkg-config and re-run autogen.sh.])])
+PKG_PROG_PKG_CONFIG
+if test x"$PKG_CONFIG" = x; then
+  AC_MSG_ERROR([pkg-config is required to prove liboqs >= 0.16.0 compatibility])
 fi
+
+dnl RIP-25 consensus signatures require final FIPS-204 ML-DSA-44 semantics.
+dnl Refuse unversioned probes: the pre-final interface can be size-compatible.
+PKG_CHECK_MODULES([LIBOQS], [liboqs >= 0.16.0],
+  [AC_DEFINE([HAVE_LIBOQS], [1], [Define to 1 if liboqs is available])],
+  [AC_MSG_ERROR([RIP-25 requires liboqs >= 0.16.0 discoverable via pkg-config; refusing an unversioned system-library fallback])])
+AC_SUBST([LIBOQS_LIBS])
+AC_SUBST([LIBOQS_CFLAGS])
 
 if test x$use_extended_functional_tests != xno; then
   AC_SUBST(EXTENDED_FUNCTIONAL_TESTS, --extended)
@@ -590,7 +599,6 @@ AX_GCC_FUNC_ATTRIBUTE([dllimport])
 
 if test x$use_glibc_compat != xno; then
 
-  #glibc absorbed clock_gettime in 2.17. librt (its previous location) is safe to link
   #in anyway for back-compat. Since gcc-9, we need to explicitly add lrt outside the
   #scope of "as-needed" packages, so we disable it, add librt, and re-enable.
   AX_CHECK_LINK_FLAG([[-Wl,-no-as-needed -Wl,-lrt -Wl,-as-needed]],
@@ -656,7 +664,12 @@ if test x$use_hardening != xno; then
 
   case $host in
     *mingw*)
-       AC_CHECK_LIB([ssp],      [main],, AC_MSG_ERROR(lib missing))
+       dnl Modern mingw-w64 (GCC 12+) provides the stack protector runtime in the
+       dnl CRT itself. Adding -lssp on top makes the link pull in both libssp.a
+       dnl and libssp.dll.a, which collide on __stack_chk_fail. Only link it when
+       dnl the symbol is not already available, so hardening stays enabled either way.
+       AC_CHECK_FUNC([__stack_chk_fail],,
+         [AC_CHECK_LIB([ssp], [main],, AC_MSG_ERROR(lib missing))])
     ;;
   esac
 fi
@@ -822,7 +835,14 @@ SOTERIA_QT_INIT
 
 dnl sets $soteria_enable_qt, $soteria_enable_qt_test, $soteria_enable_qt_dbus
 SOTERIA_QT_CONFIGURE([$use_pkgconfig], [qt5])
-
+if test x$TARGET_OS = xdarwin; then
+    QT_DBUS_LIBS=""
+    QT_DBUS_CFLAGS=""
+    QT_DBUS_INCLUDES=""
+    AC_SUBST(QT_DBUS_LIBS)
+    AC_SUBST(QT_DBUS_CFLAGS)
+    AC_SUBST(QT_DBUS_INCLUDES)
+fi
 if test x$build_soteria_cli$build_soteria_tx$build_soteriad$soteria_enable_qt$use_tests$use_bench = xnononononono; then
     use_boost=no
 else
@@ -832,11 +852,10 @@ fi
 if test x$use_boost = xyes; then
 
 dnl Minimum required Boost version
-define(MINIMUM_REQUIRED_BOOST, 1.81.0)
+define(MINIMUM_REQUIRED_BOOST, 1.84.0)
 
 dnl Check for boost libs
 AX_BOOST_BASE([MINIMUM_REQUIRED_BOOST], AC_MSG_RESULT(ok), AC_MSG_ERROR(Need at least boost 1.81.0))
-dnl Boost.System is header-only since Boost 1.70
 dnl AX_BOOST_SYSTEM
 BOOST_SYSTEM_LIB=""
 AX_BOOST_FILESYSTEM
@@ -844,8 +863,6 @@ AX_BOOST_PROGRAM_OPTIONS
 AX_BOOST_THREAD
 AX_BOOST_CHRONO
 
-dnl Boost 1.56 through 1.62 allow using std::atomic instead of its own atomic
-dnl counter implementations. In 1.63 and later the std::atomic approach is default.
 m4_pattern_allow(DBOOST_AC_USE_STD_ATOMIC) dnl otherwise it's treated like a macro
 BOOST_CPPFLAGS="-DBOOST_SP_USE_STD_ATOMIC -DBOOST_AC_USE_STD_ATOMIC $BOOST_CPPFLAGS"
 
@@ -934,16 +951,10 @@ if test x$use_boost = xyes; then
 
 BOOST_LIBS="$BOOST_LDFLAGS $BOOST_SYSTEM_LIB $BOOST_FILESYSTEM_LIB $BOOST_PROGRAM_OPTIONS_LIB $BOOST_THREAD_LIB $BOOST_CHRONO_LIB"
 
-
-dnl If boost (prior to 1.57) was built without c++11, it emulated scoped enums
-dnl using c++98 constructs. Unfortunately, this implementation detail leaked into
-dnl the abi. This was fixed in 1.57.
-
 dnl When building against that installed version using c++11, the headers pick up
 dnl on the native c++11 scoped enum support and enable it, however it will fail to
 dnl link. This can be worked around by disabling c++11 scoped enums if linking will
 dnl fail.
-dnl BOOST_NO_SCOPED_ENUMS was changed to BOOST_NO_CXX11_SCOPED_ENUMS in 1.51.
 
 TEMP_LIBS="$LIBS"
 LIBS="$BOOST_LIBS $LIBS"
@@ -1333,6 +1344,9 @@ BUILD_TEST_QT=""
 if test x$soteria_enable_qt != xno; then
   dnl enable dbus support
   AC_MSG_CHECKING([whether to build GUI with support for D-Bus])
+  if test x$TARGET_OS = xdarwin; then
+    soteria_enable_qt_dbus=no
+  fi
   if test x$soteria_enable_qt_dbus != xno; then
     AC_DEFINE([USE_DBUS],[1],[Define if dbus support should be compiled in])
   fi
