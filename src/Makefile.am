@@ -1,6 +1,6 @@
 # Copyright (c) 2011-2016 The Bitcoin Core developers
 # Copyright (c) 2017-2019 The Raven Core developers
-# Copyright (c) 2025 The Soteria Core developers
+# Copyright (c) 2025-2026 The Soteria Core developer
 
 DIST_SUBDIRS = secp256k1 univalue
 
@@ -654,8 +654,8 @@ if GLIBC_BACK_COMPAT
 endif
 
 libsoteriaconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libsoteriaconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS)
-libsoteriaconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_SOTERIA_INTERNAL
+libsoteriaconsensus_la_LIBADD = $(LIBSECP256K1) $(BOOST_LIBS) $(LIBOQS_LIBS)
+libsoteriaconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBOQS_CFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_SOTERIA_INTERNAL
 libsoteriaconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
