@@ -9,7 +9,7 @@
  * network protocol versioning
  */
 
-static constexpr int PROTOCOL_VERSION = 70058;
+static constexpr int PROTOCOL_VERSION = 70059;
 
 //! initial proto version, to be increased after version/verack negotiation
 static constexpr int INIT_PROTO_VERSION = 209;
@@ -55,7 +55,7 @@ static constexpr int INVALID_CB_NO_BAN_VERSION = 70015;
 static constexpr int ASSETDATA_VERSION_UPDATED = 70020;
 
 //! migrate to a new mining algo
-static constexpr int SOTERHASH_VERSION = 70058;
+//static constexpr int SOTERHASH_VERSION = 70058;
 
 //! getassetdata return asstnotfound, and assetdata doesn't have blockhash in the data
 static constexpr int X12RV2_VERSION = 70025;
