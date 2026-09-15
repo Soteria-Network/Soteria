@@ -5,7 +5,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
 #endif
-
+#include <qt/appnapinhibitor.h>
 #include "soteriagui.h"
 #include "soteriaunits.h"
 #include "clientmodel.h"
@@ -952,7 +952,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         labelBtcSOTER->setAlignment(Qt::AlignVCenter);
         labelBtcSOTER->setObjectName("labelBtcSOTER");
 
-        labelVersionUpdate->setText("<a href=\"https://github.com/Soteria-Network/Soteria/releases\">New Wallet Version Already Available, Hurry up!</a>");
+        labelVersionUpdate->setText("<a href=\"https://github.com/SoteriaNetwork/Soteria/releases\">New Wallet Version Already Available, Hurry up!</a>");
         labelVersionUpdate->setTextFormat(Qt::RichText);
         labelVersionUpdate->setTextInteractionFlags(Qt::TextBrowserInteraction);
         labelVersionUpdate->setOpenExternalLinks(true);
@@ -2074,27 +2074,27 @@ void SoteriaGUI::getLatestVersion()
 /** Soteria opening slots */
 	void SoteriaGUI::openWebsite()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online"));
 }
 	void SoteriaGUI::openExplorer()
 {
-    QDesktopServices::openUrl(QUrl("https://explorer.soteria-network.online"));
+    QDesktopServices::openUrl(QUrl("https://explorer.soterianetwork.online"));
 }
 	void SoteriaGUI::openEcosystem()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/ecosystem.html"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/ecosystem.html"));
 }
 	void SoteriaGUI::openRoadmap()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/roadmap.html"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/roadmap.html"));
 }
 	void SoteriaGUI::openRD()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/r&d.html"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/r&d.html"));
 }
 	void SoteriaGUI::openServices()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/services.html"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/services.html"));
 }
 	void SoteriaGUI::openWhitepaper()
 {
@@ -2143,19 +2143,19 @@ void SoteriaGUI::getLatestVersion()
 /** Investment opening slots */
 	void SoteriaGUI::openDonation()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/crowdfunding.html"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/crowdfunding.html"));
 }
 	void SoteriaGUI::openPremium()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/finance.html#premium"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/finance.html#premium"));
 }
 	void SoteriaGUI::openMembership()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/programs.html#membership"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/programs.html#membership"));
 }
 	void SoteriaGUI::openWhitelist()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/finance.html#whitelist"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/finance.html#whitelist"));
 }
 	void SoteriaGUI::openMultichain()
 {
@@ -2163,10 +2163,10 @@ void SoteriaGUI::getLatestVersion()
 }
 	void SoteriaGUI::openStaking()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/finance.html#stake"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/finance.html#stake"));
 }
 	void SoteriaGUI::openWaitlist()
 {
-    QDesktopServices::openUrl(QUrl("https://soteria-network.online/events.html#waitlist"));
+    QDesktopServices::openUrl(QUrl("https://soterianetwork.online/events.html#waitlist"));
 }
 
