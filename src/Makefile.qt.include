@@ -198,6 +198,7 @@ QT_MOC_CPP = \
 
 SOTERIA_MM = \
   qt/macdockiconhandler.mm \
+  qt/appnapinhibitor.mm \
   qt/macnotificationhandler.mm
 QT_MOC = \
   qt/soteria.moc \
@@ -219,6 +220,7 @@ PROTOBUF_PROTO = qt/paymentrequest.proto
 SOTERIA_QT_H = \
   qt/addressbookpage.h \
   qt/addresstablemodel.h \
+  qt/appnapinhibitor.h \
   qt/askpassphrasedialog.h \
   qt/assetcontroldialog.h \
   qt/assetcontroltreewidget.h \
