@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "soteriaunits.h"
 
@@ -228,11 +226,9 @@ bool SoteriaUnits::assetParse(int assetUnit, const QString &value, CAmount *val_
     bool ok = false;
     QString str = whole + decimals.leftJustified(num_decimals, '0');
 
-    if(str.size() > 18)
-    {
-        return false; // Longer numbers will exceed 63 bits
-    }
     CAmount retvalue(str.toLongLong(&ok));
+    if (!ok || retvalue > maxMoney())
+        return false;
     if(val_out)
     {
         *val_out = retvalue;
