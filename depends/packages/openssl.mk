@@ -1,11 +1,10 @@
 package=openssl
-$(package)_version=1.1.1k
+$(package)_version=3.5.5
 $(package)_download_path=https://www.openssl.org/source
 $(package)_file_name=$(package)-$($(package)_version).tar.gz
-$(package)_sha256_hash=892a0875b9872acd04a9fde79b1f943075d5ea162415de3047c327df33fbaee5
+$(package)_sha256_hash=b28c91532a8b65a1f983b4c28b7488174e4a01008e29ce8e69bd789f28bc2a89
 
 define $(package)_set_vars
-$(package)_config_env=AR="$($(package)_ar)" RANLIB="$($(package)_ranlib)" CC="$($(package)_cc)"
 $(package)_config_opts=--prefix=$(host_prefix) --openssldir=$(host_prefix)/etc/openssl
 $(package)_config_opts+=no-camellia
 $(package)_config_opts+=no-capieng
@@ -15,28 +14,20 @@ $(package)_config_opts+=no-dso
 $(package)_config_opts+=no-dtls1
 $(package)_config_opts+=no-ec_nistp_64_gcc_128
 $(package)_config_opts+=no-gost
-$(package)_config_opts+=no-gmp
 $(package)_config_opts+=no-heartbeats
 $(package)_config_opts+=no-idea
-$(package)_config_opts+=no-jpake
-$(package)_config_opts+=no-krb5
-$(package)_config_opts+=no-libunbound
 $(package)_config_opts+=no-md2
 $(package)_config_opts+=no-mdc2
 $(package)_config_opts+=no-rc4
 $(package)_config_opts+=no-rc5
 $(package)_config_opts+=no-rdrand
 $(package)_config_opts+=no-rfc3779
-$(package)_config_opts+=no-rsax
 $(package)_config_opts+=no-sctp
 $(package)_config_opts+=no-seed
-$(package)_config_opts+=no-sha0
 $(package)_config_opts+=no-shared
 $(package)_config_opts+=no-ssl-trace
 $(package)_config_opts+=no-ssl2
 $(package)_config_opts+=no-ssl3
-$(package)_config_opts+=no-static_engine
-$(package)_config_opts+=no-store
 $(package)_config_opts+=no-tests
 $(package)_config_opts+=no-unit-test
 $(package)_config_opts+=no-weak-ssl-ciphers
@@ -52,17 +43,36 @@ $(package)_config_opts_aarch64_linux=linux-generic64
 $(package)_config_opts_mipsel_linux=linux-generic32
 $(package)_config_opts_mips_linux=linux-generic32
 $(package)_config_opts_powerpc_linux=linux-generic32
-$(package)_config_opts_x86_64_darwin=darwin64-x86_64-cc
+$(package)_config_opts_x86_64_darwin=AR=$(host_prefix)/native/bin/$(host)-ar
+$(package)_config_opts_x86_64_darwin+=RANLIB=$(host_prefix)/native/bin/$(host)-ranlib
+$(package)_config_opts_x86_64_darwin+=darwin64-x86_64-cc
+$(package)_config_opts_aarch64_darwin=darwin64-arm64-cc
 $(package)_config_opts_x86_64_mingw32=mingw64
 $(package)_config_opts_i686_mingw32=mingw
+
+ifneq (,$(findstring clang,$($(package)_cxx)))
+$(package)_toolset_$(host_os)=clang
+else
+$(package)_toolset_$(host_os)=gcc
+endif
 endef
 
 define $(package)_preprocess_cmds
 endef
 
+# AR/RANLIB must be passed explicitly. Without them OpenSSL falls back to the
+# build machine's ar, and on macOS that is BSD ar, which silently refuses the
+# mingw COFF objects ("not a mach-o file") and emits a 96-byte empty archive.
+# depends then caches that empty libcrypto.a as a successful build, and the
+# failure only surfaces much later as undefined references to OPENSSL_init_crypto
+# while linking ravend.exe. On Linux hosts the system ar is GNU ar, so this
+# never showed up there.
 define $(package)_config_cmds
-  ./Configure $($(package)_config_opts) && \
-  make depend
+  CC="$($(package)_cc)" \
+  AR="$($(package)_ar)" \
+  RANLIB="$($(package)_ranlib)" \
+  CXXFLAGS="$($(package)_ccflags)" \
+  ./Configure $($(package)_config_opts)
 endef
 
 define $(package)_build_cmds
