@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "sendcoinsdialog.h"
 #include "ui_sendcoinsdialog.h"
@@ -435,6 +433,7 @@ SendCoinsEntry *SendCoinsDialog::addEntry()
     entry->setModel(model);
     ui->entries->addWidget(entry);
     connect(entry, SIGNAL(removeEntry(SendCoinsEntry*)), this, SLOT(removeEntry(SendCoinsEntry*)));
+    connect(entry, SIGNAL(useAvailableBalance(SendCoinsEntry*)), this, SLOT(useAvailableBalance(SendCoinsEntry*)));
     connect(entry, SIGNAL(payAmountChanged()), this, SLOT(coinControlUpdateLabels()));
     connect(entry, SIGNAL(subtractFeeFromAmountChanged()), this, SLOT(coinControlUpdateLabels()));
 
@@ -468,6 +467,27 @@ void SendCoinsDialog::removeEntry(SendCoinsEntry* entry)
     entry->deleteLater();
 
     updateTabsAndLabels();
+}
+
+void SendCoinsDialog::useAvailableBalance(SendCoinsEntry* entry)
+{
+    CCoinControl ctrl;
+    if (model->getOptionsModel()->getCoinControlFeatures())
+        ctrl = *CoinControlDialog::coinControl;
+
+    CAmount amount = model->getBalance(&ctrl);
+    for (int i = 0; i < ui->entries->count(); ++i) {
+        SendCoinsEntry *otherEntry = qobject_cast<SendCoinsEntry*>(ui->entries->itemAt(i)->widget());
+        if (otherEntry && !otherEntry->isHidden() && otherEntry != entry)
+            amount -= otherEntry->getValue().amount;
+    }
+
+    if (amount > 0) {
+        entry->checkSubtractFeeFromAmount();
+        entry->setAmount(amount);
+    } else {
+        entry->setAmount(0);
+    }
 }
 
 QWidget *SendCoinsDialog::setupTabChain(QWidget *prev)
