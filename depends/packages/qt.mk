@@ -1,22 +1,24 @@
 PACKAGE=qt
-$(package)_version=5.12.11
+$(package)_version=5.15.19
 $(package)_download_path=https://download.bitcoinabc.org/depends-sources/
 $(package)_suffix=everywhere-src-$($(package)_version).tar.xz
 $(package)_file_name=qtbase-$($(package)_suffix)
-$(package)_sha256_hash=1c1b4e33137ca77881074c140d54c3c9747e845a31338cfe8680f171f0bc3a39
+$(package)_sha256_hash=51e91c73abacab81e64efd01bf95794e79c0e605ad80947a024769f0dd620a32
 $(package)_dependencies=openssl
 $(package)_linux_dependencies=freetype fontconfig libxcb libxkbcommon
-$(package)_qt_libs=corelib network widgets gui plugins testlib printsupport
-$(package)_patches=fix_qt_pkgconfig.patch mac-qmake.conf no-xlib.patch dont_hardcode_pwd.patch
-$(package)_patches+= drop_lrelease_dependency.patch fix_xcb_atoms.patch
-$(package)_patches+= fix_lib_paths.patch fix_qt_fortify_readlink.patch
-$(package)_patches+= qtbase-moc-ignore-gcc-macro.patch
+$(package)_qt_libs=corelib network widgets gui plugins testlib printsupport concurrent
+$(package)_patches=mac-qmake.conf fix_no_printer.patch no-xlib.patch
+$(package)_patches+= fix_android_jni_static.patch dont_hardcode_pwd.patch
+$(package)_patches+= drop_lrelease_dependency.patch no_sdk_version_check.patch
+$(package)_patches+= qtbase-moc-ignore-gcc-macro.patch fix_qfloat16_limits.patch fix_qendian_limits.patch fix_qbytearraymatcher_limits.patch fix_generator_limits.patch
+$(package)_patches+= fix_qt_fortify_readlink.patch
+$(package)_patches+= fix_xcb_atoms.patch
 
 $(package)_qttranslations_file_name=qttranslations-$($(package)_suffix)
-$(package)_qttranslations_sha256_hash=577b0668a777eb2b451c61e8d026d79285371597ce9df06b6dee6c814164b7c3
+$(package)_qttranslations_sha256_hash=967e0d259af13f47e853f183cffc9671cc054380188fee28402f6425132a2c7b
 
 $(package)_qttools_file_name=qttools-$($(package)_suffix)
-$(package)_qttools_sha256_hash=98b2aaca230458f65996f3534fd471d2ffd038dd58ac997c0589c06dc2385b4f
+$(package)_qttools_sha256_hash=2694af886130d63b8a42bcd138f4035fd8108273ebd16781f87300da352f1aa6
 
 $(package)_extra_sources  = $($(package)_qttranslations_file_name)
 $(package)_extra_sources += $($(package)_qttools_file_name)
@@ -32,30 +34,23 @@ $(package)_config_opts += -confirm-license
 $(package)_config_opts += -hostprefix $(build_prefix)
 $(package)_config_opts += -no-pch
 $(package)_config_opts += -no-compile-examples
-$(package)_config_opts += -no-alsa
-$(package)_config_opts += -no-audio-backend
 $(package)_config_opts += -no-cups
 $(package)_config_opts += -no-egl
 $(package)_config_opts += -no-eglfs
 $(package)_config_opts += -no-freetype
 $(package)_config_opts += -no-gif
 $(package)_config_opts += -no-glib
-$(package)_config_opts += -no-gstreamer
 $(package)_config_opts += -no-icu
 $(package)_config_opts += -no-ico
 $(package)_config_opts += -no-iconv
 $(package)_config_opts += -no-kms
 $(package)_config_opts += -no-linuxfb
-$(package)_config_opts += -no-libjpeg
 $(package)_config_opts += -no-libudev
-$(package)_config_opts += -no-mitshm
 $(package)_config_opts += -no-mtdev
 $(package)_config_opts += -openssl-linked
 $(package)_config_opts += -no-dtls
-$(package)_config_opts += -no-pulseaudio
 $(package)_config_opts += -no-openvg
 $(package)_config_opts += -no-reduce-relocations
-$(package)_config_opts += -no-qml-debug
 $(package)_config_opts += -no-sql-db2
 $(package)_config_opts += -no-sql-ibase
 $(package)_config_opts += -no-sql-oci
@@ -67,15 +62,9 @@ $(package)_config_opts += -no-sql-sqlite
 $(package)_config_opts += -no-sql-sqlite2
 $(package)_config_opts += -no-system-proxies
 $(package)_config_opts += -no-use-gold-linker
-$(package)_config_opts += -no-xcb-xlib
-$(package)_config_opts += -no-xinput2
-$(package)_config_opts += -no-xrender
 $(package)_config_opts += -nomake examples
 $(package)_config_opts += -nomake tests
 $(package)_config_opts += -opensource
-$(package)_config_opts += -openssl-linked
-$(package)_config_opts += -optimized-qmake
-$(package)_config_opts += -pch
 $(package)_config_opts += -pkg-config
 $(package)_config_opts += -prefix $(host_prefix)
 $(package)_config_opts += -qt-libpng
@@ -83,23 +72,18 @@ $(package)_config_opts += -qt-libjpeg
 $(package)_config_opts += -qt-pcre
 $(package)_config_opts += -qt-harfbuzz
 $(package)_config_opts += -qt-zlib
-$(package)_config_opts += -reduce-exports
 $(package)_config_opts += -static
 $(package)_config_opts += -v
-
+$(package)_config_opts += -feature-printer -feature-printdialog -feature-printpreviewdialog -feature-printpreviewwidget
 # disabled features to reduce binary size and attack surface
 $(package)_config_opts += -no-feature-bearermanagement
 $(package)_config_opts += -no-feature-colordialog
 $(package)_config_opts += -no-feature-commandlineparser
-$(package)_config_opts += -no-feature-concurrent
+$(package)_config_opts += -feature-concurrent
 $(package)_config_opts += -no-feature-dial
 $(package)_config_opts += -no-feature-fontcombobox
 $(package)_config_opts += -no-feature-ftp
 $(package)_config_opts += -no-feature-image_heuristic_mask
-$(package)_config_opts += -no-feature-imageformat_bmp
-$(package)_config_opts += -no-feature-imageformat_jpeg
-$(package)_config_opts += -no-feature-imageformat_ppm
-$(package)_config_opts += -no-feature-imageformat_xbm
 $(package)_config_opts += -no-feature-keysequenceedit
 $(package)_config_opts += -no-feature-lcdnumber
 $(package)_config_opts += -no-feature-networkdiskcache
@@ -118,6 +102,9 @@ $(package)_config_opts += -no-feature-undoview
 $(package)_config_opts += -no-feature-vnc
 $(package)_config_opts += -no-feature-wizard
 $(package)_config_opts += -no-feature-xml
+$(package)_config_opts += QMAKE_CXXFLAGS="-Wno-deprecated-copy"
+$(package)_config_opts += QMAKE_CFLAGS="-Wno-deprecated-copy"
+$(package)_config_opts += QMAKE_CXXFLAGS+="-Wno-deprecated-copy"
 
 $(package)_config_opts_darwin = -no-dbus
 $(package)_config_opts_darwin += -no-opengl
@@ -125,7 +112,6 @@ $(package)_config_opts_darwin += -no-feature-corewlan
 $(package)_config_opts_darwin += -device-option QMAKE_MACOSX_DEPLOYMENT_TARGET=$(OSX_MIN_VERSION)
 
 ifneq ($(build_os),darwin)
-$(package)_config_opts_darwin += -no-dbus
 $(package)_config_opts_darwin = OPENSSL_LIBS="-lssl -lcrypto -pthread -ldl"
 $(package)_config_opts_darwin += -xplatform macx-clang-linux
 $(package)_config_opts_darwin += -device-option MAC_SDK_PATH=$(OSX_SDK)
@@ -134,30 +120,90 @@ $(package)_config_opts_darwin += -device-option CROSS_COMPILE="$(host)-"
 $(package)_config_opts_darwin += -device-option MAC_MIN_VERSION=$(OSX_MIN_VERSION)
 $(package)_config_opts_darwin += -device-option MAC_TARGET=$(host)
 $(package)_config_opts_darwin += -device-option XCODE_VERSION=$(XCODE_VERSION)
+$(package)_config_opts_darwin += -no-dbus
 endif
 
-$(package)_config_opts_linux += -qt-xcb
+# for macOS on Apple Silicon (ARM) see https://bugreports.qt.io/browse/QTBUG-85279
+$(package)_config_opts_arm_darwin += -device-option QMAKE_APPLE_DEVICE_ARCHS=arm64
+
+$(package)_config_opts_linux = -qt-xcb
 $(package)_config_opts_linux += -no-xcb-xlib
 $(package)_config_opts_linux += -no-feature-xlib
 $(package)_config_opts_linux += -system-freetype
-$(package)_config_opts_linux += -no-sm
 $(package)_config_opts_linux += -fontconfig
 $(package)_config_opts_linux += -no-opengl
 $(package)_config_opts_linux += -no-feature-vulkan
 $(package)_config_opts_linux += -dbus-runtime
 $(package)_config_opts_arm_linux = OPENSSL_LIBS="-lssl -lcrypto -pthread -ldl"
 $(package)_config_opts_arm_linux += -platform linux-g++ -xplatform bitcoin-linux-g++
+$(package)_config_opts_arm_linux += -I $(host_prefix)/include
+$(package)_config_opts_arm_linux += -L $(host_prefix)/lib
 $(package)_config_opts_i686_linux  = -xplatform linux-g++-32
 $(package)_config_opts_x86_64_linux = OPENSSL_LIBS="-lssl -lcrypto -pthread -ldl"
 $(package)_config_opts_x86_64_linux += -xplatform linux-g++-64
+$(package)_config_opts_x86_64_linux += -I $(host_prefix)/include
+$(package)_config_opts_x86_64_linux += -L $(host_prefix)/lib
+$(package)_config_opts_aarch64_linux = OPENSSL_LIBS="-lssl -lcrypto -pthread -ldl"
+$(package)_config_opts_aarch64_linux += -xplatform linux-aarch64-gnu-g++
+$(package)_config_opts_aarch64_linux += -I $(host_prefix)/include
+$(package)_config_opts_aarch64_linux += -L $(host_prefix)/lib
+$(package)_config_opts_powerpc64_linux = -platform linux-g++ -xplatform bitcoin-linux-g++
+$(package)_config_opts_powerpc64_linux += -I $(host_prefix)/include
+$(package)_config_opts_powerpc64_linux += -L $(host_prefix)/lib
+$(package)_config_opts_powerpc64le_linux = -platform linux-g++ -xplatform bitcoin-linux-g++
+$(package)_config_opts_powerpc64le_linux += -I $(host_prefix)/include
+$(package)_config_opts_powerpc64le_linux += -L $(host_prefix)/lib
+$(package)_config_opts_riscv64_linux = -platform linux-g++ -xplatform bitcoin-linux-g++
+$(package)_config_opts_riscv64_linux += -I $(host_prefix)/include
+$(package)_config_opts_riscv64_linux += -L $(host_prefix)/lib
+$(package)_config_opts_s390x_linux = -platform linux-g++ -xplatform bitcoin-linux-g++
+$(package)_config_opts_s390x_linux += -I $(host_prefix)/include
+$(package)_config_opts_s390x_linux += -L $(host_prefix)/lib
+
 $(package)_config_opts_mingw32 = -no-opengl
 $(package)_config_opts_mingw32 += -no-dbus
 $(package)_config_opts_mingw32 += -xplatform win32-g++
 $(package)_config_opts_mingw32 += -device-option CROSS_COMPILE="$(host)-"
-$(package)_config_opts_mingw32 += OPENSSL_LIBS="-L/usr/x86_64-w64-mingw32/lib -lssl -lcrypto -lws2_32"
+$(package)_config_opts_mingw32 += -I $(host_prefix)/include
+$(package)_config_opts_mingw32 += -L $(host_prefix)/lib
+$(package)_config_opts_mingw32 += OPENSSL_LIBS="-L$(host_prefix)/lib -lssl -lcrypto -lws2_32 -lcrypt32"
+
+$(package)_config_opts_android = -xplatform android-clang
+$(package)_config_opts_android += -android-sdk $(ANDROID_SDK)
+$(package)_config_opts_android += -android-ndk $(ANDROID_NDK)
+$(package)_config_opts_android += -android-ndk-platform android-$(ANDROID_API_LEVEL)
+$(package)_config_opts_android += -device-option CROSS_COMPILE="$(host)-"
+$(package)_config_opts_android += -egl
+$(package)_config_opts_android += -qpa xcb
+$(package)_config_opts_android += -no-eglfs
+$(package)_config_opts_android += -no-dbus
+$(package)_config_opts_android += -opengl es2
+$(package)_config_opts_android += -qt-freetype
+$(package)_config_opts_android += -no-fontconfig
+$(package)_config_opts_android += -L $(host_prefix)/lib
+$(package)_config_opts_android += -I $(host_prefix)/include
+$(package)_config_opts_android += -pch
+$(package)_config_opts_android += -no-feature-vulkan
+
+$(package)_config_opts_aarch64_android += -android-arch arm64-v8a
+$(package)_config_opts_armv7a_android += -android-arch armeabi-v7a
+$(package)_config_opts_x86_64_android += -android-arch x86_64
+$(package)_config_opts_i686_android += -android-arch i686
 
 $(package)_build_env  = QT_RCC_TEST=1
 $(package)_build_env += QT_RCC_SOURCE_DATE_OVERRIDE=1
+
+# Qt 5.12 predates the header cleanups in current libstdc++/libc++, so many of
+# its own sources reach for std::numeric_limits / std::runtime_error without
+# including <limits> / <stdexcept>. Force-including both is far more reliable
+# than chasing the individual headers. These reach the TARGET build only
+# (the mkspec lines below are gated on !host_build) — the host qmake bootstrap
+# is handled separately in preprocess_cmds.
+$(package)_cxxflags += -include limits -include stdexcept
+
+# rand_s() is an MSVC extension; mingw only declares it when _CRT_RAND_S is
+# defined, otherwise qrandom.cpp fails with "'rand_s' was not declared".
+$(package)_cppflags_mingw32 += -D_CRT_RAND_S
 endef
 
 define $(package)_fetch_cmds
@@ -205,23 +251,28 @@ endef
 define $(package)_preprocess_cmds
   patch -p1 -i $($(package)_patch_dir)/drop_lrelease_dependency.patch && \
   patch -p1 -i $($(package)_patch_dir)/dont_hardcode_pwd.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fix_qt_pkgconfig.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_no_printer.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_android_jni_static.patch && \
   patch -p1 -i $($(package)_patch_dir)/no-xlib.patch && \
-  patch -p1 -i $($(package)_patch_dir)/fix_lib_paths.patch && \
+  patch -p1 -i $($(package)_patch_dir)/no_sdk_version_check.patch && \
   patch -p1 -i $($(package)_patch_dir)/qtbase-moc-ignore-gcc-macro.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_qfloat16_limits.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_qt_fortify_readlink.patch && \
   patch -p1 -i $($(package)_patch_dir)/fix_xcb_atoms.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_qendian_limits.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_qbytearraymatcher_limits.patch && \
+  patch -p1 -i $($(package)_patch_dir)/fix_generator_limits.patch && \
   sed -i.old "s|updateqm.commands = \$$$$\$$$$LRELEASE|updateqm.commands = $($(package)_extract_dir)/qttools/bin/lrelease|" qttranslations/translations/translations.pro && \
   mkdir -p qtbase/mkspecs/macx-clang-linux &&\
   cp -f qtbase/mkspecs/macx-clang/qplatformdefs.h qtbase/mkspecs/macx-clang-linux/ &&\
   cp -f $($(package)_patch_dir)/mac-qmake.conf qtbase/mkspecs/macx-clang-linux/qmake.conf && \
-  echo "!host_build: QMAKE_CFLAGS     += $($(package)_cflags) $($(package)_cppflags)" >> qtbase/mkspecs/common/gcc-base.conf && \
-  echo "!host_build: QMAKE_CXXFLAGS   += $($(package)_cxxflags) $($(package)_cppflags)" >> qtbase/mkspecs/common/gcc-base.conf && \
-  echo "!host_build: QMAKE_LFLAGS     += $($(package)_ldflags)" >> qtbase/mkspecs/common/gcc-base.conf && \
-  echo "QMAKE_CXXFLAGS += -include limits" >> qtbase/mkspecs/common/gcc-base.conf && \
-  echo "QMAKE_CXXFLAGS += -include limits" >> qtbase/mkspecs/win32-g++/qmake.conf && \
+  cp -r qtbase/mkspecs/linux-arm-gnueabi-g++ qtbase/mkspecs/bitcoin-linux-g++ && \
+  sed -i.old "s/arm-linux-gnueabi-/$(host)-/g" qtbase/mkspecs/bitcoin-linux-g++/qmake.conf && \
+  echo "QMAKE_CFLAGS     += $($(package)_cflags) $($(package)_cppflags) -I$(host_prefix)/include" >> qtbase/mkspecs/common/gcc-base.conf && \
+  echo "QMAKE_CXXFLAGS   += $($(package)_cxxflags) $($(package)_cppflags) -Wno-deprecated-copy -I$(host_prefix)/include" >> qtbase/mkspecs/common/gcc-base.conf && \
+  echo "QMAKE_LFLAGS     += $($(package)_ldflags) -L$(host_prefix)/lib" >> qtbase/mkspecs/common/gcc-base.conf && \
   sed -i.old "s|QMAKE_CFLAGS           += |!host_build: QMAKE_CFLAGS            = $($(package)_cflags) $($(package)_cppflags) |" qtbase/mkspecs/win32-g++/qmake.conf && \
-  sed -i.old "s|QMAKE_CXXFLAGS         += |!host_build: QMAKE_CXXFLAGS            = $($(package)_cxxflags) $($(package)_cppflags) |" qtbase/mkspecs/win32-g++/qmake.conf && \
+  sed -i.old "s|QMAKE_CXXFLAGS         += |!host_build: QMAKE_CXXFLAGS            = $($(package)_cxxflags) $($(package)_cppflags) -Wno-deprecated-copy |" qtbase/mkspecs/win32-g++/qmake.conf && \
   sed -i.old "0,/^QMAKE_LFLAGS_/s|^QMAKE_LFLAGS_|!host_build: QMAKE_LFLAGS            = $($(package)_ldflags)\n&|" qtbase/mkspecs/win32-g++/qmake.conf && \
   sed -i.old "s|QMAKE_CC                = \$$$$\$$$${CROSS_COMPILE}clang|QMAKE_CC                = $($(package)_cc)|" qtbase/mkspecs/common/clang.conf && \
   sed -i.old "s|QMAKE_CXX               = \$$$$\$$$${CROSS_COMPILE}clang++|QMAKE_CXX               = $($(package)_cxx)|" qtbase/mkspecs/common/clang.conf && \
@@ -240,6 +291,7 @@ define $(package)_config_cmds
   ./configure $($(package)_config_opts) && \
   cd .. && \
   $(MAKE) -C qtbase sub-src-clean && \
+  qtbase/bin/qmake -o qtbase/src/plugins/platforms/Makefile qtbase/src/plugins/platforms/platforms.pro && \
   qtbase/bin/qmake -o qttranslations/Makefile qttranslations/qttranslations.pro && \
   qtbase/bin/qmake -o qttranslations/translations/Makefile qttranslations/translations/translations.pro && \
   qtbase/bin/qmake -o qttools/src/linguist/lrelease/Makefile qttools/src/linguist/lrelease/lrelease.pro && \
@@ -248,6 +300,7 @@ endef
 
 define $(package)_build_cmds
   $(MAKE) -C qtbase/src $(addprefix sub-,$($(package)_qt_libs)) && \
+  $(MAKE) -C qtbase/src/plugins/platforms && \
   $(MAKE) -C qttools/src/linguist/lrelease && \
   $(MAKE) -C qttools/src/linguist/lupdate && \
   $(MAKE) -C qttranslations
@@ -255,6 +308,8 @@ endef
 
 define $(package)_stage_cmds
   $(MAKE) -C qtbase/src INSTALL_ROOT=$($(package)_staging_dir) $(addsuffix -install_subtargets,$(addprefix sub-,$($(package)_qt_libs))) && \
+  mkdir -p $($(package)_staging_prefix_dir)/plugins/platforms && \
+  cp qtbase/src/plugins/platforms/*/*.a $($(package)_staging_prefix_dir)/plugins/platforms/ 2>/dev/null || true && \
   $(MAKE) -C qttools/src/linguist/lrelease INSTALL_ROOT=$($(package)_staging_dir) install_target && \
   $(MAKE) -C qttools/src/linguist/lupdate INSTALL_ROOT=$($(package)_staging_dir) install_target && \
   $(MAKE) -C qttranslations INSTALL_ROOT=$($(package)_staging_dir) install_subtargets
