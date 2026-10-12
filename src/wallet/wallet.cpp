@@ -61,6 +61,7 @@ const uint32_t BIP32_HARDENED_KEY_LIMIT = 0x80000000;
 
 std::string my_words;
 std::string my_passphrase;
+bool my_mnemonic_import = false;
 
 /**
  * Fees smaller than this (in soterio) are considered zero fee (for transaction creation)
@@ -1555,6 +1556,7 @@ CPubKey CWallet::GenerateNewSeed()
 
     my_passphrase.clear();
     my_words.clear();
+    my_mnemonic_import = false;
 
     return seed;
 }
@@ -4726,6 +4728,7 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
 
     int64_t nStart = GetTimeMillis();
     bool fFirstRun = true;
+    bool fMnemonicImport = false;
     std::unique_ptr<CWalletDBWrapper> dbw(new CWalletDBWrapper(&bitdb, walletFile));
     CWallet* walletInstance = new CWallet(std::move(dbw));
     DBErrors nLoadWalletRet = walletInstance->LoadWallet(fFirstRun);
@@ -4786,8 +4789,13 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
 
         // If this is the first run, show the bip44 gui to the user
         if (walletInstance->hdChain.IsBip44()) {
-            if (gArgs.GetArg("-mnemonic", "").empty() && gArgs.GetArg("-mnemonicpassphrase", "").empty())
+            if (gArgs.GetArg("-mnemonic", "").empty() && gArgs.GetArg("-mnemonicpassphrase", "").empty()) {
+                my_mnemonic_import = false;
                 uiInterface.ShowMnemonic(CClientUIInterface::MODAL);
+                fMnemonicImport = my_mnemonic_import;
+            } else {
+                fMnemonicImport = !gArgs.GetArg("-mnemonic", "").empty();
+            }
         }
 
         // generate a new seed
@@ -4800,8 +4808,10 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
             return nullptr;
         }
 
-        walletInstance->SetBestChain(chainActive.GetLocator());
-    } else if (gArgs.IsArgSet("-usehd")) {
+        if (!fMnemonicImport)
+            walletInstance->SetBestChain(chainActive.GetLocator());
+    }
+    else if (gArgs.IsArgSet("-usehd")) {
         bool useHD = gArgs.GetBoolArg("-usehd", true);
         if (walletInstance->IsHDEnabled() && !useHD) {
             InitError(strprintf(_("Error loading %s: You can't disable HD on an already existing HD wallet"), walletFile));
@@ -4854,7 +4864,7 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
     }
 
     CBlockIndex* pindexRescan = chainActive.Genesis();
-    if (!gArgs.GetBoolArg("-rescan", false)) {
+    if (!fMnemonicImport && !gArgs.GetBoolArg("-rescan", false)) {
         CWalletDB walletdb(*walletInstance->dbw);
         CBlockLocator locator;
         if (walletdb.ReadBestBlock(locator))
@@ -4880,7 +4890,7 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
 
         // No need to read and scan block if block was created before
         // our wallet birthday (as adjusted for block time variability)
-        while (pindexRescan && walletInstance->nTimeFirstKey && (pindexRescan->GetBlockTime() < (walletInstance->nTimeFirstKey - TIMESTAMP_WINDOW))) {
+        while (!fMnemonicImport && pindexRescan && walletInstance->nTimeFirstKey && (pindexRescan->GetBlockTime() < (walletInstance->nTimeFirstKey - TIMESTAMP_WINDOW))) {
             pindexRescan = chainActive.Next(pindexRescan);
         }
 
