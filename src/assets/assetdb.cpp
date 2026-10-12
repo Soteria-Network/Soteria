@@ -1,5 +1,5 @@
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <util/system.h>
 #include <consensus/params.h>
@@ -294,6 +294,8 @@ bool CAssetsDB::AddressDir(std::vector<std::pair<std::string, CAmount> >& vecAss
             std::pair<char, std::pair<std::string, std::string> > key;
             if (pcursor->GetKey(key) && key.first == ADDRESS_ASSET_QUANTITY_FLAG && key.second.first == address) {
                 totalEntries++;
+            } else {
+                break;
             }
             pcursor->Next();
         }
@@ -313,6 +315,8 @@ bool CAssetsDB::AddressDir(std::vector<std::pair<std::string, CAmount> >& vecAss
             std::pair<char, std::pair<std::string, std::string> > key;
             if (pcursor->GetKey(key) && key.first == ADDRESS_ASSET_QUANTITY_FLAG && key.second.first == address) {
                 table_size += 1;
+            } else {
+                break;
             }
             pcursor->Next();
         }
@@ -367,6 +371,8 @@ bool CAssetsDB::AssetAddressDir(std::vector<std::pair<std::string, CAmount> >& v
             std::pair<char, std::pair<std::string, std::string> > key;
             if (pcursor->GetKey(key) && key.first == ASSET_ADDRESS_QUANTITY_FLAG && key.second.first == assetName) {
                 totalEntries += 1;
+            } else {
+                break;
             }
             pcursor->Next();
         }
@@ -386,6 +392,8 @@ bool CAssetsDB::AssetAddressDir(std::vector<std::pair<std::string, CAmount> >& v
             std::pair<char, std::pair<std::string, std::string> > key;
             if (pcursor->GetKey(key) && key.first == ASSET_ADDRESS_QUANTITY_FLAG && key.second.first == assetName) {
                 table_size += 1;
+            } else {
+                break;
             }
             pcursor->Next();
         }
