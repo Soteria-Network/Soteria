@@ -1,7 +1,6 @@
 // Copyright (c) 2020 Hans Schmidt
 // Copyright (c) 2017-2018 The Particl Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #define TEST 0
 
@@ -128,6 +127,9 @@ void MnemonicDialog2::on_acceptButton_clicked()
 #endif
     my_words = words;
     my_passphrase = passphrase;
+#if !TEST
+    my_mnemonic_import = false;
+#endif
     int my_languageSelected = languageSelected;
 
 #if TEST
@@ -248,9 +250,9 @@ void MnemonicDialog3::on_acceptButton_clicked()
         return;
     }
 
-    // boolean for triggering a rescan of the wallet once it is imported
-  //  fJustImportedExistingMnemonic = true;
-
+#if !TEST
+    my_mnemonic_import = true;
+#endif
     Q_EMIT allCloseRequested();
 };
 
