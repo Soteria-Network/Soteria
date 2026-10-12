@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_QT_ASSETTABLEMODEL_H
 #define SOTERIA_QT_ASSETTABLEMODEL_H
@@ -49,10 +47,12 @@ public:
             AssetIPFSHashRole = 104,
         /** IPFS Decoration Role */
             AssetIPFSHashDecorationRole = 105,
+        /** Time the asset was first received by the wallet */
+            AssetDateRole = 106,
         /** SNS info */
-            AssetANSRole = 106,
+            AssetANSRole = 107,
         /** SNS Decoration Role */
-            AssetANSDecorationRole = 107
+            AssetANSDecorationRole = 108
     };
 
     int rowCount(const QModelIndex &parent) const;
