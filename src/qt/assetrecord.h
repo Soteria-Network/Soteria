@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_QT_ASSETRECORD_H
 #define SOTERIA_QT_ASSETRECORD_H
@@ -19,12 +17,12 @@ class AssetRecord
 public:
 
     AssetRecord():
-            name(""), quantity(0), units(0), fIsAdministrator(false), ipfshash(""), ansID("")
+            name(""), quantity(0), units(0), fIsAdministrator(false), ipfshash(""), ansID(""), nTime(0)
     {
     }
 
-    AssetRecord(const std::string _name, const CAmount& _quantity, const int _units, const bool _fIsAdministrator, const std::string _ipfshash, const std::string _ansID):
-            name(_name), quantity(_quantity), units(_units), fIsAdministrator(_fIsAdministrator), ipfshash(_ipfshash), ansID(_ansID)
+    AssetRecord(const std::string _name, const CAmount& _quantity, const int _units, const bool _fIsAdministrator, const std::string _ipfshash, const std::string _ansID, const int64_t _nTime):
+            name(_name), quantity(_quantity), units(_units), fIsAdministrator(_fIsAdministrator), ipfshash(_ipfshash), ansID(_ansID), nTime(_nTime)
     {
     }
 
@@ -51,6 +49,7 @@ public:
     bool fIsAdministrator;
     std::string ipfshash;
     std::string ansID;
+    int64_t nTime;
     /**@}*/
 
 };
