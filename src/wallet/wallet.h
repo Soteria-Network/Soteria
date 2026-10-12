@@ -49,6 +49,7 @@ extern bool fWalletRbf;
 
 extern std::string my_words;
 extern std::string my_passphrase;
+extern bool my_mnemonic_import;
 // BTC Default for -keypool=1000
 static constexpr unsigned int DEFAULT_KEYPOOL_SIZE = 250;
 //! -paytxfee default
