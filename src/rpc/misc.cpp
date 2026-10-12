@@ -1204,18 +1204,17 @@ UniValue getaddressbalance(const JSONRPCRequest& request)
             balances[assetName].second += it->second;
         }
 
-        UniValue result(UniValue::VARR);
-
-        for (std::map<std::string, std::pair<CAmount, CAmount>>::const_iterator it = balances.begin();
-            it != balances.end(); it++) {
-            UniValue balance(UniValue::VOBJ);
-            balance.push_back(Pair("assetName", it->first));
-            balance.push_back(Pair("balance", it->second.second));
-            balance.push_back(Pair("received", it->second.first));
-            result.push_back(balance);
-        }
-
-        return result;
+	UniValue result(UniValue::VARR);
+	
+	for (const auto& entry : balances) {
+    	UniValue balance(UniValue::VOBJ);
+    	balance.push_back(Pair("assetName", entry.first));
+    	balance.push_back(Pair("balance", entry.second.second));
+    	balance.push_back(Pair("received", entry.second.first));
+    	result.push_back(balance);
+	}
+	
+	return result;
 
     } else {
         std::vector<std::pair<CAddressIndexKey, CAmount>> addressIndex;
