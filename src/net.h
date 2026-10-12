@@ -60,12 +60,14 @@ static constexpr unsigned int MAX_LOCATOR_SZ = 101;
 static constexpr unsigned int MAX_ASSET_INV_SZ = 1024;
 /** The maximum number of new addresses to accumulate before announcing. */
 static constexpr unsigned int MAX_ADDR_TO_SEND = 1000;
-/** Maximum length of incoming protocol messages. With our 3 MiB blocks, a raw block message (headers + txs) can exceed 4 MiB once we add envelope headers, varints, padding, or future block‐format extensions. Recommendation, we should raise to at least 5 MiB w/o sc or 6 MiB w sc. 6 MiB safely covers current blocks and leaves headroom for spikes (e.g., “getdata” replies, packed headers, larger sc scripts).*/
-static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 12 * 1024 * 1024; // increased for RIP-25 PQ signatures
+/** Maximum length of incoming protocol messages (no message over 6 MB is currently acceptable in RVN). With our 3 MiB blocks, a raw block message (headers + txs) can exceed 4 MiB once we add envelope headers, varints, padding, or future block‐format extensions. Recommendation, we should raise to at least 5 MiB w/o sc or 6 MiB w sc. 6 MiB safely covers current blocks and leaves headroom for spikes (e.g., “getdata” replies, packed headers, larger sc scripts).*/
+//static constexpr unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 6 * 1024 * 1024;
+/** Maximum length of incoming protocol messages (increased for RIP-25 PQ signatures). */
+static const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 12 * 1024 * 1024;
 /** Maximum length of strSubVer in `version` message */
 static constexpr unsigned int MAX_SUBVERSION_LENGTH = 256;
 /** Maximum number of automatic outgoing nodes over which we'll relay everything (blocks, tx, addrs, etc), 32 to reduce latency before 90% of peers see a new block */
-static constexpr int MAX_OUTBOUND_CONNECTIONS = 32;
+static constexpr int MAX_OUTBOUND_CONNECTIONS = 32; // 12R, 16nD, 32nV
 /** Maximum number of addnode outgoing nodes */
 static constexpr int MAX_ADDNODE_CONNECTIONS = 24;
 /** -listen default */
@@ -93,7 +95,7 @@ static constexpr bool DEFAULT_FORCEDNSSEED = false;
 static constexpr size_t DEFAULT_MAXRECEIVEBUFFER = 500 * 1000;
 static constexpr size_t DEFAULT_MAXSENDBUFFER    = 100 * 1000;
 // NOTE: When adjusting this, update rpcnet:setban's help ("24h")
-static constexpr unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 60 * 72;
+static constexpr unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 60 * 72; // 24
 typedef int64_t NodeId;
 struct AddedNodeInfo
 {
@@ -461,6 +463,15 @@ struct LocalServiceInfo {
     int nScore;
     int nPort;
 };
+
+// soteriainfo verification state (manual method)
+extern CCriticalSection cs_soteriainfo;
+extern std::string soteriainfo_challenge;
+extern std::string soteriainfo_signature;
+extern bool soteriainfo_verified;
+extern int64_t soteriainfo_verified_time;
+
+
 extern CCriticalSection cs_mapLocalHost;
 extern std::map<CNetAddr, LocalServiceInfo> mapLocalHost GUARDED_BY(cs_mapLocalHost);
 typedef std::map<std::string, uint64_t> mapMsgCmdSize; //command, total bytes
@@ -652,6 +663,10 @@ public:
     CCriticalSection cs_feeFilter;
     CAmount lastSentFeeFilter{0};
     int64_t nextSendTimeFeeFilter{0};
+
+    // Orphans to reconsider on this peer's next processing turn.
+    std::set<uint256> orphan_work_set;
+
     CNode(NodeId id, ServiceFlags nLocalServicesIn, int nMyStartingHeightIn, SOCKET hSocketIn, const CAddress &addrIn, uint64_t nKeyedNetGroupIn, uint64_t nLocalHostNonceIn, const CAddress &addrBindIn, const std::string &addrNameIn = "", bool fInboundIn = false);
     ~CNode();
     CNode(const CNode&) = delete;
