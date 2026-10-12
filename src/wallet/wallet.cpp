@@ -3457,6 +3457,8 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
             bool pick_new_inputs = true;
             CAmount nValueIn = 0;
 
+            const uint32_t nSequence = CTxIn::SEQUENCE_FINAL - 1;
+
             // Start with no fee and loop until there is enough fee
             while (true) {
                 std::map<std::string, CAmount> mapAssetsIn;
@@ -3695,8 +3697,6 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 // to avoid conflicting with other possible uses of nSequence,
                 // and in the spirit of "smallest possible change from prior
                 // behavior."
-                //                const uint32_t nSequence = coin_control.signalRbf ? MAX_BIP125_RBF_SEQUENCE : (CTxIn::SEQUENCE_FINAL - 1);
-                const uint32_t nSequence = CTxIn::SEQUENCE_FINAL - 1;
                 for (const auto& coin : setCoins)
                     txNew.vin.push_back(CTxIn(coin.outpoint, CScript(),
                         nSequence));
@@ -3800,7 +3800,18 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
         }
 
         if (nChangePosInOut == -1) reservekey.ReturnKey(); // Return any reserved key if we don't have change
+        
+        /* The fee calculation relies on the deterministic order. Shuffle after sizing
+        so the transaction does not fingerprint the wallet's coin ordering.*/
+        std::vector<CInputCoin> selected_coins;
+        selected_coins.reserve(setCoins.size() + setAssets.size());
+        selected_coins.insert(selected_coins.end(), setCoins.begin(), setCoins.end());
+        selected_coins.insert(selected_coins.end(), setAssets.begin(), setAssets.end());
+        Shuffle(selected_coins.begin(), selected_coins.end(), FastRandomContext());
 
+        txNew.vin.clear();
+        for (const auto& coin : selected_coins)
+            txNew.vin.push_back(CTxIn(coin.outpoint, CScript(), nSequence));
         if (sign) {
             uint32_t nHashType = SIGHASH_ALL;
             // If we already forked, use replay protected tx by default.
@@ -3812,7 +3823,7 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
             }
             CTransaction txNewConst(txNew);
             int nIn = 0;
-            for (const auto& coin : setCoins) {
+            for (const auto& coin : selected_coins) {
                 const CScript& scriptPubKey = coin.txout.scriptPubKey;
                 SignatureData sigdata;
 
@@ -3825,25 +3836,6 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
 
                 nIn++;
             }
-            /** SOTER START */
-            if (AreAssetsDeployed()) {
-                for (const auto& asset : setAssets) {
-                    const CScript& scriptPubKey = asset.txout.scriptPubKey;
-                    SignatureData sigdata;
-
-                    if (!ProduceSignature(
-                            TransactionSignatureCreator(this, &txNewConst, nIn, asset.txout.nValue, nHashType),
-                            scriptPubKey, sigdata)) {
-                        strFailReason = _("Signing asset transaction failed");
-                        return false;
-                    } else {
-                        UpdateTransaction(txNew, nIn, sigdata);
-                    }
-
-                    nIn++;
-                }
-            }
-            /** SOTER END */
         }
 
         // Embed the constructed transaction data in wtxNew.
