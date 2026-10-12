@@ -5,7 +5,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
 #endif
-
+#include <qt/appnapinhibitor.h>
 #include "soteriagui.h"
 #include "soteriaunits.h"
 #include "clientmodel.h"
