@@ -3687,16 +3687,9 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
                 }
                 /** SOTER END */
 
-                // Fill vin
-                //
-                // Note how the sequence number is set to non-maxint so that
-                // the nLockTime set above actually works.
-                //
-                // BIP125 defines opt-in RBF as any nSequence < maxint-1, so
-                // we use the highest possible value in that range (maxint-2)
-                // to avoid conflicting with other possible uses of nSequence,
-                // and in the spirit of "smallest possible change from prior
-                // behavior."
+                unsigned int nSequence = (txNew.nLockTime > 0)
+                                         ? CTxIn::SEQUENCE_FINAL - 1
+                                         : CTxIn::SEQUENCE_FINAL;
                 for (const auto& coin : setCoins)
                     txNew.vin.push_back(CTxIn(coin.outpoint, CScript(),
                         nSequence));
@@ -3808,7 +3801,12 @@ bool CWallet::CreateTransactionAll(const std::vector<CRecipient>& vecSend, CWall
         selected_coins.insert(selected_coins.end(), setCoins.begin(), setCoins.end());
         selected_coins.insert(selected_coins.end(), setAssets.begin(), setAssets.end());
         Shuffle(selected_coins.begin(), selected_coins.end(), FastRandomContext());
-
+        
+        // Determine the input sequence for the final transaction. Same rule as
+        // inside the fee loop: enforce nLockTime when set.
+        unsigned int nSequence = (txNew.nLockTime > 0)
+                                 ? CTxIn::SEQUENCE_FINAL - 1
+                                 : CTxIn::SEQUENCE_FINAL;
         txNew.vin.clear();
         for (const auto& coin : selected_coins)
             txNew.vin.push_back(CTxIn(coin.outpoint, CScript(), nSequence));
