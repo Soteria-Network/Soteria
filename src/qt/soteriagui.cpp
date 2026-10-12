@@ -5,7 +5,7 @@
 #if defined(HAVE_CONFIG_H)
 #include "config/soteria-config.h"
 #endif
-#include <qt/appnapinhibitor.h>
+
 #include "soteriagui.h"
 #include "soteriaunits.h"
 #include "clientmodel.h"
@@ -998,6 +998,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         // Network request code for the header widget
         QObject::connect(networkManager, &QNetworkAccessManager::finished,
             this, [=](QNetworkReply* reply) {
+                    reply->deleteLater();
                 if (reply->error()) {
                     labelCurrentPrice->setText("");
                     qDebug() << reply->errorString();
@@ -1032,6 +1033,7 @@ QString openSansFontString = "font: normal 22pt \"Open Sans\";";
         // Network request code for the header widget
         QObject::connect(networkVersionManager, &QNetworkAccessManager::finished,
             this, [=](QNetworkReply* reply) {
+                    reply->deleteLater();
                 if (reply->error()) {
                     qDebug() << reply->errorString();
                     return;
