@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "assettablemodel.h"
 #include "assetrecord.h"
@@ -40,7 +38,6 @@ public:
 #ifdef ENABLE_WALLET
     void refreshWallet() {
         qDebug() << "AssetTablePriv::refreshWallet";
-        cachedBalances.clear();
         auto currentActiveAssetCache = GetCurrentAssetCache();
         if (currentActiveAssetCache) {
             {
@@ -51,6 +48,7 @@ public:
                     qWarning("AssetTablePriv::refreshWallet: Error retrieving asset balances");
                     return;
                 }
+                QList<AssetRecord> refreshedBalances;                
                 std::set<std::string> setAssetsToSkip;
                 auto bal = balances.begin();
                 for (; bal != balances.end(); bal++) {
@@ -88,8 +86,17 @@ public:
                             continue;
                         }
                     }
-                    cachedBalances.append(AssetRecord(bal->first, bal->second, units, fIsAdministrator, EncodeAssetData(ipfsHash), EncodeANS(ansID)));
+                    int64_t assetTime = 0;
+                    const auto outputsIt = outputs.find(bal->first);
+                    if (outputsIt != outputs.end()) {
+                        for (const auto& txout : outputsIt->second) {
+                            if (txout.tx && (assetTime == 0 || txout.tx->GetTxTime() < assetTime))
+                                assetTime = txout.tx->GetTxTime();
+                        }
+                    }
+                    refreshedBalances.append(AssetRecord(bal->first, bal->second, units, fIsAdministrator, EncodeAssetData(ipfsHash), EncodeANS(ansID), assetTime));
                 }
+                cachedBalances = refreshedBalances;
             }
         }
     }
@@ -167,6 +174,8 @@ QVariant AssetTableModel::data(const QModelIndex &index, int role) const
             return rec->fIsAdministrator;
         case AssetIPFSHashRole:
             return QString::fromStdString(rec->ipfshash);
+        case AssetDateRole:
+            return QVariant::fromValue<qint64>(rec->nTime);
         case AssetIPFSHashDecorationRole:
         {
             if (index.column() == Quantity)
