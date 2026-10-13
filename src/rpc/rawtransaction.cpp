@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-present The Soteria Core developers
+// Copyright (c) 2025-present The Soteria Core developer
 
 #include <vector>
 #include <set>
@@ -1658,9 +1658,12 @@ UniValue decodescript(const JSONRPCRequest& request)
     UniValue type;
     type = find_value(r, "type");
 
-    if (type.isStr() && type.get_str() != "scripthash") {
-        // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
-        // don't return the address for a P2SH of the P2SH.
+    const bool is_asset_type = type.isStr() &&
+        (type.get_str() == ASSET_TRANSFER_STRING ||
+         type.get_str() == ASSET_REISSUE_STRING ||
+         type.get_str() == ASSET_NEW_STRING ||
+         type.get_str() == "nullassetdata");
+    if (type.isStr() && type.get_str() != "scripthash" && !is_asset_type) {
         r.push_back(Pair("p2sh", EncodeDestination(CScriptID(script))));
     }
 
