@@ -71,9 +71,10 @@ public:
                         units = assetData.units;
                         ipfsHash = assetData.strIPFSHash;
                         ansID = assetData.strANSID;
-                        // If we have the administrator asset, add it to the skip list
-                        if (balances.count(bal->first + OWNER_TAG)) {
-                            setAssetsToSkip.insert(bal->first + OWNER_TAG);
+                        // If we have the administrator asset, add it to the skip listå
+                        const std::string owner_name = GetAssetOwnerName(bal->first);
+                        if (balances.count(owner_name)) {
+                            setAssetsToSkip.insert(owner_name);
                         } else {
                             fIsAdministrator = false;
                         }
@@ -81,7 +82,7 @@ public:
                         // Asset is an administrator asset, if we own assets that is administrators, skip this balance
                         std::string name = bal->first;
                         name.pop_back();
-                        if (balances.count(name)) {
+                        if (balances.count(name) || balances.count("$" + name)) {
                             setAssetsToSkip.insert(bal->first);
                             continue;
                         }
