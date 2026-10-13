@@ -228,10 +228,7 @@ public:
             painter->drawPixmap(ansRect, anspixmap);
 
         /** Create the font that is used for painting the asset name */
-        QFont nameFont;
-#if !defined(Q_OS_MAC)
-        nameFont.setFamily("Manrope");
-#endif
+        QFont nameFont = GUIUtil::fixedPitchFont();
         nameFont.setPixelSize(20);
         nameFont.setWeight(QFont::Weight::Normal);
         nameFont.setLetterSpacing(QFont::SpacingType::AbsoluteSpacing, -0.4);
@@ -776,7 +773,7 @@ void OverviewPage::getPriceInfo()
     QtConcurrent::run([this]() {
         // Execute on main thread to use QNetworkAccessManager
         QMetaObject::invokeMethod(this, [this]() {
-            QString url = "https://api.coingecko.com/api/v3/coins/avian-network/";
+            QString url = "https://api.coingecko.com/api/v3/coins/soteria-network/";
 
             QNetworkRequest request;
             QSslConfiguration sslConfiguration;
