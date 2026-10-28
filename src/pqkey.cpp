@@ -90,7 +90,7 @@ bool CPQKey::Sign(const uint256& hash, std::vector<unsigned char>& sigOut) const
     return true;
 }
 
-bool CPQKey::SetKeyData(const std::vector<unsigned char>& data)
+bool CPQKey::SetKeyData(const KeyData& data)
 {
     if (data.size() != mldsa::SECRETKEY_BYTES) {
         fValid = false;
@@ -98,7 +98,8 @@ bool CPQKey::SetKeyData(const std::vector<unsigned char>& data)
         return false;
     }
 
-    std::memcpy(keydata.data(), data.data(), mldsa::SECRETKEY_BYTES);
+    if (keydata.data() != data.data())
+        std::memcpy(keydata.data(), data.data(), mldsa::SECRETKEY_BYTES);
     pubkey = CPQPubKey();
     fValid = true;
     return true;
@@ -121,7 +122,7 @@ bool CPQKey::MatchesPubKey(const CPQPubKey& pubkeyIn) const
     return pubkeyIn.Verify(challenge, sig);
 }
 
-bool CPQKey::SetKeyData(const std::vector<unsigned char>& data, const CPQPubKey& pubkeyIn)
+bool CPQKey::SetKeyData(const KeyData& data, const CPQPubKey& pubkeyIn)
 {
     if (!SetKeyData(data))
         return false;
