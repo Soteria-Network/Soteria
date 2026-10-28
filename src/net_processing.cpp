@@ -766,12 +766,12 @@ bool AddOrphanTx(const CTransactionRef& tx, NodeId peer) EXCLUSIVE_LOCKS_REQUIRE
     // Ignore big transactions, to avoid a
     // send-big-orphans memory exhaustion attack. If a peer has a legitimate
     // large transaction with a missing parent then we assume
-    // it will rebroadcast it later, after the parent transaction(s)
-    // have been mined or received.
-    // 100 orphans, each of which is at most 99,999 bytes big is
-    // at most 10 megabytes of orphans and somewhat more byprev index (in the worst case):
-    unsigned int sz = GetTransactionWeight(*tx);
-    if (sz >= MAX_STANDARD_TX_WEIGHT)
+    // it will rebroadcast it later, after the parent transaction(s) have been mined or received.
+    // An orphan each of which is at most 99,999 bytes big is and somewhat more byprev index (in the worst case):
+    // An orphan has no available prevout, so an attacker-controlled witness
+    // shape must not receive the RIP-25 PQ discount. Bound the bytes retained in memory directly.
+    const unsigned int sz = ::GetSerializeSize(*tx, SER_NETWORK, PROTOCOL_VERSION);
+    if (sz >= MAX_STANDARD_TX_WEIGHT / WITNESS_SCALE_FACTOR)
     {
         LogPrint(BCLog::MEMPOOL, "ignoring large orphan tx (size: %u, hash: %s)\n", sz, hash.ToString());
         return false;
@@ -3178,7 +3178,7 @@ bool PeerLogicValidation::ProcessMessages(CNode* pfrom, std::atomic<bool>& inter
             return false;
         // Just take one message
         msgs.splice(msgs.begin(), pfrom->vProcessMsg, pfrom->vProcessMsg.begin());
-        pfrom->nProcessQueueSize -= msgs.front().vRecv.size() + CMessageHeader::HEADER_SIZE;
+        pfrom->nProcessQueueSize -= msgs.front().vRecv.capacity() + CMessageHeader::HEADER_SIZE;
         pfrom->fPauseRecv = pfrom->nProcessQueueSize > connman->GetReceiveFloodSize();
         fMoreWork = !pfrom->vProcessMsg.empty();
     }
