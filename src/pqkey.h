@@ -71,9 +71,12 @@ public:
  */
 class CPQKey
 {
+public:
+    using KeyData = SecureVector;
+
 private:
     bool fValid;
-    std::vector<unsigned char, secure_allocator<unsigned char>> keydata;
+    KeyData keydata;
     CPQPubKey pubkey;
 
 public:
@@ -99,13 +102,17 @@ public:
     bool Sign(const uint256& hash, std::vector<unsigned char>& sigOut) const;
 
     /** Get raw secret key data (for wallet serialization) */
-    const std::vector<unsigned char, secure_allocator<unsigned char>>& GetKeyData() const { return keydata; }
+    const KeyData& GetKeyData() const { return keydata; }
 
-    /** Set key from raw data (for wallet deserialization), recomputes pubkey */
-    bool SetKeyData(const std::vector<unsigned char>& data);
+    /**
+     * Load raw secret-key bytes. This validates only the secret-key size;
+     * callers loading persisted wallet material must subsequently validate the
+     * associated public key with MatchesPubKey() or use the two-argument form.
+     */
+    bool SetKeyData(const KeyData& data);
 
     /** Load raw secret-key bytes and cryptographically validate/bind pubkey. */
-    bool SetKeyData(const std::vector<unsigned char>& data, const CPQPubKey& pubkeyIn);
+    bool SetKeyData(const KeyData& data, const CPQPubKey& pubkeyIn);
 
     /** Verify that pubkeyIn is the public key corresponding to this secret key. */
     bool MatchesPubKey(const CPQPubKey& pubkeyIn) const;
