@@ -84,6 +84,12 @@ CAmount GetDustThreshold(const CTxOut& txout, const CFeeRate& dustRelayFee);
 bool IsDust(const CTxOut& txout, const CFeeRate& dustRelayFee);
 
 bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool witnessEnabled = false);
+
+/** RIP-25 policy predicates shared by admission and reorg cleanup. */
+bool IsPQWitnessV2Program(const CScript& scriptPubKey);
+bool HasPQWitnessV2Output(const CTransaction& tx);
+bool SpendsPQWitnessV2Program(const CTxIn& txin, const CScript& prevScriptPubKey);
+
     /**
      * Check for standard transaction types
      * @return True if all outputs (scriptPubKeys) use only standard transaction forms
