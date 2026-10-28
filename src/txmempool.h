@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2017 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #ifndef SOTERIA_TXMEMPOOL_H
 #define SOTERIA_TXMEMPOOL_H
@@ -33,7 +31,7 @@
 class CBlockIndex;
 struct ConnectedBlockAssetData;
 
-/** Fake height value used in Coin to signify they are only in the memory pool (since 0.8) */
+/** Fake height value used in Coin to signify they are only in the memory pool (since 1.0.0) */
 static constexpr uint32_t MEMPOOL_HEIGHT = 0x7FFFFFFF;
 
 struct LockPoints
@@ -579,9 +577,9 @@ public:
     bool removeSpentIndex(const uint256 txhash);
 
     void removeRecursive(const CTransaction &tx, MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN);
-    void removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMemPoolHeight, int flags);
+    void removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMemPoolHeight, int flags, bool fPQHybridActive);
     void removeConflicts(const CTransaction &tx);
-    void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockAssetData& connectedBlockData );
+    void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight, ConnectedBlockAssetData& connectedBlockData);
     void removeForBlock(const std::vector<CTransactionRef>& vtx, unsigned int nBlockHeight);
 
     void clear();
