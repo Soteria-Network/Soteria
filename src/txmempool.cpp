@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2011-2017 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "txmempool.h"
 #include "consensus/consensus.h"
@@ -795,7 +793,7 @@ void CTxMemPool::removeRecursive(const CTransaction &origTx, MemPoolRemovalReaso
     }
 }
 
-void CTxMemPool::removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMemPoolHeight, int flags)
+void CTxMemPool::removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMemPoolHeight, int flags, bool fPQHybridActive)
 {
     // Remove transactions spending a coinbase which are now immature and no-longer-final transactions
     LOCK(cs);
@@ -820,6 +818,28 @@ void CTxMemPool::removeForReorg(const CCoinsViewCache *pcoins, unsigned int nMem
                     break;
                 }
             }
+        }
+        if (!fPQHybridActive && !txToRemove.count(it)) {
+            bool removeForPQRollback = HasPQWitnessV2Output(tx);
+            for (const CTxIn& txin : tx.vin) {
+                if (removeForPQRollback)
+                    break;
+                CScript prevScriptPubKey;
+                const indexed_transaction_set::const_iterator parent = mapTx.find(txin.prevout.hash);
+                if (parent != mapTx.end()) {
+                    if (txin.prevout.n >= parent->GetTx().vout.size())
+                        continue;
+                    prevScriptPubKey = parent->GetTx().vout[txin.prevout.n].scriptPubKey;
+                } else {
+                    const Coin& coin = pcoins->AccessCoin(txin.prevout);
+                    if (coin.IsSpent())
+                        continue;
+                    prevScriptPubKey = coin.out.scriptPubKey;
+                }
+                removeForPQRollback = SpendsPQWitnessV2Program(txin, prevScriptPubKey);
+            }
+            if (removeForPQRollback)
+                txToRemove.insert(it);
         }
         if (!validLP) {
             mapTx.modify(it, update_lock_points(lp));
@@ -978,7 +998,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef>& vtx, unsigne
                     if (i != mapTx.end()) {
                         CValidationState state;
                         std::vector<std::pair<std::string, uint256>> vReissueAssets;
-                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxAssets(i->GetTx(), state, pcoinsTip, passets, false, vReissueAssets)) {
+                        if (!setAlreadyRemoving.count(hash) && !Consensus::CheckTxAssets(i->GetTx(), state, pcoinsTip, passets, false, vReissueAssets, false, nullptr, 0, nullptr, nullptr, chainActive.Height() + 1)) {
                             entries.push_back(&*i);
                             trans.emplace_back(i->GetTx());
                             setAlreadyRemoving.insert(hash);
@@ -1071,7 +1091,7 @@ static void CheckInputsAndUpdateCoins(const CTransaction& tx, CCoinsViewCache& m
     /** SOTER START */
     if (AreAssetsDeployed()) {
         std::vector<std::pair<std::string, uint256>> vReissueAssets;
-        bool fCheckAssets = Consensus::CheckTxAssets(tx, state, mempoolDuplicate, passets, false, vReissueAssets);
+        bool fCheckAssets = Consensus::CheckTxAssets(tx, state, mempoolDuplicate, passets, false, vReissueAssets, false, nullptr, 0, nullptr, nullptr, (int)spendheight);
         assert(fCheckResult && fCheckAssets);
     } else
         assert(fCheckResult);
