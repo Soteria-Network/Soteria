@@ -65,6 +65,48 @@ bool IsDust(const CTxOut& txout, const CFeeRate& dustRelayFeeIn)
         return (txout.nValue < GetDustThreshold(txout, dustRelayFeeIn));
 }
 
+bool IsPQWitnessV2Program(const CScript& scriptPubKey)
+{
+    int witnessVersion = -1;
+    std::vector<unsigned char> witnessProgram;
+    return scriptPubKey.IsWitnessProgram(witnessVersion, witnessProgram) &&
+           witnessVersion == 2 && witnessProgram.size() == 32;
+}
+
+bool HasPQWitnessV2Output(const CTransaction& tx)
+{
+    for (const CTxOut& txout : tx.vout) {
+        if (IsPQWitnessV2Program(txout.scriptPubKey))
+            return true;
+    }
+    return false;
+}
+
+bool SpendsPQWitnessV2Program(const CTxIn& txin, const CScript& prevScriptPubKey)
+{
+    if (IsPQWitnessV2Program(prevScriptPubKey))
+        return true;
+    if (!prevScriptPubKey.IsPayToScriptHash())
+        return false;
+
+    CScript::const_iterator pc = txin.scriptSig.begin();
+    opcodetype opcode;
+    std::vector<unsigned char> redeemBytes;
+    if (!txin.scriptSig.GetOp(pc, opcode, redeemBytes) || opcode > OP_PUSHDATA4 ||
+        pc != txin.scriptSig.end()) {
+        return false;
+    }
+
+    const CScript redeemScript(redeemBytes.begin(), redeemBytes.end());
+    if (txin.scriptSig != CScript() << redeemBytes)
+        return false;
+    const CScriptID redeemScriptID(redeemScript);
+    const CScript expectedP2SH = CScript() << OP_HASH160 << ToByteVector(redeemScriptID) << OP_EQUAL;
+    if (expectedP2SH != prevScriptPubKey)
+        return false;
+    return IsPQWitnessV2Program(redeemScript);
+}
+
 bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool witnessEnabled) {
     std::vector<std::vector<unsigned char> > vSolutions;
     if (!Solver(scriptPubKey, whichType, vSolutions))
@@ -87,7 +129,7 @@ bool IsStandard(const CScript& scriptPubKey, txnouttype& whichType, const bool w
     else if (!witnessEnabled && (whichType == TX_WITNESS_V0_KEYHASH || whichType == TX_WITNESS_V0_SCRIPTHASH))
         return false;
     else if (whichType == TX_WITNESS_V2_PQ_KEYHASH)
-        return true; // RIP-25: PQ witness v2 outputs are always standard when solved
+        return true; // structurally standard; activation relay policy is enforced in validation.cpp
 
     return whichType != TX_NONSTANDARD ;
 }
