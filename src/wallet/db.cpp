@@ -530,6 +530,52 @@ bool CDB::Rewrite(CWalletDBWrapper& dbw, const char* pszSkip)
                 bool fSuccess = true;
                 LogPrintf("CDB::Rewrite: Rewriting %s...\n", strFile);
                 std::string strFileRes = strFile + ".rewrite";
+                const fs::path pathRewrite = GetDataDir() / strFileRes;
+                try {
+                    const fs::file_status rewriteStatus = fs::symlink_status(pathRewrite);
+                    if (fs::exists(rewriteStatus)) {
+                        // The source still exists at this point, so a regular
+                        // temporary database can only be stale. Never follow
+                        // or remove an unexpected symlink/directory.
+                        if (fs::is_symlink(rewriteStatus) ||
+                            !fs::is_regular_file(rewriteStatus)) {
+                            LogPrintf("CDB::Rewrite: Refusing stale non-regular path %s\n",
+                                      pathRewrite.string());
+                            return false;
+                        }
+
+                        // Keep stale-file cleanup inside Berkeley DB as well.
+                        // Renaming or unlinking an environment database behind
+                        // Berkeley DB's back can invalidate its recovery state.
+                        if (env->mapFileUseCount.count(strFileRes) &&
+                            env->mapFileUseCount[strFileRes] != 0) {
+                            LogPrintf("CDB::Rewrite: Stale database file is still in use %s\n",
+                                      strFileRes);
+                            return false;
+                        }
+                        env->CloseDb(strFileRes);
+                        env->mapFileUseCount.erase(strFileRes);
+                        DbTxn* cleanupTxn = env->TxnBegin();
+                        if (!cleanupTxn) {
+                            return false;
+                        }
+                        if (env->dbenv->dbremove(cleanupTxn, strFileRes.c_str(), nullptr, 0) != 0) {
+                            cleanupTxn->abort();
+                            LogPrintf("CDB::Rewrite: Can't remove stale database file %s\n",
+                                      strFileRes);
+                            return false;
+                        }
+                        if (cleanupTxn->commit(DB_TXN_SYNC) != 0) {
+                            LogPrintf("CDB::Rewrite: Can't commit removal of stale database file %s\n",
+                                      strFileRes);
+                            return false;
+                        }
+                    }
+                } catch (const fs::filesystem_error& e) {
+                    LogPrintf("CDB::Rewrite: Can't clear stale database file %s: %s\n",
+                              pathRewrite.string(), e.what());
+                    return false;
+                }
                 { // surround usage of db with extra {}
                     CDB db(dbw, "r");
                     Db* pdbCopy = new Db(env->dbenv, 0);
@@ -589,12 +635,27 @@ bool CDB::Rewrite(CWalletDBWrapper& dbw, const char* pszSkip)
                     delete pdbCopy;
                 }
                 if (fSuccess) {
-                    Db dbA(env->dbenv, 0);
-                    if (dbA.remove(strFile.c_str(), nullptr, 0))
+                    // Keep the namespace update inside one durable Berkeley
+                    // DB transaction. A crash leaves either the complete
+                    // source or the complete rewritten database at the
+                    // configured path; there is no remove/rename gap.
+                    DbTxn* ptxn = env->TxnBegin();
+                    if (!ptxn) {
                         fSuccess = false;
-                    Db dbB(env->dbenv, 0);
-                    if (dbB.rename(strFileRes.c_str(), nullptr, strFile.c_str(), 0))
-                        fSuccess = false;
+                    } else {
+                        const int removeResult =
+                            env->dbenv->dbremove(ptxn, strFile.c_str(), nullptr, 0);
+                        const int renameResult = removeResult == 0
+                            ? env->dbenv->dbrename(ptxn, strFileRes.c_str(), nullptr,
+                                                  strFile.c_str(), 0)
+                            : removeResult;
+                        if (removeResult != 0 || renameResult != 0) {
+                            ptxn->abort();
+                            fSuccess = false;
+                        } else if (ptxn->commit(DB_TXN_SYNC) != 0) {
+                            fSuccess = false;
+                        }
+                    }
                 }
                 if (!fSuccess)
                     LogPrintf("CDB::Rewrite: Failed to rewrite database file %s\n", strFileRes);
