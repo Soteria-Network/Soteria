@@ -227,49 +227,26 @@ UniValue getnewaddress(const JSONRPCRequest& request)
 UniValue getnewpqaddress(const JSONRPCRequest& request)
 {
     CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
-    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
-    }
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) return NullUniValue;
     if (request.fHelp || request.params.size() > 1)
-        throw std::runtime_error(
-            "getnewpqaddress ( \"account\" )\n"
-            "\nReturns a new post-quantum Raven address (witness v2, ML-DSA-44) for receiving payments.\n"
-            "These addresses are quantum-resistant and use Bech32m encoding.\n"
-            "\nArguments:\n"
-            "1. \"account\"        (string, optional) . The account name for the address to be linked to.\n"
-            "\nResult:\n"
-            "\"address\"    (string) The new post-quantum raven address (bech32m encoded)\n"
-            "\nExamples:\n"
-            + HelpExampleCli("getnewpqaddress", "")
-            + HelpExampleRpc("getnewpqaddress", "")
-        );
-
+        throw std::runtime_error("getnewpqaddress ( \"account\" )\nReturns a new post-quantum Soteria address (witness v2, ML-DSA-44).\n");
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    // Parse the account first so we don't generate a key if there's an error
-    std::string strAccount;
-    if (!request.params[0].isNull())
-        strAccount = AccountFromValue(request.params[0]);
+    // RIP-25 witness-v2 outputs are anyone-can-spend to pre-activation consensus.
+    // Do not let mainnet wallets generate addresses that are not yet protected.
+    if (!IsPQHybridDeployed())
+        throw JSONRPCError(RPC_WALLET_ERROR, "RIP-25 is not active on this network; refusing to generate an unprotected witness-v2 address");
 
-    // Generate a new ML-DSA-44 keypair
+    std::string strAccount;
+    if (!request.params[0].isNull()) strAccount = AccountFromValue(request.params[0]);
     CPQKey pqKey;
     pqKey.MakeNewKey();
-    if (!pqKey.IsValid()) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to generate ML-DSA-44 keypair");
-    }
-
+    if (!pqKey.IsValid()) throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to generate ML-DSA-44 keypair");
     CPQPubKey pqPubKey = pqKey.GetPubKey();
     uint256 witnessProgram = pqPubKey.GetWitnessProgram();
-
-    // Add to keystore
-    if (!pwallet->AddPQKeyPubKey(pqKey, pqPubKey)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to add PQ key to wallet");
-    }
-
-    // Create destination and set address book
+    if (!pwallet->AddPQKeyPubKey(pqKey, pqPubKey)) throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to add PQ key to wallet");
     WitnessV2PQDestination dest(witnessProgram);
     pwallet->SetAddressBook(dest, strAccount, "receive");
-
     return EncodeDestination(dest);
 }
 
@@ -2780,7 +2757,15 @@ UniValue encryptwallet(const JSONRPCRequest& request)
             "encryptwallet <passphrase>\n"
             "Encrypts the wallet with <passphrase>.");
 
+    const bool wasCrypted = pwallet->IsCrypted();
     if (!pwallet->EncryptWallet(strWalletPass)) {
+        if (!wasCrypted && pwallet->IsCrypted()) {
+            StartShutdown();
+            throw JSONRPCError(
+                RPC_WALLET_ENCRYPTION_FAILED,
+                "Error: Wallet encryption failed after changing the wallet state. "
+                "The node is shutting down; restart it before using this wallet.");
+        }
         throw JSONRPCError(RPC_WALLET_ENCRYPTION_FAILED, "Error: Failed to encrypt the wallet.");
     }
 
