@@ -8,6 +8,7 @@
 #include "consensus/validation.h"
 #include "guiconstants.h"
 #include "guiutil.h"
+#include "init.h"
 #include "optionsmodel.h"
 #include "paymentserver.h"
 #include "recentrequeststablemodel.h"
@@ -467,8 +468,14 @@ bool WalletModel::setWalletEncrypted(bool encrypted, const SecureString& passphr
 {
     if (encrypted) {
         // Encrypt
-        return wallet->EncryptWallet(passphrase);
-    } else {
+        const bool wasCrypted = wallet->IsCrypted();
+        const bool encryptedSuccessfully = wallet->EncryptWallet(passphrase);
+        if (!wasCrypted && !encryptedSuccessfully && wallet->IsCrypted())
+            StartShutdown();
+        return encryptedSuccessfully;
+    }
+    else
+    {
         // Decrypt -- TODO; not supported yet
         return false;
     }
