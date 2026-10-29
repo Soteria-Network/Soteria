@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <vector>
 #include "db.h"
@@ -542,39 +540,44 @@ bool CDB::Rewrite(CWalletDBWrapper& dbw, const char* pszSkip)
                                             DB_BTREE,           // Database type
                                             DB_CREATE,          // Flags
                                             0);
-                    if (ret > 0) {
+                    if (ret != 0) {
                         LogPrintf("CDB::Rewrite: Can't create database file %s\n", strFileRes);
                         fSuccess = false;
                     }
 
-                    Dbc* pcursor = db.GetCursor();
-                    if (pcursor)
-                        while (fSuccess) {
-                            CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-                            CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-                            int ret1 = db.ReadAtCursor(pcursor, ssKey, ssValue);
-                            if (ret1 == DB_NOTFOUND) {
-                                pcursor->close();
-                                break;
-                            } else if (ret1 != 0) {
-                                pcursor->close();
-                                fSuccess = false;
-                                break;
-                            }
-                            if (pszSkip &&
-                                strncmp(ssKey.data(), pszSkip, std::min(ssKey.size(), strlen(pszSkip))) == 0)
-                                continue;
-                            if (strncmp(ssKey.data(), "\x07version", 8) == 0) {
-                                // Update version:
-                                ssValue.clear();
-                                ssValue << CLIENT_VERSION;
-                            }
-                            Dbt datKey(ssKey.data(), ssKey.size());
-                            Dbt datValue(ssValue.data(), ssValue.size());
-                            int ret2 = pdbCopy->put(nullptr, &datKey, &datValue, DB_NOOVERWRITE);
-                            if (ret2 > 0)
-                                fSuccess = false;
+                    Dbc* pcursor = fSuccess ? db.GetCursor() : nullptr;
+                    bool fReachedEnd = false;
+                    if (!pcursor)
+                        fSuccess = false;
+                    while (fSuccess) {
+                        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+                        CDataStream ssValue(SER_DISK, CLIENT_VERSION);
+                        int ret1 = db.ReadAtCursor(pcursor, ssKey, ssValue);
+                        if (ret1 == DB_NOTFOUND) {
+                            fReachedEnd = true;
+                            break;
+                        } else if (ret1 != 0) {
+                            fSuccess = false;
+                            break;
                         }
+                        if (pszSkip &&
+                            strncmp(ssKey.data(), pszSkip, std::min(ssKey.size(), strlen(pszSkip))) == 0)
+                            continue;
+                        if (strncmp(ssKey.data(), "\x07version", 8) == 0) {
+                            // Update version:
+                            ssValue.clear();
+                            ssValue << CLIENT_VERSION;
+                        }
+                        Dbt datKey(ssKey.data(), ssKey.size());
+                        Dbt datValue(ssValue.data(), ssValue.size());
+                        int ret2 = pdbCopy->put(nullptr, &datKey, &datValue, DB_NOOVERWRITE);
+                        if (ret2 != 0)
+                            fSuccess = false;
+                    }
+                    if (pcursor && pcursor->close() != 0)
+                        fSuccess = false;
+                    if (!fReachedEnd)
+                        fSuccess = false;
                     if (fSuccess) {
                         db.Close();
                         env->CloseDb(strFile);
