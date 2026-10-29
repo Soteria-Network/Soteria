@@ -310,42 +310,96 @@ bool CWallet::AddPQKeyPubKey(const CPQKey &key, const CPQPubKey &pubkey)
     if (IsCrypted())
         return true;
 
-    uint256 witnessProgram = pubkey.GetWitnessProgram();
-    std::vector<unsigned char> keyData(key.GetKeyData().begin(), key.GetKeyData().end());
-    return CWalletDB(*dbw).WritePQKey(witnessProgram, pubkey, keyData);
+    return CWalletDB(*dbw).WritePQKey(
+        pubkey.GetWitnessProgram(), pubkey, key.GetKeyData());
 }
 
 bool CWallet::AddCryptedKey(const CPubKey& vchPubKey,
     const std::vector<unsigned char>& vchCryptedSecret)
 {
+    const CKeyID keyID = vchPubKey.GetID();
+    const bool wasCrypted = IsCrypted();
+    bool hadPrevious = false;
+    std::pair<CPubKey, std::vector<unsigned char>> previous;
+    {
+        LOCK(cs_KeyStore);
+        const auto it = mapCryptedKeys.find(keyID);
+        if (it != mapCryptedKeys.end()) {
+            hadPrevious = true;
+            previous = it->second;
+        }
+    }
+
     if (!CCryptoKeyStore::AddCryptedKey(vchPubKey, vchCryptedSecret))
         return false;
+
+    bool persisted = false;
     {
         LOCK(cs_wallet);
         if (pwalletdbEncryption)
-            return pwalletdbEncryption->WriteCryptedKey(vchPubKey,
-                vchCryptedSecret,
-                mapKeyMetadata[vchPubKey.GetID()]);
+            persisted = pwalletdbEncryption->WriteCryptedKey(vchPubKey,
+                                                              vchCryptedSecret,
+                                                              mapKeyMetadata[keyID]);
         else
-            return CWalletDB(*dbw).WriteCryptedKey(vchPubKey,
-                vchCryptedSecret,
-                mapKeyMetadata[vchPubKey.GetID()]);
+            persisted = CWalletDB(*dbw).WriteCryptedKey(vchPubKey,
+                                                        vchCryptedSecret,
+                                                        mapKeyMetadata[keyID]);
     }
+
+    if (!persisted) {
+        {
+            LOCK(cs_KeyStore);
+            if (hadPrevious)
+                mapCryptedKeys[keyID] = std::move(previous);
+            else
+                mapCryptedKeys.erase(keyID);
+        }
+        if (!wasCrypted)
+            ResetCryptedOnAddFailure();
+    }
+    return persisted;
 }
 
 bool CWallet::AddCryptedPQKey(const CPQPubKey &pqPubKey,
                               const std::vector<unsigned char> &vchCryptedSecret)
 {
+    const uint256 witnessProgram = pqPubKey.GetWitnessProgram();
+    const bool wasCrypted = IsCrypted();
+    bool hadPrevious = false;
+    std::pair<CPQPubKey, std::vector<unsigned char>> previous;
+    {
+        LOCK(cs_KeyStore);
+        const auto it = mapCryptedPQKeys.find(witnessProgram);
+        if (it != mapCryptedPQKeys.end()) {
+            hadPrevious = true;
+            previous = it->second;
+        }
+    }
+
     if (!CCryptoKeyStore::AddCryptedPQKey(pqPubKey, vchCryptedSecret))
         return false;
+
+    bool persisted = false;
     {
         LOCK(cs_wallet);
-        uint256 witnessProgram = pqPubKey.GetWitnessProgram();
         if (pwalletdbEncryption)
-            return pwalletdbEncryption->WriteCryptedPQKey(witnessProgram, pqPubKey, vchCryptedSecret);
+            persisted = pwalletdbEncryption->WriteCryptedPQKey(witnessProgram, pqPubKey, vchCryptedSecret);
         else
-            return CWalletDB(*dbw).WriteCryptedPQKey(witnessProgram, pqPubKey, vchCryptedSecret);
+            persisted = CWalletDB(*dbw).WriteCryptedPQKey(witnessProgram, pqPubKey, vchCryptedSecret);
     }
+
+    if (!persisted) {
+        {
+            LOCK(cs_KeyStore);
+            if (hadPrevious)
+                mapCryptedPQKeys[witnessProgram] = std::move(previous);
+            else
+                mapCryptedPQKeys.erase(witnessProgram);
+        }
+        if (!wasCrypted)
+            ResetCryptedOnAddFailure();
+    }
+    return persisted;
 }
 
 bool CWallet::LoadKeyMetadata(const CTxDestination& keyID, const CKeyMetadata& meta)
@@ -553,19 +607,20 @@ bool CWallet::SetMinVersion(enum WalletFeature nVersion, CWalletDB* pwalletdbIn,
     if (fExplicit && nVersion > nWalletMaxVersion)
         nVersion = FEATURE_LATEST;
 
-    nWalletVersion = nVersion;
-
-    if (nVersion > nWalletMaxVersion)
-        nWalletMaxVersion = nVersion;
-
+    // Persist first. A failed database write must not make a later retry skip
+    // the min-version record because only the in-memory version was advanced.
     {
         CWalletDB* pwalletdb = pwalletdbIn ? pwalletdbIn : new CWalletDB(*dbw);
-        if (nWalletVersion > 40000)
-            pwalletdb->WriteMinVersion(nWalletVersion);
+        const bool fWriteSuccess = nVersion <= 40000 || pwalletdb->WriteMinVersion(nVersion);
         if (!pwalletdbIn)
             delete pwalletdb;
+        if (!fWriteSuccess)
+            return false;
     }
 
+    nWalletVersion = nVersion;
+    if (nVersion > nWalletMaxVersion)
+        nWalletMaxVersion = nVersion;
     return true;
 }
 
@@ -730,22 +785,45 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
 
     {
         LOCK(cs_wallet);
-        mapMasterKeys[++nMasterKeyMaxID] = kMasterKey;
+        const unsigned int previousMasterKeyMaxID = nMasterKeyMaxID;
+        const int previousWalletVersion = nWalletVersion;
+        const int previousWalletMaxVersion = nWalletMaxVersion;
+        const unsigned int masterKeyID = ++nMasterKeyMaxID;
+        mapMasterKeys[masterKeyID] = kMasterKey;
+
+        auto abortEncryptionSetup = [&](bool transactionActive) {
+            if (pwalletdbEncryption) {
+                if (transactionActive)
+                    pwalletdbEncryption->TxnAbort();
+                delete pwalletdbEncryption;
+                pwalletdbEncryption = nullptr;
+            }
+            mapMasterKeys.erase(masterKeyID);
+            nMasterKeyMaxID = previousMasterKeyMaxID;
+            nWalletVersion = previousWalletVersion;
+            nWalletMaxVersion = previousWalletMaxVersion;
+            return false;
+        };
+
         assert(!pwalletdbEncryption);
         pwalletdbEncryption = new CWalletDB(*dbw);
         if (!pwalletdbEncryption->TxnBegin()) {
-            delete pwalletdbEncryption;
-            pwalletdbEncryption = nullptr;
-            return false;
+            return abortEncryptionSetup(false);
         }
-        pwalletdbEncryption->WriteMasterKey(nMasterKeyMaxID, kMasterKey);
+        if (!pwalletdbEncryption->WriteMasterKey(masterKeyID, kMasterKey)) {
+            return abortEncryptionSetup(true);
+        }
 
-        if (!EncryptKeys(_vMasterKey)) {
-            pwalletdbEncryption->TxnAbort();
-            delete pwalletdbEncryption;
-            // We now probably have half of our keys encrypted in memory, and half not...
-            // die and let the user reload the unencrypted wallet.
-            assert(false);
+        // Persist the version before mutating the in-memory keystore so a write failure can abort cleanly.
+        if (!SetMinVersion(FEATURE_WALLETCRYPT, pwalletdbEncryption, true)) {
+            return abortEncryptionSetup(true);
+        }
+
+        if (!EncryptKeys(_vMasterKey))
+        {
+            // EncryptKeys is failure-atomic in memory. Abort the database
+            // transaction and restore the setup metadata for a clean retry.
+            return abortEncryptionSetup(true);
         }
 
         if (hdChain.IsBip44()) {
@@ -784,9 +862,6 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
             }
         }
 
-        // Encryption was introduced in version 0.4.0
-        SetMinVersion(FEATURE_WALLETCRYPT, pwalletdbEncryption, true);
-
         if (!pwalletdbEncryption->TxnCommit()) {
             delete pwalletdbEncryption;
             // We now have keys encrypted in memory, but not on disk...
@@ -814,7 +889,8 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
 
         // Need to completely rewrite the wallet file; if we don't, bdb might keep
         // bits of the unencrypted private key in slack space in the database file.
-        dbw->Rewrite();
+        if (!dbw->Rewrite())
+            return false;
 
         if (hdChain.IsBip44()) {
             CWalletDB walletdb(*dbw);
@@ -4956,6 +5032,28 @@ void CWallet::postInitProcess(CScheduler& scheduler)
 
 bool CWallet::BackupWallet(const std::string& strDest)
 {
+    LOCK(cs_wallet);
+    if (IsCrypted()) {
+        {
+            LOCK(cs_KeyStore);
+            if (!mapPQKeys.empty())
+                return false;
+        }
+
+        bool hasPlaintextPQKeys = false;
+        bool hasPlaintextKeys = false;
+        {
+            CWalletDB walletdb(*dbw, "r");
+            if (!walletdb.HasPlaintextKeys(hasPlaintextKeys) || hasPlaintextKeys ||
+                !walletdb.HasPlaintextPQKeys(hasPlaintextPQKeys) || hasPlaintextPQKeys)
+                return false;
+        }
+
+        // Compact before every encrypted backup so deleted plaintext cannot be
+        // copied from Berkeley DB slack space.
+        if (!dbw->Rewrite())
+            return false;
+    }
     return dbw->Backup(strDest);
 }
 
