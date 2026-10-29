@@ -805,99 +805,121 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
             return false;
         };
 
-        assert(!pwalletdbEncryption);
-        pwalletdbEncryption = new CWalletDB(*dbw);
-        if (!pwalletdbEncryption->TxnBegin()) {
-            return abortEncryptionSetup(false);
-        }
-        if (!pwalletdbEncryption->WriteMasterKey(masterKeyID, kMasterKey)) {
-            return abortEncryptionSetup(true);
-        }
-
-        // Persist the version before mutating the in-memory keystore so a write failure can abort cleanly.
-        if (!SetMinVersion(FEATURE_WALLETCRYPT, pwalletdbEncryption, true)) {
-            return abortEncryptionSetup(true);
-        }
-
-        if (!EncryptKeys(_vMasterKey))
-        {
-            // EncryptKeys is failure-atomic in memory. Abort the database
-            // transaction and restore the setup metadata for a clean retry.
-            return abortEncryptionSetup(true);
-        }
-
-        if (hdChain.IsBip44()) {
-            pwalletdbEncryption->EraseBip39Words(false);
-            pwalletdbEncryption->EraseBip39Passphrase(false);
-            pwalletdbEncryption->EraseBip39VchSeed(false);
-
-            if (!EncryptBip39(_vMasterKey)) {
-                pwalletdbEncryption->TxnAbort();
-                delete pwalletdbEncryption;
-                // We now probably have half of our keys encrypted in memory, and half not...
-                // die and let the user reload the unencrypted wallet.
-                assert(false);
-            }
-
-            if (!pwalletdbEncryption->WriteBip39Words(nWordHash, vchCryptedBip39Words, true)) {
-                pwalletdbEncryption->TxnAbort();
-                delete pwalletdbEncryption;
-                assert(false);
-            }
-
-            if (!vchCryptedBip39Passphrase.empty()) {
-                if (!pwalletdbEncryption->WriteBip39Passphrase(vchCryptedBip39Passphrase, true)) {
-                    pwalletdbEncryption->TxnAbort();
-                    delete pwalletdbEncryption;
-                    assert(false);
+        // EncryptKeys cannot be rolled back after it has successfully
+        // replaced the live plaintext maps. From that point on, close the
+        // database transaction exactly once, retain the encrypted in-memory
+        // state as an unambiguous signal to callers, and require a restart.
+        auto failEncryptionAfterKeyMutation = [&](bool transactionActive) {
+            if (pwalletdbEncryption) {
+                if (transactionActive && !pwalletdbEncryption->TxnAbort()) {
+                    LogPrintf("EncryptWallet: failed to abort wallet database transaction\n");
                 }
+                delete pwalletdbEncryption;
+                pwalletdbEncryption = nullptr;
             }
-
-            if (!vchCryptedBip39VchSeed.empty()) {
-                if (!pwalletdbEncryption->WriteBip39VchSeed(vchCryptedBip39VchSeed, true)) {
-                    pwalletdbEncryption->TxnAbort();
-                    delete pwalletdbEncryption;
-                    assert(false);
-                }
-            }
-        }
-
-        if (!pwalletdbEncryption->TxnCommit()) {
-            delete pwalletdbEncryption;
-            // We now have keys encrypted in memory, but not on disk...
-            // die to avoid confusion and let the user reload the unencrypted wallet.
-            assert(false);
-        }
-
-        delete pwalletdbEncryption;
-        pwalletdbEncryption = nullptr;
-
-        Lock();
-        Unlock(strWalletPassphrase);
-
-        // if we are using HD, replace the HD seed with a new one
-        if (IsHDEnabled() && !hdChain.IsBip44()) {
-            if (!SetHDSeed(GenerateNewSeed())) {
-                return false;
-            }
-        }
-
-        if (!hdChain.IsBip44())
-            NewKeyPool();
-
-        Lock();
-
-        // Need to completely rewrite the wallet file; if we don't, bdb might keep
-        // bits of the unencrypted private key in slack space in the database file.
-        if (!dbw->Rewrite())
             return false;
+        };
 
-        if (hdChain.IsBip44()) {
-            CWalletDB walletdb(*dbw);
-            walletdb.WriteBip39Words(nWordHash, vchCryptedBip39Words, true);
-            walletdb.WriteBip39VchSeed(vchCryptedBip39VchSeed, true);
-            if (!vchCryptedBip39Passphrase.empty())
-                walletdb.WriteBip39Passphrase(vchCryptedBip39Passphrase, true);
+        bool transactionActive = false;
+        bool keysMutated = false;
+        try {
+            assert(!pwalletdbEncryption);
+            pwalletdbEncryption = new CWalletDB(*dbw);
+            if (!pwalletdbEncryption->TxnBegin()) {
+                return abortEncryptionSetup(false);
+            }
+            transactionActive = true;
+            if (!pwalletdbEncryption->WriteMasterKey(masterKeyID, kMasterKey)) {
+                return abortEncryptionSetup(true);
+            }
+
+            // Persist the version before mutating the in-memory keystore so a write failure can abort cleanly.
+            if (!SetMinVersion(FEATURE_WALLETCRYPT, pwalletdbEncryption, true)) {
+                return abortEncryptionSetup(true);
+            }
+
+            if (!EncryptKeys(_vMasterKey))
+            {
+                // EncryptKeys is failure-atomic in memory. Abort the database
+                // transaction and restore the setup metadata for a clean retry.
+                return abortEncryptionSetup(true);
+            }
+            keysMutated = true;
+
+            if(hdChain.IsBip44()) {
+                pwalletdbEncryption->EraseBip39Words( false);
+                pwalletdbEncryption->EraseBip39Passphrase(false);
+                pwalletdbEncryption->EraseBip39VchSeed(false);
+
+                if (!EncryptBip39(_vMasterKey))
+                {
+                    return failEncryptionAfterKeyMutation(true);
+                }
+
+                if (!pwalletdbEncryption->WriteBip39Words(nWordHash, vchCryptedBip39Words, true)) {
+                    return failEncryptionAfterKeyMutation(true);
+                }
+
+                if (!vchCryptedBip39Passphrase.empty()) {
+                    if (!pwalletdbEncryption->WriteBip39Passphrase(vchCryptedBip39Passphrase, true)) {
+                        return failEncryptionAfterKeyMutation(true);
+                    }
+                }
+
+                if (!vchCryptedBip39VchSeed.empty()) {
+                    if (!pwalletdbEncryption->WriteBip39VchSeed(vchCryptedBip39VchSeed, true)) {
+                        return failEncryptionAfterKeyMutation(true);
+                    }
+                }
+            }
+
+            const bool transactionCommitted = pwalletdbEncryption->TxnCommit();
+            // TxnCommit consumes the transaction handle even on failure.
+            transactionActive = false;
+            if (!transactionCommitted) {
+                return failEncryptionAfterKeyMutation(false);
+            }
+
+            delete pwalletdbEncryption;
+            pwalletdbEncryption = nullptr;
+
+            Lock();
+            Unlock(strWalletPassphrase);
+
+            // if we are using HD, replace the HD seed with a new one
+            if (IsHDEnabled() && !hdChain.IsBip44()) {
+                if (!SetHDSeed(GenerateNewSeed())) {
+                    return false;
+                }
+            }
+
+            if (!hdChain.IsBip44())
+                NewKeyPool();
+
+            Lock();
+
+            // Need to completely rewrite the wallet file; if we don't, bdb might keep
+            // bits of the unencrypted private key in slack space in the database file.
+            if (!dbw->Rewrite())
+                return false;
+
+            if (hdChain.IsBip44()) {
+                CWalletDB walletdb(*dbw);
+                walletdb.WriteBip39Words(nWordHash, vchCryptedBip39Words, true);
+                walletdb.WriteBip39VchSeed(vchCryptedBip39VchSeed, true);
+                if (!vchCryptedBip39Passphrase.empty())
+                    walletdb.WriteBip39Passphrase(vchCryptedBip39Passphrase, true);
+            }
+        } catch (const std::exception& e) {
+            LogPrintf("EncryptWallet: exception while encrypting wallet: %s\n", e.what());
+            return keysMutated
+                ? failEncryptionAfterKeyMutation(transactionActive)
+                : abortEncryptionSetup(transactionActive);
+        } catch (...) {
+            LogPrintf("EncryptWallet: unknown exception while encrypting wallet\n");
+            return keysMutated
+                ? failEncryptionAfterKeyMutation(transactionActive)
+                : abortEncryptionSetup(transactionActive);
         }
     }
     NotifyStatusChanged(this);
