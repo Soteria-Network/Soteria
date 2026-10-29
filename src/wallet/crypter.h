@@ -128,6 +128,10 @@ private:
 protected:
     bool SetCrypted();
 
+    /** Restore the initial unencrypted mode after the first encrypted-key
+     * persistence attempt failed and no encrypted entries remain. */
+    void ResetCryptedOnAddFailure();
+
     //! will encrypt previously unencrypted keys
     bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
 
