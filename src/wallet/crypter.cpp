@@ -146,10 +146,20 @@ bool CCryptoKeyStore::SetCrypted()
     LOCK(cs_KeyStore);
     if (fUseCrypto)
         return true;
-    if (!mapKeys.empty())
+    if (!mapKeys.empty() || !mapPQKeys.empty())
         return false;
     fUseCrypto = true;
     return true;
+}
+
+void CCryptoKeyStore::ResetCryptedOnAddFailure()
+{
+    LOCK(cs_KeyStore);
+    if (mapCryptedKeys.empty() && mapCryptedPQKeys.empty()) {
+        vMasterKey.clear();
+        fUseCrypto = false;
+        fDecryptionThoroughlyChecked = false;
+    }
 }
 
 bool CCryptoKeyStore::Lock()
@@ -193,6 +203,7 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
             if (fDecryptionThoroughlyChecked)
                 break;
         }
+        // RIP-25: validate decrypted PQ secret/public-key pairs as well.
         // A successful AES decrypt alone is not sufficient: the persisted ML-DSA
         // secret must cryptographically match the public key/witness program.
         if (!keyFail) {
@@ -207,9 +218,8 @@ bool CCryptoKeyStore::Unlock(const CKeyingMaterial& vMasterKeyIn)
                     keyFail = true;
                     break;
                 }
-                std::vector<unsigned char> keyData(vchSecret.begin(), vchSecret.end());
                 CPQKey pqKey;
-                if (!pqKey.SetKeyData(keyData, pqPubKey))
+                if (!pqKey.SetKeyData(vchSecret, pqPubKey))
                 {
                     keyFail = true;
                     break;
@@ -325,8 +335,7 @@ bool CCryptoKeyStore::GetPQKey(const uint256 &witnessProgram, CPQKey &keyOut) co
             CKeyingMaterial vchSecret;
             if (!DecryptSecret(vMasterKey, vchCryptedSecret, pqPubKey.GetWitnessProgram(), vchSecret))
                 return false;
-            std::vector<unsigned char> keyData(vchSecret.begin(), vchSecret.end());
-            return keyOut.SetKeyData(keyData, pqPubKey);
+            return keyOut.SetKeyData(vchSecret, pqPubKey);
         }
     }
     return false;
@@ -392,11 +401,17 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
 {
     {
         LOCK(cs_KeyStore);
-        if (!mapCryptedKeys.empty() || IsCrypted())
+        if (!mapCryptedKeys.empty() || !mapCryptedPQKeys.empty() || IsCrypted())
             return false;
 
-        fUseCrypto = true;
-        for (KeyMap::value_type& mKey : mapKeys)
+        // Build every ciphertext before changing keystore mode. Persistence is
+        // performed through the virtual AddCrypted* methods below; if any of
+        // those writes fails, restore the original plaintext maps so callers
+        // can abort their database transaction without leaving a half-crypted
+        // in-memory wallet.
+        CryptedKeyMap cryptedKeys;
+        CryptedPQKeyMap cryptedPQKeys;
+        for (const KeyMap::value_type& mKey : mapKeys)
         {
             const CKey &key = mKey.second;
             CPubKey vchPubKey = key.GetPubKey();
@@ -404,12 +419,10 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
             std::vector<unsigned char> vchCryptedSecret;
             if (!EncryptSecret(vMasterKeyIn, vchSecret, vchPubKey.GetHash(), vchCryptedSecret))
                 return false;
-            if (!AddCryptedKey(vchPubKey, vchCryptedSecret))
-                return false;
+            cryptedKeys[vchPubKey.GetID()] = std::make_pair(vchPubKey, std::move(vchCryptedSecret));
         }
-        mapKeys.clear();
 
-        for (PQKeyMap::value_type& mKey : mapPQKeys)
+        for (const PQKeyMap::value_type& mKey : mapPQKeys)
         {
             const CPQKey &key = mKey.second;
             CPQPubKey pqPubKey = key.GetPubKey();
@@ -419,10 +432,43 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
             std::vector<unsigned char> vchCryptedSecret;
             if (!EncryptSecret(vMasterKeyIn, vchSecret, pqPubKey.GetWitnessProgram(), vchCryptedSecret))
                 return false;
-            if (!AddCryptedPQKey(pqPubKey, vchCryptedSecret))
-                return false;
+            cryptedPQKeys[pqPubKey.GetWitnessProgram()] = std::make_pair(pqPubKey, std::move(vchCryptedSecret));
         }
-        mapPQKeys.clear();
+
+        KeyMap plaintextKeys;
+        PQKeyMap plaintextPQKeys;
+        plaintextKeys.swap(mapKeys);
+        plaintextPQKeys.swap(mapPQKeys);
+        fUseCrypto = true;
+
+        bool success = true;
+        try {
+            for (const CryptedKeyMap::value_type& entry : cryptedKeys) {
+                if (!AddCryptedKey(entry.second.first, entry.second.second)) {
+                    success = false;
+                    break;
+                }
+            }
+            if (success) {
+                for (const CryptedPQKeyMap::value_type& entry : cryptedPQKeys) {
+                    if (!AddCryptedPQKey(entry.second.first, entry.second.second)) {
+                        success = false;
+                        break;
+                    }
+                }
+            }
+        } catch (...) {
+            success = false;
+        }
+
+        if (!success) {
+            mapCryptedKeys.clear();
+            mapCryptedPQKeys.clear();
+            mapKeys.swap(plaintextKeys);
+            mapPQKeys.swap(plaintextPQKeys);
+            fUseCrypto = false;
+            return false;
+        }
     }
     return true;
 }
