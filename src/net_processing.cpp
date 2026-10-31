@@ -560,7 +560,7 @@ static bool TipMayBeStale(const Consensus::ConsensusParams &consensusParams) EXC
 // Requires cs_main
 static bool CanDirectFetch(const Consensus::ConsensusParams &consensusParams) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
 {
-    return chainActive.Tip()->GetBlockTime() > GetAdjustedTime() - consensusParams.nPowTargetSpacing * 20;
+    return chainActive.Tip()->GetBlockTime() > GetAdjustedTime() - consensusParams.nPowTargetSpacing * 50;
 }
 
 // Requires cs_main
