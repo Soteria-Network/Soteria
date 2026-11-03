@@ -15,9 +15,15 @@
 #include <vector>
 
 static constexpr unsigned char pchIPv4[12] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff };
-static constexpr unsigned char pchOnionCat[] = {0xFD,0x53, 0x4F, 0x54, 0x45, 0x52};
+// Standard OnionCat IPv6 prefix for Tor .onion addresses:
+//   0xFD || SHA256(".onion")[0:5]  ==  fd87:d87e:eb43::/48
+// Must NOT collide with g_internal_prefix, or IsTor() and IsInternal()
+// would return true for the same addresses and .onion peers would be
+// silently classified as NET_INTERNAL and rejected by IsValid().
+static constexpr unsigned char pchOnionCat[] = {0xFD, 0x87, 0xD8, 0x7E, 0xEB, 0x43};
 
-// 0xFD + sha256("soteria")[0:5] // These are JUST ASCII values
+// Soteria internal address prefix: 0xFD + "SOTER" (ASCII branding,
+// private-use block, only meaningful to Soteria nodes).
 static constexpr unsigned char g_internal_prefix[] = { 0xFD, 0x53, 0x4F, 0x54, 0x45, 0x52 };
 
 void CNetAddr::Init()
