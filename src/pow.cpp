@@ -175,7 +175,8 @@ unsigned int GetNextWorkRequiredLWMA(const CBlockIndex* pindexLast, const CBlock
 	   return GetNextWorkRequiredLWMA6(pindexLast, pblock, params, powType);    
    else if ((pindexLast->nHeight >= params.diffRetargetStartHeight6) && (pindexLast->nHeight < params.diffRetargetEndHeight6))        
 	   return GetNextWorkRequiredLWMA7(pindexLast, pblock, params, powType);
-
+   else if ((pindexLast->nHeight >= params.diffRetargetStartHeight7) && (pindexLast->nHeight < params.diffRetargetEndHeight7))        
+	   return GetNextWorkRequiredLWMA8(pindexLast, pblock, params, powType);
     // default fallback if no stage matched    
     return GetNextWorkRequiredLWMA5(pindexLast, pblock, params, powType);
 }
@@ -652,6 +653,116 @@ unsigned int GetNextWorkRequiredLWMA7(
 
     // ===== EWMA smoothing (future test 2/3 weighting, 3/4) =====
     constexpr uint64_t EWMA_NUM = 2, EWMA_DEN = 3;
+    arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
+
+    // Final safety clamps
+    if (smoothed > powTypeLimit) smoothed = powTypeLimit;
+
+    return smoothed.GetCompact();
+}
+
+unsigned int GetNextWorkRequiredLWMA8(
+    const CBlockIndex* pindexLast,
+    const CBlockHeader* pblock,
+    const Consensus::ConsensusParams& params,
+    const POW_TYPE powType)
+{
+    // ===== Parameters =====
+    const int64_t T = 12;             
+    const int64_t N = 45;             // LWMA window
+
+    const arith_uint256 powTypeLimit = UintToArith256(params.powTypeLimits[powType]);
+
+    // ===== Basic guards =====
+    if (!pindexLast || !pblock) {
+        return powTypeLimit.GetCompact();
+    }
+    if (pindexLast->nHeight > 0 && !pindexLast->pprev) {
+        return powTypeLimit.GetCompact();
+    }
+
+    const int64_t height = pindexLast->nHeight + 1;
+
+    // k = T * (1 + 2 + ... + N) = T * N*(N+1)/2
+    const uint64_t k = static_cast<uint64_t>((static_cast<uint64_t>(N) * (N + 1) / 2) * T);
+
+    // ===== Bootstrap when chain is short =====
+    if (height < N + 1) {
+        return powTypeLimit.GetCompact();
+    }
+
+    // ===== Collect last N+1 contiguous blocks =====
+    std::vector<const CBlockIndex*> blocks;
+    blocks.reserve(static_cast<size_t>(N) + 1);
+
+    const CBlockIndex* walker = pindexLast;
+    while (walker && blocks.size() < static_cast<size_t>(N) + 1) {
+        blocks.push_back(walker);      // blocks[0] = newest, blocks[N] = oldest
+        walker = walker->pprev;
+    }
+
+    // If not enough blocks, just return limit (simpler fallback)
+    if (blocks.size() < static_cast<size_t>(N) + 1) {
+        return powTypeLimit.GetCompact();
+    }
+
+    // ===== LWMA core with bounded dt =====
+    __int128 totalWeightedSolveTime = 0;
+    arith_uint256 totalTarget = 0;
+
+    const int64_t dtLower = std::max<int64_t>(1, T / 3);
+    const int64_t dtUpper = 4 * T; 
+
+    for (int i = 0; i < N; ++i) {
+        const int idx_newer = i;
+        const int idx_older = i + 1;
+
+        int64_t rawDt = blocks[idx_newer]->GetBlockTime() - blocks[idx_older]->GetBlockTime();
+    if (rawDt <= 0) rawDt = dtLower;
+        int64_t dt = rawDt;
+        if (dt < dtLower) dt = dtLower;
+        if (dt > dtUpper) dt = dtUpper;
+
+        // Weight more recent intervals higher
+        const int weight = N - i;
+        int64_t wdt;
+        if (!SafeMultiply(dt, weight, wdt)) {
+            return powTypeLimit.GetCompact();
+        }
+        totalWeightedSolveTime += wdt;
+
+        // Average targets over the same N blocks (align with intervals)
+        arith_uint256 tgt; tgt.SetCompact(blocks[idx_newer]->nBits);
+        totalTarget += tgt;
+    }
+
+    // Average target and next target (rounded)
+    arith_uint256 avgTarget = totalTarget / N;
+
+    // Safe conversion of weighted solve time to 256-bit
+    const uint64_t sumWeightedDt64 = static_cast<uint64_t>(totalWeightedSolveTime);
+    arith_uint256 weightedTime = arith_uint256(sumWeightedDt64);
+
+    arith_uint256 K = arith_uint256(k);
+    arith_uint256 numerator = avgTarget * weightedTime;
+    arith_uint256 halfK = K >> 1;
+    arith_uint256 nextTarget = (numerator + halfK) / K;
+
+    // ===== Floor and limit clamps =====
+    if (nextTarget > powTypeLimit) nextTarget = powTypeLimit;
+
+    // ===== Last target =====
+    arith_uint256 lastTarget; lastTarget.SetCompact(pindexLast->nBits);
+
+    // ===== Per-block ratio clamp =====
+    arith_uint256 downBound = (lastTarget * 50) / 100;   // −50%
+    arith_uint256 upBound   = (lastTarget * 200) / 100;  // +100%
+
+    if (nextTarget < downBound) nextTarget = downBound;
+    if (nextTarget > upBound)   nextTarget = upBound;
+
+    // ===== EWMA smoothing =====
+    constexpr uint64_t EWMA_NUM = 4, EWMA_DEN = 5;
     arith_uint256 smoothed = (nextTarget * EWMA_NUM + lastTarget * (EWMA_DEN - EWMA_NUM)) / EWMA_DEN;
 
     // Final safety clamps
