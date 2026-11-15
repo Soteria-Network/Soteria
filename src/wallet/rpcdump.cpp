@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2020 The Raven Core developers
-// Copyright (c) 2025-2026 The Soteria Core developers
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include <algorithm>
 #include <ios>
@@ -347,7 +347,18 @@ UniValue importprunedfunds(const JSONRPCRequest& request)
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
-    if (pwallet->IsMine(wtx)) {
+    const auto origin = mapBlockIndex.find(wtx.hashBlock);
+    if (origin == mapBlockIndex.end() || !chainActive.Contains(origin->second))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found in chain");
+
+    bool hasOwnedOutput = false;
+    for (const CTxOut& output : wtx.tx->vout) {
+        if (pwallet->IsMine(output, origin->second)) {
+            hasOwnedOutput = true;
+            break;
+        }
+    }
+    if (hasOwnedOutput) {
         pwallet->AddToWallet(wtx, false);
         return NullUniValue;
     }
@@ -656,7 +667,7 @@ UniValue dumpwallet(const JSONRPCRequest& request)
     std::sort(vKeyBirth.begin(), vKeyBirth.end());
 
     // produce output
-    file << strprintf("# Wallet dump created by Soteria %s\n", CLIENT_BUILD);
+    file << strprintf("# Wallet dump created by Soteria Network %s\n", CLIENT_BUILD);
     file << strprintf("# * Created on %s\n", EncodeDumpTime(GetTime()));
     file << strprintf("# * Best block at time of backup was %i (%s),\n", chainActive.Height(), chainActive.Tip()->GetBlockHash().ToString());
     file << strprintf("#   mined on %s\n", EncodeDumpTime(chainActive.Tip()->GetBlockTime()));
@@ -1377,7 +1388,7 @@ UniValue removewatchonly(const JSONRPCRequest& request)
             "removewatchonly \"address\"\n"
             "\nRemoves a watch-only address from the wallet.\n"
             "\nArguments:\n"
-            "1. \"address\"          (string, required) The Avian address to remove\n"
+            "1. \"address\"          (string, required) The Soteria address to remove\n"
             "\nResult:\n"
             "null                    (JSON null) upon successful removal\n"
             "\nExamples:\n"
@@ -1390,7 +1401,7 @@ UniValue removewatchonly(const JSONRPCRequest& request)
     CTxDestination dest = DecodeDestination(request.params[0].get_str());
 
     if (!IsValidDestination(dest)) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Avian address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Soteria address");
     }
 
     // Check if address exists in the wallet
