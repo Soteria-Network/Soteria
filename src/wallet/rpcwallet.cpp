@@ -18,6 +18,8 @@
 #include <init.h> // For StartShutdown
 #include <map>
 #include <memory>
+#include "assets/assets.h"
+#include "hash.h"
 #include "net.h"
 #include "policy/feerate.h"
 #include "policy/fees.h"
@@ -69,7 +71,15 @@ std::string HelpRequiringPassphrase(CWallet* const pwallet)
 
 bool EnsureWalletIsAvailable(CWallet* const pwallet, bool avoidException)
 {
-    if (pwallet) return true;
+    if (pwallet) {
+        if (!pwallet->IsEncryptionRewritePending())
+            return true;
+        if (avoidException)
+            return false;
+        throw JSONRPCError(
+            RPC_WALLET_ERROR,
+            "Wallet encryption recovery is pending. Restart before using this wallet.");
+    }
     if (avoidException) return false;
     if (::vpwallets.empty()) {
         // Note: It isn't currently possible to trigger this error because
@@ -192,10 +202,10 @@ UniValue getnewaddress(const JSONRPCRequest& request)
         throw std::runtime_error(
             "getnewaddress ( \"account\" )\n"
             "\nReturns a new Soteria address for receiving payments.\n"
-            "If 'account' is specified (DEPRECATED), it is added to the address book \n"
+            "If 'account' is specified, it is added to the address book \n"
             "so payments received with the address will be credited to 'account'.\n"
             "\nArguments:\n"
-            "1. \"account\"        (string, optional) DEPRECATED. The account name for the address to be linked to. If not provided, the default account \"\" is used. It can also be set to the empty string \"\" to represent the default account. The account does not need to exist, it will be created if there is no account by the given name.\n"
+            "1. \"account\"        (string, optional) The account name for the address to be linked to. If not provided, the default account \"\" is used. It can also be set to the empty string \"\" to represent the default account. The account does not need to exist, it will be created if there is no account by the given name.\n"
             "\nResult:\n"
             "\"address\"    (string) The new soteria address\n"
             "\nExamples:\n" +
@@ -237,17 +247,154 @@ UniValue getnewpqaddress(const JSONRPCRequest& request)
     if (!IsPQHybridDeployed())
         throw JSONRPCError(RPC_WALLET_ERROR, "RIP-25 is not active on this network; refusing to generate an unprotected witness-v2 address");
 
+    EnsureWalletIsUnlocked(pwallet);
+
     std::string strAccount;
     if (!request.params[0].isNull()) strAccount = AccountFromValue(request.params[0]);
-    CPQKey pqKey;
-    pqKey.MakeNewKey();
-    if (!pqKey.IsValid()) throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to generate ML-DSA-44 keypair");
-    CPQPubKey pqPubKey = pqKey.GetPubKey();
+    CPQPubKey pqPubKey;
+    if (!pwallet->GenerateNewPQKey(pqPubKey))
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to derive and persist ML-DSA-44 keypair");
     uint256 witnessProgram = pqPubKey.GetWitnessProgram();
-    if (!pwallet->AddPQKeyPubKey(pqKey, pqPubKey)) throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to add PQ key to wallet");
     WitnessV2PQDestination dest(witnessProgram);
     pwallet->SetAddressBook(dest, strAccount, "receive");
     return EncodeDestination(dest);
+}
+
+UniValue recoverpqkeys(const JSONRPCRequest& request)
+{
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) return NullUniValue;
+    if (request.fHelp || request.params.size() != 4) {
+        throw std::runtime_error(
+            "recoverpqkeys start_index end_index start_height stop_height\n"
+            "Restore deterministic PQ keys in an inclusive index range and rescan an inclusive block range.\n"
+            "At most 100 keys and 100000 blocks may be processed per call. Split larger recovery into multiple calls.\n"
+            "All keys and the next allocation index are persisted before the rescan. If the rescan fails or is aborted, retry the same call.\n"
+            "The next allocation index advances past end_index, including unused indices.\n"
+            "An encrypted wallet must be unlocked. This cannot recover older random PQ keys; those require a wallet-file backup.\n"
+            "Arguments:\n"
+            "1. start_index    (numeric, required) first hardened PQ receive index\n"
+            "2. end_index      (numeric, required) last hardened PQ receive index\n"
+            "3. start_height   (numeric, required) first block to rescan\n"
+            "4. stop_height    (numeric, required) last block to rescan\n"
+            "Result: {\"start_index\":n,\"end_index\":n,\"new_keys\":n,\"next_index\":n,\"start_height\":n,\"stop_height\":n}\n");
+    }
+
+    const int64_t startIndex = request.params[0].get_int64();
+    const int64_t endIndex = request.params[1].get_int64();
+    const int64_t startHeight = request.params[2].get_int64();
+    const int64_t stopHeight = request.params[3].get_int64();
+    if (startIndex < 0 || endIndex < startIndex ||
+        endIndex >= CPQHDChain::MAX_COUNTER || endIndex - startIndex >= 100) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+                           "Invalid PQ index range: use 1 to 100 indices below 2147483648");
+    }
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+    if (startHeight < 0 || stopHeight < startHeight ||
+        stopHeight > chainActive.Height() || stopHeight - startHeight >= 100000) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+                           "Invalid block height range: use 1 to 100000 available blocks");
+    }
+    if (!pwallet->IsHDEnabled() || !pwallet->GetPQHDChain().IsValid()) {
+        throw JSONRPCError(RPC_WALLET_ERROR,
+                           "PQ recovery requires a valid HD wallet");
+    }
+    EnsureWalletIsUnlocked(pwallet);
+
+    CBlockIndex* const pindexStart = chainActive[static_cast<int>(startHeight)];
+    CBlockIndex* const pindexStop = chainActive[static_cast<int>(stopHeight)];
+    if (fPruneMode) {
+        for (CBlockIndex* block = pindexStop;
+             block && block->nHeight >= pindexStart->nHeight;
+             block = block->pprev) {
+            if (!(block->nStatus & BLOCK_HAVE_DATA)) {
+                throw JSONRPCError(RPC_MISC_ERROR,
+                                   "Requested block range contains pruned data");
+            }
+        }
+    }
+
+    int newKeys = 0;
+    for (int64_t index = startIndex; index <= endIndex; ++index) {
+        bool added = false;
+        if (!pwallet->RecoverPQKey(static_cast<uint32_t>(index), added)) {
+            throw JSONRPCError(RPC_WALLET_ERROR,
+                               strprintf("PQ recovery stopped at index %u. Persisted keys remain available; retry the same range.",
+                                         static_cast<uint32_t>(index)));
+        }
+        if (added)
+            ++newKeys;
+    }
+
+    CBlockIndex* const failedBlock = pwallet->ScanForWalletTransactions(
+        pindexStart, pindexStop, true);
+    if (pwallet->IsAbortingRescan()) {
+        throw JSONRPCError(RPC_MISC_ERROR,
+                           "PQ recovery rescan aborted. Keys remain persisted; retry the same range.");
+    }
+    if (failedBlock) {
+        throw JSONRPCError(RPC_MISC_ERROR,
+                           "PQ recovery rescan failed. Keys remain persisted; retry the same range.");
+    }
+
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("start_index", startIndex);
+    result.pushKV("end_index", endIndex);
+    result.pushKV("new_keys", newKeys);
+    result.pushKV("next_index", static_cast<int64_t>(
+        pwallet->GetPQHDChain().nExternalChainCounter));
+    result.pushKV("start_height", startHeight);
+    result.pushKV("stop_height", stopHeight);
+    return result;
+}
+
+UniValue getnewpqassetaddress(const JSONRPCRequest& request)
+{
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) return NullUniValue;
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error("getnewpqassetaddress ( \"account\" )\nReturns an asset identifier|PQ address destination for active RIP-25 asset rules. The identifier does not have a classical private key.\n");
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    const int activationHeight = GetPQAssetActivationHeightForPrev(chainActive.Tip(), GetParams().GetConsensus());
+    if (activationHeight < 0 || chainActive.Height() + 1 < activationHeight)
+        throw JSONRPCError(RPC_WALLET_ERROR, "PQ asset rules are not active; refusing to generate an unprotected asset destination");
+    EnsureWalletIsUnlocked(pwallet);
+
+    std::string account;
+    if (!request.params[0].isNull()) account = AccountFromValue(request.params[0]);
+    CPQPubKey pqPubKey;
+    if (!pwallet->GenerateNewPQKey(pqPubKey))
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to derive and persist ML-DSA-44 keypair");
+    const WitnessV2PQDestination pqDestination(pqPubKey.GetWitnessProgram());
+    const CKeyID assetID(Hash160(pqDestination.witnessProgram.begin(),
+                                 pqDestination.witnessProgram.end()));
+    if (!pwallet->StoreOwnedPQAssetDestination(assetID, pqDestination.witnessProgram))
+        throw JSONRPCError(RPC_WALLET_ERROR, "Error: Failed to persist PQ-only asset destination");
+    pwallet->SetAddressBook(assetID, account, "pqasset");
+    pwallet->SetAddressBook(pqDestination, account, "receive");
+    return EncodePQAssetDestination(assetID, pqDestination.witnessProgram);
+}
+
+UniValue listpqassetaddresses(const JSONRPCRequest& request)
+{
+    CWallet* const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) return NullUniValue;
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "listpqassetaddresses\nReturns saved wallet-owned PQ-only and historical paired asset destinations and whether PQ asset rules are active for the next block. Historical pairs cannot receive newly created asset outputs after activation. An inactive destination is not safe for receiving assets.\n");
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    const int activationHeight = GetPQAssetActivationHeightForPrev(chainActive.Tip(), GetParams().GetConsensus());
+    const bool active = activationHeight >= 0 && chainActive.Height() + 1 >= activationHeight;
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("active", active);
+    UniValue addresses(UniValue::VARR);
+    for (const std::string& descriptor : pwallet->GetOwnedPQAssetDestinations())
+        addresses.push_back(descriptor);
+    result.pushKV("addresses", addresses);
+    return result;
 }
 
 CTxDestination GetAccountAddress(CWallet* const pwallet, std::string strAccount, bool bForceNew = false)
@@ -336,12 +483,12 @@ UniValue setaccount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             "setaccount \"address\" \"account\"\n"
-            "\nDEPRECATED. Sets the account associated with the given address.\n"
+            "\n Sets the account associated with the given address.\n"
             "\nArguments:\n"
             "1. \"address\"         (string, required) The soteria address to be associated with an account.\n"
             "2. \"account\"         (string, required) The account to assign the address to.\n"
             "\nExamples:\n" +
-            HelpExampleCli("setaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"tabby\"") + HelpExampleRpc("setaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", \"tabby\""));
+            HelpExampleCli("setaccount", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" \"tabby\"") + HelpExampleRpc("setaccount", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", \"tabby\""));
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
@@ -381,13 +528,13 @@ UniValue getaccount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getaccount \"address\"\n"
-            "\nDEPRECATED. Returns the account associated with the given address.\n"
+            "\n Returns the account associated with the given address.\n"
             "\nArguments:\n"
             "1. \"address\"         (string, required) The soteria address for account lookup.\n"
             "\nResult:\n"
             "\"accountname\"        (string) the account address\n"
             "\nExamples:\n" +
-            HelpExampleCli("getaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\"") + HelpExampleRpc("getaccount", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\""));
+            HelpExampleCli("getaccount", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\"") + HelpExampleRpc("getaccount", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\""));
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
@@ -415,7 +562,7 @@ UniValue getaddressesbyaccount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 1)
         throw std::runtime_error(
             "getaddressesbyaccount \"account\"\n"
-            "\nDEPRECATED. Returns the list of addresses for the given account.\n"
+            "\n Returns the list of addresses for the given account.\n"
             "\nArguments:\n"
             "1. \"account\"        (string, required) The account name.\n"
             "\nResult:\n"
@@ -435,7 +582,7 @@ UniValue getaddressesbyaccount(const JSONRPCRequest& request)
     for (const std::pair<const CTxDestination, CAddressBookData>& item : pwallet->mapAddressBook) {
         const CTxDestination& dest = item.first;
         const std::string& strName = item.second.name;
-        if (strName == strAccount) {
+        if (strName == strAccount && !pwallet->IsPQOnlyAssetID(dest)) {
             ret.push_back(EncodeDestination(dest));
         }
     }
@@ -512,7 +659,7 @@ UniValue sendtoaddress(const JSONRPCRequest& request)
                             "\nResult:\n"
                             "\"txid\"                  (string) The transaction id.\n"
                             "\nExamples:\n" +
-            HelpExampleCli("sendtoaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1") + HelpExampleCli("sendtoaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 \"donation\" \"seans outpost\"") + HelpExampleCli("sendtoaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 \"\" \"\" true") + HelpExampleRpc("sendtoaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\", 0.1, \"donation\", \"seans outpost\""));
+            HelpExampleCli("sendtoaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" 0.1") + HelpExampleCli("sendtoaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.1 \"donation\" \"seans outpost\"") + HelpExampleCli("sendtoaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" 0.1 \"\" \"\" true") + HelpExampleRpc("sendtoaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", 0.1, \"donation\", \"seans outpost\""));
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -594,7 +741,7 @@ UniValue sendfromaddress(const JSONRPCRequest& request)
                             "\nResult:\n"
                             "\"txid\"                  (string) The transaction id.\n"
                             "\nExamples:\n" +
-            HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1") + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 \"donation\" \"seans outpost\"") + HelpExampleCli("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.1 \"\" \"\" true") + HelpExampleRpc("sendfromaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\", 0.1, \"donation\", \"seans outpost\""));
+            HelpExampleCli("sendfromaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.1") + HelpExampleCli("sendfromaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.1 \"donation\" \"seans outpost\"") + HelpExampleCli("sendfromaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.1 \"\" \"\" true") + HelpExampleRpc("sendfromaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", 0.1, \"donation\", \"seans outpost\""));
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -694,7 +841,7 @@ UniValue listaddressgroupings(const JSONRPCRequest& request)
             "      \"address\",            (string) The soteria address\n"
             "      amount,                 (numeric) The amount in " +
             CURRENCY_UNIT + "\n"
-                            "      \"account\"             (string, optional) DEPRECATED. The account\n"
+                            "      \"account\"             (string, optional) . The account\n"
                             "    ]\n"
                             "    ,...\n"
                             "  ]\n"
@@ -710,7 +857,10 @@ UniValue listaddressgroupings(const JSONRPCRequest& request)
     std::map<CTxDestination, CAmount> balances = pwallet->GetAddressBalances();
     for (const std::set<CTxDestination>& grouping : pwallet->GetAddressGroupings()) {
         UniValue jsonGrouping(UniValue::VARR);
-        for (const CTxDestination& address : grouping) {
+        for (const CTxDestination& address : grouping)
+        {
+            if (pwallet->IsPQOnlyAssetID(address))
+                continue;
             UniValue addressInfo(UniValue::VARR);
             addressInfo.push_back(EncodeDestination(address));
             addressInfo.push_back(ValueFromAmount(balances[address]));
@@ -721,7 +871,8 @@ UniValue listaddressgroupings(const JSONRPCRequest& request)
             }
             jsonGrouping.push_back(addressInfo);
         }
-        jsonGroupings.push_back(jsonGrouping);
+        if (!jsonGrouping.empty())
+            jsonGroupings.push_back(jsonGrouping);
     }
     return jsonGroupings;
 }
@@ -746,9 +897,9 @@ UniValue signmessage(const JSONRPCRequest& request)
                                                "\nExamples:\n"
                                                "\nUnlock the wallet for 30 seconds\n" +
             HelpExampleCli("walletpassphrase", "\"mypassphrase\" 30") +
-            "\nCreate the signature\n" + HelpExampleCli("signmessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"my message\"") +
-            "\nVerify the signature\n" + HelpExampleCli("verifymessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"signature\" \"my message\"") +
-            "\nAs json rpc\n" + HelpExampleRpc("signmessage", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", \"my message\""));
+            "\nCreate the signature\n" + HelpExampleCli("signmessage", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" \"my message\"") +
+            "\nVerify the signature\n" + HelpExampleCli("verifymessage", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" \"signature\" \"my message\"") +
+            "\nAs json rpc\n" + HelpExampleRpc("signmessage", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", \"my message\""));
 
     LOCK2(cs_main, pwallet->cs_wallet);
 
@@ -802,10 +953,10 @@ UniValue getreceivedbyaddress(const JSONRPCRequest& request)
             CURRENCY_UNIT + " received at this address.\n"
                             "\nExamples:\n"
                             "\nThe amount from transactions with at least 1 confirmation\n" +
-            HelpExampleCli("getreceivedbyaddress", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\"") +
-            "\nThe amount including unconfirmed transactions, zero confirmations\n" + HelpExampleCli("getreceivedbyaddress", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" 0") +
-            "\nThe amount with at least 6 confirmations\n" + HelpExampleCli("getreceivedbyaddress", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" 6") +
-            "\nAs a json rpc call\n" + HelpExampleRpc("getreceivedbyaddress", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", 6"));
+            HelpExampleCli("getreceivedbyaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\"") +
+            "\nThe amount including unconfirmed transactions, zero confirmations\n" + HelpExampleCli("getreceivedbyaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0") +
+            "\nThe amount with at least 6 confirmations\n" + HelpExampleCli("getreceivedbyaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 6") +
+            "\nAs a json rpc call\n" + HelpExampleRpc("getreceivedbyaddress", "\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", 6"));
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -852,7 +1003,7 @@ UniValue getreceivedbyaccount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(
             "getreceivedbyaccount \"account\" ( minconf )\n"
-            "\nDEPRECATED. Returns the total amount received by addresses with <account> in transactions with at least [minconf] confirmations.\n"
+            "\n. Returns the total amount received by addresses with <account> in transactions with at least [minconf] confirmations.\n"
             "\nArguments:\n"
             "1. \"account\"      (string, required) The selected account, may be the default account using \"\".\n"
             "2. minconf          (numeric, optional, default=1) Only include transactions confirmed at least this many times.\n"
@@ -909,11 +1060,11 @@ UniValue getbalance(const JSONRPCRequest& request)
         throw std::runtime_error(
             "getbalance ( \"account\" minconf include_watchonly )\n"
             "\nIf account is not specified, returns the server's total available balance.\n"
-            "If account is specified (DEPRECATED), returns the balance in the account.\n"
+            "If account is specified, returns the balance in the account.\n"
             "Note that the account \"\" is not the same as leaving the parameter out.\n"
             "The server total may be different to the balance in the default \"\" account.\n"
             "\nArguments:\n"
-            "1. \"account\"         (string, optional) DEPRECATED. The account string may be given as a\n"
+            "1. \"account\"         (string, optional). The account string may be given as a\n"
             "                     specific account name to find the balance associated with wallet keys in\n"
             "                     a named account, or as the empty string (\"\") to find the balance\n"
             "                     associated with wallet keys not in any named account, or as \"*\" to find\n"
@@ -998,7 +1149,7 @@ UniValue movecmd(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 3 || request.params.size() > 5)
         throw std::runtime_error(
             "move \"fromaccount\" \"toaccount\" amount ( minconf \"comment\" )\n"
-            "\nDEPRECATED. Move a specified amount from one account in your wallet to another.\n"
+            "\n Move a specified amount from one account in your wallet to another.\n"
             "\nArguments:\n"
             "1. \"fromaccount\"   (string, required) The name of the account to move funds from. May be the default account using \"\".\n"
             "2. \"toaccount\"     (string, required) The name of the account to move funds to. May be the default account using \"\".\n"
@@ -1047,7 +1198,7 @@ UniValue sendfrom(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() < 3 || request.params.size() > 6)
         throw std::runtime_error(
             "sendfrom \"fromaccount\" \"toaddress\" amount ( minconf \"comment\" \"comment_to\" )\n"
-            "\nDEPRECATED (use sendtoaddress). Sent an amount from an account to a soteria address." + 
+            "\n (use sendtoaddress). Sent an amount from an account to a soteria address." + 
             HelpRequiringPassphrase(pwallet) + "\n"
                                                "\nArguments:\n"
                                                "1. \"fromaccount\"       (string, required) The name of the account to send funds from. May be the default account using \"\".\n"
@@ -1067,9 +1218,9 @@ UniValue sendfrom(const JSONRPCRequest& request)
                             "\"txid\"                 (string) The transaction id.\n"
                             "\nExamples:\n"
                             "\nSend 0.01 " +
-            CURRENCY_UNIT + " from the default account to the address, must have at least 1 confirmation\n" + HelpExampleCli("sendfrom", "\"\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.01") +
-            "\nSend 0.01 from the tabby account to the given address, funds must have at least 6 confirmations\n" + HelpExampleCli("sendfrom", "\"tabby\" \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 0.01 6 \"donation\" \"seans outpost\"") +
-            "\nAs a json rpc call\n" + HelpExampleRpc("sendfrom", "\"tabby\", \"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\", 0.01, 6, \"donation\", \"seans outpost\""));
+            CURRENCY_UNIT + " from the default account to the address, must have at least 1 confirmation\n" + HelpExampleCli("sendfrom", "\"\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.01") +
+            "\nSend 0.01 from the tabby account to the given address, funds must have at least 6 confirmations\n" + HelpExampleCli("sendfrom", "\"tabby\" \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\" 0.01 6 \"donation\" \"seans outpost\"") +
+            "\nAs a json rpc call\n" + HelpExampleRpc("sendfrom", "\"tabby\", \"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\", 0.01, 6, \"donation\", \"seans outpost\""));
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -1120,7 +1271,7 @@ UniValue sendmany(const JSONRPCRequest& request)
             "\nSend multiple times. Amounts are double-precision floating point numbers." +
             HelpRequiringPassphrase(pwallet) + "\n"
                                                "\nArguments:\n"
-                                               "1. \"fromaccount\"         (string, required) DEPRECATED. The account to send the funds from. Should be \"\" for the default account\n"
+                                               "1. \"fromaccount\"         (string, required) . The account to send the funds from. Should be \"\" for the default account\n"
                                                "2. \"amounts\"             (string, required) A json object with addresses and amounts\n"
                                                "    {\n"
                                                "      \"address\":amount   (numeric or string) The soteria address is the key, the numeric amount (can be string) in " +
@@ -1148,10 +1299,10 @@ UniValue sendmany(const JSONRPCRequest& request)
                             "                                    the number of addresses.\n"
                             "\nExamples:\n"
                             "\nSend two amounts to two different addresses:\n" +
-            HelpExampleCli("sendmany", "\"\" \"{\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\":0.01,\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\":0.02}\"") +
-            "\nSend two amounts to two different addresses setting the confirmation and comment:\n" + HelpExampleCli("sendmany", "\"\" \"{\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\":0.01,\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\":0.02}\" 6 \"testing\"") +
-            "\nSend two amounts to two different addresses, subtract fee from amount:\n" + HelpExampleCli("sendmany", "\"\" \"{\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\":0.01,\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\":0.02}\" 1 \"\" \"[\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\",\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\"]\"") +
-            "\nAs a json rpc call\n" + HelpExampleRpc("sendmany", "\"\", \"{\\\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\\\":0.01,\\\"1353tsE8YMTA4EuV7dgUXGjNFf9KpVvKHz\\\":0.02}\", 6, \"testing\""));
+            HelpExampleCli("sendmany", "\"\" \"{\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\":0.01,\\\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\\\":0.02}\"") +
+            "\nSend two amounts to two different addresses setting the confirmation and comment:\n" + HelpExampleCli("sendmany", "\"\" \"{\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\":0.01,\\\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\\\":0.02}\" 6 \"testing\"") +
+            "\nSend two amounts to two different addresses, subtract fee from amount:\n" + HelpExampleCli("sendmany", "\"\" \"{\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\":0.01,\\\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\\\":0.02}\" 1 \"\" \"[\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\",\\\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\\\"]\"") +
+            "\nAs a json rpc call\n" + HelpExampleRpc("sendmany", "\"\", \"{\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\":0.01,\\\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\\\":0.02}\", 6, \"testing\""));
 
     ObserveSafeMode();
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -1261,7 +1412,7 @@ UniValue addmultisigaddress(const JSONRPCRequest& request)
         std::string msg = "addmultisigaddress nrequired [\"key\",...] ( \"account\" )\n"
                           "\nAdd a nrequired-to-sign multisignature address to the wallet.\n"
                           "Each key is a Soteria address or hex-encoded public key.\n"
-                          "If 'account' is specified (DEPRECATED), assign address to that account.\n"
+                          "If 'account' is specified, assign address to that account.\n"
 
                           "\nArguments:\n"
                           "1. nrequired        (numeric, required) The number of required signatures out of the n keys or addresses.\n"
@@ -1270,15 +1421,15 @@ UniValue addmultisigaddress(const JSONRPCRequest& request)
                           "       \"address\"  (string) soteria address or hex-encoded public key\n"
                           "       ...,\n"
                           "     ]\n"
-                          "3. \"account\"      (string, optional) DEPRECATED. An account to assign the addresses to.\n"
+                          "3. \"account\"      (string, optional) An account to assign the addresses to.\n"
 
                           "\nResult:\n"
                           "\"address\"         (string) A soteria address associated with the keys.\n"
 
                           "\nExamples:\n"
                           "\nAdd a multisig address from 2 addresses\n" + 
-                          HelpExampleCli("addmultisigaddress", "2 \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"") +
-                          "\nAs json rpc call\n" + HelpExampleRpc("addmultisigaddress", "2, \"[\\\"16sSauSf5pF2UkUwvKGq4qjNRzBZYqgEL5\\\",\\\"171sgjn4YtPu27adkKGrdDwzRTxnRkBfKV\\\"]\"");
+                          HelpExampleCli("addmultisigaddress", "2 \"[\\\"SXxtKXnka6qjCLSB6nPPWA62A3FGPC6VZn\\\",\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\"]\"") +
+                          "\nAs json rpc call\n" + HelpExampleRpc("addmultisigaddress", "2, \"[\\\"SXxtKXnka6qjCLSB6nPPWA62A3FGPC6VZn\\\",\\\"SWauooUrkoPir7SREZmBZeyJTxWDxZRsXP\\\"]\"");
         throw std::runtime_error(msg);
     }
 
@@ -1352,7 +1503,6 @@ public:
         }
         return false;
     }
-
     bool operator()(const WitnessV2PQDestination &dest) const { return false; }
 };
 
@@ -1465,6 +1615,8 @@ UniValue ListReceived(CWallet* const pwallet, const UniValue& params, bool fByAc
     std::map<std::string, tallyitem> mapAccountTally;
     for (const std::pair<const CTxDestination, CAddressBookData>& item : pwallet->mapAddressBook) {
         const CTxDestination& dest = item.first;
+        if (pwallet->IsPQOnlyAssetID(dest))
+            continue;
         const std::string& strAccount = item.second.name;
         std::map<CTxDestination, tallyitem>::iterator it = mapTally.find(dest);
         if (it == mapTally.end() && !fIncludeEmpty)
@@ -1543,7 +1695,7 @@ UniValue listreceivedbyaddress(const JSONRPCRequest& request)
             "  {\n"
             "    \"involvesWatchonly\" : true,        (bool) Only returned if imported addresses were involved in transaction\n"
             "    \"address\" : \"receivingaddress\",  (string) The receiving address\n"
-            "    \"account\" : \"accountname\",       (string) DEPRECATED. The account of the receiving address. The default account is \"\".\n"
+            "    \"account\" : \"accountname\",       (string) . The account of the receiving address. The default account is \"\".\n"
             "    \"amount\" : x.xxx,                  (numeric) The total amount in " +
             CURRENCY_UNIT + " received by the address\n"
                             "    \"confirmations\" : n,               (numeric) The number of confirmations of the most recent transaction included\n"
@@ -1575,7 +1727,7 @@ UniValue listreceivedbyaccount(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() > 3)
         throw std::runtime_error(
             "listreceivedbyaccount ( minconf include_empty include_watchonly)\n"
-            "\nDEPRECATED. List balances by account.\n"
+            "\n. List balances by account.\n"
             "\nArguments:\n"
             "1. minconf           (numeric, optional, default=1) The minimum number of confirmations before payments are included.\n"
             "2. include_empty     (bool, optional, default=false) Whether to include accounts that haven't received any payments.\n"
@@ -1607,6 +1759,21 @@ static void MaybePushAddress(UniValue& entry, const CTxDestination& dest)
     if (IsValidDestination(dest)) {
         entry.push_back(Pair("address", EncodeDestination(dest)));
     }
+}
+
+static std::string AssetHistoryDestination(const CWalletTx& wtx,
+                                           const CAssetOutputEntry& data)
+{
+    if (data.vout < 0 || static_cast<size_t>(data.vout) >= wtx.tx->vout.size())
+        return std::string();
+    LOCK(cs_main);
+    const CBlockIndex* originBlock = nullptr;
+    const int depth = wtx.GetDepthInMainChain(originBlock);
+    const int originHeight = depth > 0 && originBlock ? originBlock->nHeight : -1;
+    const int activationHeight = GetPQAssetActivationHeightForPrev(
+        chainActive.Tip(), Params().GetConsensus());
+    return EncodeContextualAssetDestination(
+        wtx.tx->vout[data.vout].scriptPubKey, originHeight, activationHeight);
 }
 
 /**
@@ -1710,7 +1877,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                 entry.push_back(Pair("message", EncodeAssetData(data.message)));
                 if (!data.message.empty() && data.expireTime > 0)
                     entry.push_back(Pair("message_expires", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", data.expireTime)));
-                entry.push_back(Pair("destination", EncodeDestination(data.destination)));
+                entry.push_back(Pair("destination", AssetHistoryDestination(wtx, data)));
                 entry.push_back(Pair("vout", data.vout));
                 entry.push_back(Pair("category", "receive"));
                 if (fLong)
@@ -1734,7 +1901,7 @@ void ListTransactions(CWallet* const pwallet, const CWalletTx& wtx, const std::s
                 entry.push_back(Pair("message", EncodeAssetData(data.message)));
                 if (!data.message.empty() && data.expireTime > 0)
                     entry.push_back(Pair("message_expires", DateTimeStrFormat("%Y-%m-%d %H:%M:%S", data.expireTime)));
-                entry.push_back(Pair("destination", EncodeDestination(data.destination)));
+                entry.push_back(Pair("destination", AssetHistoryDestination(wtx, data)));
                 entry.push_back(Pair("vout", data.vout));
                 entry.push_back(Pair("category", "send"));
                 if (fLong)
@@ -1785,14 +1952,14 @@ UniValue listtransactions(const JSONRPCRequest& request)
             "listtransactions ( \"account\" count skip include_watchonly)\n"
             "\nReturns up to 'count' most recent transactions skipping the first 'from' transactions for account 'account'.\n"
             "\nArguments:\n"
-            "1. \"account\"    (string, optional) DEPRECATED. The account name. Should be \"*\".\n"
+            "1. \"account\"    (string, optional) . The account name. Should be \"*\".\n"
             "2. count          (numeric, optional, default=10) The number of transactions to return\n"
             "3. skip           (numeric, optional, default=0) The number of transactions to skip\n"
             "4. include_watchonly (bool, optional, default=false) Include transactions to watch-only addresses (see 'importaddress')\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
-            "    \"account\":\"accountname\",       (string) DEPRECATED. The account name associated with the transaction. \n"
+            "    \"account\":\"accountname\",       (string) . The account name associated with the transaction. \n"
             "                                                It will be \"\" for the default account.\n"
             "    \"address\":\"address\",    (string) The soteria address of the transaction. Not present for \n"
             "                                                move transactions (category = move).\n"
@@ -1823,7 +1990,7 @@ UniValue listtransactions(const JSONRPCRequest& request)
                             "    \"timereceived\": xxx,      (numeric) The time received in seconds since epoch (midnight Jan 1 1970 GMT). Available \n"
                             "                                          for 'send' and 'receive' category of transactions.\n"
                             "    \"comment\": \"...\",       (string) If a comment is associated with the transaction.\n"
-                            "    \"otheraccount\": \"accountname\",  (string) DEPRECATED. For the 'move' category of transactions, the account the funds came \n"
+                            "    \"otheraccount\": \"accountname\",  (string) . For the 'move' category of transactions, the account the funds came \n"
                             "                                          from (for receiving funds, positive amounts), or went to (for sending funds,\n"
                             "                                          negative amounts).\n"
                             "    \"bip125-replaceable\": \"yes|no|unknown\",  (string) Whether this transaction could be replaced due to BIP125 (replace-by-fee);\n"
@@ -2060,7 +2227,7 @@ UniValue liststucktransactions(const JSONRPCRequest& request)
                             "                                                      may be unknown for unconfirmed transactions not in the mempool\n"
                             "     \"details\" : [\n"
                             "       {\n"
-                            "         \"account\" : \"accountname\",      (string) DEPRECATED. The account name involved in the transaction, can be \"\" for the default account.\n"
+                            "         \"account\" : \"accountname\",      (string) . The account name involved in the transaction, can be \"\" for the default account.\n"
                             "         \"address\" : \"address\",          (string) The dogecoin address involved in the transaction\n"
                             "         \"category\" : \"send|receive\",    (string) The category, either 'send' or 'receive'\n"
                             "         \"amount\" : x.xxx,                 (numeric) The amount in " +
@@ -2231,7 +2398,7 @@ UniValue listsinceblock(const JSONRPCRequest& request)
             "\nResult:\n"
             "{\n"
             "  \"transactions\": [\n"
-            "    \"account\":\"accountname\",       (string) DEPRECATED. The account name associated with the transaction. Will be \"\" for the default account.\n"
+            "    \"account\":\"accountname\",       (string) . The account name associated with the transaction. Will be \"\" for the default account.\n"
             "    \"address\":\"address\",    (string) The soteria address of the transaction. Not present for move transactions (category = move).\n"
             "    \"category\":\"send|receive\",     (string) The transaction category. 'send' has negative amounts, 'receive' has positive amounts.\n"
             "    \"amount\": x.xxx,          (numeric) The amount in " +
@@ -2382,7 +2549,7 @@ UniValue gettransaction(const JSONRPCRequest& request)
                             "                                                   may be unknown for unconfirmed transactions not in the mempool\n"
                             "  \"details\" : [\n"
                             "    {\n"
-                            "      \"account\" : \"accountname\",      (string) DEPRECATED. The account name involved in the transaction, can be \"\" for the default account.\n"
+                            "      \"account\" : \"accountname\",      (string) . The account name involved in the transaction, can be \"\" for the default account.\n"
                             "      \"address\" : \"address\",          (string) The soteria address involved in the transaction\n"
                             "      \"category\" : \"send|receive\",    (string) The category, either 'send' or 'receive'\n"
                             "      \"amount\" : x.xxx,                 (numeric) The amount in " +
@@ -2691,7 +2858,7 @@ UniValue walletlock(const JSONRPCRequest& request)
             "\nExamples:\n"
             "\nSet the passphrase for 2 minutes to perform a transaction\n" +
             HelpExampleCli("walletpassphrase", "\"my pass phrase\" 120") +
-            "\nPerform a send (requires passphrase set)\n" + HelpExampleCli("sendtoaddress", "\"1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd\" 1.0") +
+            "\nPerform a send (requires passphrase set)\n" + HelpExampleCli("sendtoaddress", "\"ScfJvtiR3aU73rSttJWfjyc8m6TwCT6Hn7\" 1.0") +
             "\nClear the passphrase since we are done before 2 minutes is up\n" + HelpExampleCli("walletlock", "") +
             "\nAs json rpc call\n" + HelpExampleRpc("walletlock", ""));
     }
@@ -3251,7 +3418,7 @@ UniValue listunspent(const JSONRPCRequest& request)
                             "    \"txid\" : \"txid\",          (string) the transaction id \n"
                             "    \"vout\" : n,               (numeric) the vout value\n"
                             "    \"address\" : \"address\",    (string) the soteria address\n"
-                            "    \"account\" : \"account\",    (string) DEPRECATED. The associated account, or \"\" for the default account\n"
+                            "    \"account\" : \"account\",    (string) . The associated account, or \"\" for the default account\n"
                             "    \"scriptPubKey\" : \"key\",   (string) the script key\n"
                             "    \"amount\" : x.xxx,         (numeric) the transaction output amount in " +
             CURRENCY_UNIT + "\n"
@@ -3550,7 +3717,7 @@ UniValue fundrawtransaction(const JSONRPCRequest& request)
 
 UniValue bumpfee(const JSONRPCRequest& request)
 {
-    throw std::runtime_error("bumpfee has been deprecated on the SOTER Wallet.");
+    throw std::runtime_error("bumpfee has been deprecated on the SOTER Wallet to avoid the risk of double spending.");
 
     //    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
     //
