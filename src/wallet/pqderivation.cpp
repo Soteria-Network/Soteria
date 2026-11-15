@@ -98,6 +98,11 @@ std::string GetKeypath(uint32_t coinType, uint32_t index)
 {
     if (coinType >= HARDENED_LIMIT || index >= HARDENED_LIMIT)
         return std::string();
+    // Purpose 25' is fixed by RIP-25 and must never change.
+    // Changing it re-derives every PQ seed, which means every existing
+    // wallet loses access to its PQ keys. Do not "clean this up" to a
+    // registered BIP purpose (44'/49'/84'/86'); those are reserved for
+    // secp256k1 address types and would collide semantically with PQ keys.
     return strprintf("m/25'/%u'/0'/0'/%u'", coinType, index);
 }
 
