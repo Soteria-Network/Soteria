@@ -1,8 +1,6 @@
 // Copyright (c) 2011-2017 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 #include "consensus/validation.h"
 #include "wallet/coincontrol.h"
@@ -116,7 +114,7 @@ CFeeBumper::CFeeBumper(const CWallet *pWallet, const uint256 txidIn, const CCoin
     // if there was no change output or multiple change outputs, fail
     int nOutput = -1;
     for (size_t i = 0; i < wtx.tx->vout.size(); ++i) {
-        if (pWallet->IsChange(wtx.tx->vout[i])) {
+        if (pWallet->IsChange(wtx, i, nullptr)) {
             if (nOutput != -1) {
                 vErrors.push_back("Transaction has multiple change outputs");
                 currentResult = BumpFeeResult::WALLET_ERROR;
@@ -291,4 +289,3 @@ bool CFeeBumper::commit(CWallet *pWallet)
     }
     return true;
 }
-
