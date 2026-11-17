@@ -226,7 +226,7 @@ public:
     bool operator()(const CKeyID& id) const { return addr->Set(id); }
     bool operator()(const CScriptID& id) const { return addr->Set(id); }
     bool operator()(const CNoDestination& no) const { return false; }
-    bool operator()(const WitnessV2PQDestination&) const { return false; } // PQ uses bech32m
+    bool operator()(const WitnessV2PQDestination&) const { return false; } // PQ uses bech32m, not base58
 };
 
 } // namespace
@@ -329,13 +329,16 @@ namespace {
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad>
 bool ConvertBits(std::vector<uint8_t>& out, const std::vector<uint8_t>& in) {
-    int acc = 0;
+    static_assert(frombits > 0 && frombits <= 8 && tobits > 0 && tobits <= 8,
+                  "ConvertBits requires byte-sized input and output groups");
+    uint32_t acc = 0;
     int bits = 0;
-    const int maxv = (1 << tobits) - 1;
+    const uint32_t maxv = (1U << tobits) - 1U;
+    const uint32_t max_acc = (1U << (frombits + tobits - 1)) - 1U;
     for (size_t i = 0; i < in.size(); ++i) {
-        int value = in[i];
-        if (value < 0 || (value >> frombits)) return false;
-        acc = (acc << frombits) | value;
+        const uint32_t value = in[i];
+        if (value >> frombits) return false;
+        acc = ((acc << frombits) | value) & max_acc;
         bits += frombits;
         while (bits >= tobits) {
             bits -= tobits;
@@ -389,6 +392,45 @@ CTxDestination DecodeDestination(const std::string& str)
 
     // Fall back to base58
     return CSoteriaAddress(str).Get();
+}
+
+std::string EncodePQAssetDestination(const CKeyID& classicalKey, const uint256& pqProgram)
+{
+    const std::string classicalAddress = EncodeDestination(classicalKey);
+    const std::string pqAddress = EncodeDestination(WitnessV2PQDestination(pqProgram));
+    if (classicalAddress.empty() || pqAddress.empty())
+        return std::string();
+    return classicalAddress + "|" + pqAddress;
+}
+
+bool DecodePQAssetDestination(const std::string& descriptor, CKeyID& classicalKey, uint256& pqProgram)
+{
+    const size_t separator = descriptor.find('|');
+    if (separator == std::string::npos || separator == 0 ||
+        separator + 1 == descriptor.size() ||
+        descriptor.find('|', separator + 1) != std::string::npos)
+        return false;
+
+    const std::string classicalAddress = descriptor.substr(0, separator);
+    const std::string pqAddress = descriptor.substr(separator + 1);
+    const CTxDestination classicalDestination = DecodeDestination(classicalAddress);
+    const CTxDestination pqDestination = DecodeDestination(pqAddress);
+    const CKeyID* classical = boost::get<CKeyID>(&classicalDestination);
+    const WitnessV2PQDestination* pq = boost::get<WitnessV2PQDestination>(&pqDestination);
+    if (!classical || !pq || EncodeDestination(*classical) != classicalAddress ||
+        EncodeDestination(*pq) != pqAddress)
+        return false;
+
+    classicalKey = *classical;
+    pqProgram = pq->witnessProgram;
+    return true;
+}
+
+bool DecodePQOnlyAssetDestination(const std::string& descriptor, CKeyID& assetID, uint256& pqProgram)
+{
+    if (!DecodePQAssetDestination(descriptor, assetID, pqProgram))
+        return false;
+    return assetID == CKeyID(Hash160(pqProgram.begin(), pqProgram.end()));
 }
 
 bool IsValidDestinationString(const std::string& str, const CChainParams& params)
