@@ -1,9 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
 // Copyright (c) 2017-2019 The Raven Core developers
-// Copyright (c) 2025 The Soteria Core developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2025-2026 The Soteria Core developer
 
 /**
  * Why base-58 instead of standard base-64 encoding?
@@ -168,6 +166,15 @@ typedef CSoteriaExtKeyBase<CExtPubKey, BIP32_EXTKEY_SIZE, CChainParams::EXT_PUBL
 
 std::string EncodeDestination(const CTxDestination& dest);
 CTxDestination DecodeDestination(const std::string& str);
+
+/** Asset descriptor. Historical pairs contain a classical key ID; PQ-only
+ *  pairs contain the HASH160 of the PQ program as an asset identifier.
+ *  Neither form is a native SOTER payment address.
+ */
+std::string EncodePQAssetDestination(const CKeyID& classicalKey, const uint256& pqProgram);
+bool DecodePQAssetDestination(const std::string& descriptor, CKeyID& classicalKey, uint256& pqProgram);
+bool DecodePQOnlyAssetDestination(const std::string& descriptor, CKeyID& assetID, uint256& pqProgram);
+
 bool IsValidDestinationString(const std::string& str);
 bool IsValidDestinationString(const std::string& str, const CChainParams& params);
 
