@@ -22,6 +22,28 @@
 #include <utility>
 #include <string>
 
+// Internal-linkage helper: builds a validated RIP-25 ML-DSA-44 signing
+// context from a string literal. Not exported outside this TU.
+template <std::size_t N>
+static constexpr Consensus::PQSignatureContext MakePQSignatureContext(const char (&literal)[N])
+{
+    static_assert(N == Consensus::PQ_SIGNATURE_CONTEXT_BYTES + 1,
+                  "RIP-25 context must contain 83 bytes plus the C string terminator");
+
+    Consensus::PQSignatureContext context{};
+    for (std::size_t i = 0; i < context.size(); ++i)
+        context[i] = static_cast<unsigned char>(literal[i]);
+
+    // Belt-and-suspenders: for constexpr callers this branch is never
+    // taken (a bad literal makes the constant evaluation ill-formed, so
+    // the error surfaces at compile time). For runtime callers it is a
+    // guarded throw. Valid literals pass through both paths untouched.
+    if (!Consensus::IsValidPQSignatureContext(context))
+        throw std::runtime_error("invalid RIP-25 ML-DSA network context");
+
+    return context;
+}
+
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
     CMutableTransaction txNew;
