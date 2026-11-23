@@ -4466,7 +4466,22 @@ static bool AcceptBlockHeader(const CBlockHeader& block, CValidationState& state
      // we’re still far enough behind the tip that we skip all of the
      // expensive header/PoW/contextual checks
      // return true; }
-        
+
+        {
+            static constexpr int MAX_HEADERS_AHEAD = 100000;
+            const int nNewHeight = pindexPrev->nHeight + 1;
+            if (nNewHeight > chainActive.Height() + MAX_HEADERS_AHEAD) {
+        /* Testnet only
+            return state.Invalid(error("%s: header height %d too far ahead of tip %d", __func__, nNewHeight, chainActive.Height()),
+                                         0, "header-height-too-far-ahead");
+        */  
+
+        // Mainnet
+    	return state.DoS(10, error("%s: header height %d too far ahead of tip %d", __func__, nNewHeight, chainActive.Height()),
+    	                 REJECT_INVALID, "header-height-too-far-ahead");    
+            }
+        }  
+		
         // normal header checks kick in:
         if (pindexPrev->nStatus & BLOCK_FAILED_MASK)
             return state.DoS(100, error("%s: prev block invalid", __func__), REJECT_INVALID, "bad-prevblk-invalid");
